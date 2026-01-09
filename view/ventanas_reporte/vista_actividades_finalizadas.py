@@ -3,8 +3,6 @@ from PyQt5.QtWidgets import (QFrame, QLabel, QVBoxLayout,
                             QTableWidget, QTableWidgetItem, QHeaderView, 
                             QAbstractItemView, QScrollArea, QWidget, QSizePolicy, QMessageBox)
 from PyQt5.QtCore import (Qt)
-from PyQt5.QtGui import QFont
-from view.ventanas_reporte.v_modal_actulizar_actividad import Modal_actulizar_actividades
 
 
 FONT_FAMILY = "Arial"
@@ -211,7 +209,7 @@ class Ventana_reporte_finalizados(QFrame):
 
 
     def Abrir_modal(self):
-        self.tabla_actividades.viewport().installEventFilter(self)
+        #self.tabla_actividades.viewport().installEventFilter(self)
         self.controller.Abrir_modal()
 
     def Elminar_actividad(self):

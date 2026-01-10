@@ -5,7 +5,6 @@ from PyQt5.QtWidgets import (
     QGraphicsDropShadowEffect, QLineEdit, QComboBox, QSizePolicy, QWidget, QMessageBox, QDialog
 )
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFont
 
 
 # Definición de la familia de fuente y colores

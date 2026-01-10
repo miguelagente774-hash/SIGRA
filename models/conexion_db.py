@@ -60,24 +60,19 @@ class ConexionDB:
             # Tabla Coordinación
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS Coordinacion (
-                    id_Coordinacion INTEGER PRIMARY KEY AUTOINCREMENT,
-                    cedula INTEGER UNIQUE NOT NULL,
+                    id_coordinador INTEGER PRIMARY KEY AUTOINCREMENT,
                     nombres TEXT NOT NULL,
                     apellidos TEXT NOT NULL,
-                    telefono TEXT,
-                    id_gaceta INTEGER,
-                    FOREIGN KEY (id_gaceta) REFERENCES Gaceta (id_gaceta)
+                    telefono TEXT
                 )
             ''')
             
             # Tabla Gobernación
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS Gobernacion (
-                    id_gobernacion INTEGER PRIMARY KEY AUTOINCREMENT,
-                    cedula INTEGER UNIQUE NOT NULL,
+                    id_jefe INTEGER PRIMARY KEY AUTOINCREMENT,
                     nombres TEXT NOT NULL,
-                    apellidos TEXT NOT NULL,
-                    telefono INTEGER
+                    apellidos TEXT NOT NULL
                 )
             ''')
             
@@ -113,8 +108,11 @@ class ConexionDB:
             # Tabla Gaceta
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS Gaceta (
-                    id_gaceta INTEGER PRIMARY KEY AUTOINCREMENT,
-                    serial TEXT
+                    id_coordinador INTEGER,
+                    decreto TEXT,
+                    fecha_publicacion TEXT,
+                    PRIMARY KEY(id_coordinador),
+                    FOREIGN KEY (id_coordinador) REFERENCES Coordinacion(id_coordinador) ON DELETE CASCADE
                 )
             ''')
             

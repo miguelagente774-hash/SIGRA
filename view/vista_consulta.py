@@ -2,10 +2,11 @@ import sys
 from PyQt5.QtWidgets import (
     QApplication, QFrame, QVBoxLayout, QHBoxLayout, QTableWidget,
     QTableWidgetItem, QPushButton, QHeaderView, QMainWindow, QLabel,
-    QGraphicsDropShadowEffect, QLineEdit, QComboBox, QSizePolicy, QWidget, QMessageBox
+    QGraphicsDropShadowEffect, QLineEdit, QComboBox, QSizePolicy, QWidget, QMessageBox, QDialog
 )
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
+
 
 # Definición de la familia de fuente y colores
 FONT_FAMILY = "Arial"
@@ -211,7 +212,8 @@ class Ventana_consulta(QFrame):
         #    self.tabla.selectRow(0)
 
     def Eliminar_reporte(self):
-        id_reporte = self.Obtener_reporte_seleccionado()
+        datos_reporte = self.Obtener_reporte_seleccionado()
+        id_reporte = datos_reporte[0]
         self.controlador.Eliminar_reporte(id_reporte)
 
     def Obtener_reporte_seleccionado(self):
@@ -220,10 +222,12 @@ class Ventana_consulta(QFrame):
         print(fila_seleccionda)
         if fila_seleccionda >= 0:
             id_reporte = self.tabla.item(fila_seleccionda, 0).text()
+            nombre_reporte = self.tabla.item(fila_seleccionda, 1).text()
+            datos_reporte = [id_reporte, nombre_reporte]
         else:
-            id_reporte = None
+            datos_reporte = None
 
-        return id_reporte
+        return datos_reporte
             
     # MÉTODOS AUXILIARES Y DE BOTONES
     def _crear_botones_accion(self):
@@ -241,6 +245,7 @@ class Ventana_consulta(QFrame):
 
         boton_excel = crear_boton("Excel-Reporte")
         boton_pptx = crear_boton("PTTX-Reporte")
+        boton_pptx.clicked.connect(self.Abrir_modal)
         
         boton_eliminar = crear_boton("Eliminar")
         boton_eliminar.clicked.connect(self.Eliminar_reporte)
@@ -250,6 +255,15 @@ class Ventana_consulta(QFrame):
         layout_botones.addWidget(boton_eliminar)
         
         return marco_botones
+    
+    def Abrir_modal(self):
+        datos_reporte = self.Obtener_reporte_seleccionado()
+        try:
+            nombre_reporte = datos_reporte[1]
+            self.controlador.abrir_modal(nombre_reporte)
+        except:
+            self.mensaje_advertencia("Advertencia", "Por favor seleccione un Reporte")
+
 
     def mensaje_advertencia(self, titulo, mensaje):
         QMessageBox.warning(self, titulo, mensaje)

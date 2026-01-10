@@ -3,7 +3,7 @@ from models.models_reportes.Model_actividad_finalizadas import Modelo_actividade
 from controller.ventanas_reporte.c_modal_actulizar_actividad import Controller_modal
 from comunicador import Comunicador_global
 import os
-
+from pathlib import Path
 
 class controlador_reporte_finalizados():
     def __init__(self):
@@ -53,8 +53,13 @@ class controlador_reporte_finalizados():
                 try:
                     imagenes = self.modelo.Obtener_url_imagenes(id_actividad)
                     rutas = imagenes[0]
-                    os.remove(rutas[0])
-                    os.remove(rutas[1])
+                    
+                    #verificar si exiten las rutas para eliminar
+                    imagen1 = Path(rutas[0])
+                    imagen2 = Path(rutas[1])
+                    if  imagen1.exists() and imagen2.exists():
+                        os.remove(rutas[0])
+                        os.remove(rutas[1])
                 except:
                     self.actividades_finalizadas.Mensaje_error("error", "Nose pudo eliminar la imagenes")
                 #eliminando datos de la actividad de la base de datos

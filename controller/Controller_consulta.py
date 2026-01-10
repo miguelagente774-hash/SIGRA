@@ -2,9 +2,10 @@ from view.vista_consulta import Ventana_consulta
 from models.Modelo_consulta import Modelo_consulta
 from comunicador import Comunicador_global
 from components.modal_reporte import Modal_exportar_Reporte
-from PyQt5.QtWidgets import QDialog
+from PyQt5.QtWidgets import QDialog, QFileDialog
 from datetime import datetime
 from services.pptx.reporte import Reporte
+from pathlib import Path
 
 class controlador_consulta():
     def __init__(self):
@@ -28,18 +29,26 @@ class controlador_consulta():
             modal = Modal_exportar_Reporte(Nombre_reporte, self)
             if modal.exec_() == QDialog.Accepted:
                 self.datos_meses = modal.obtener_lista_simple()
-                self.Crear_Reporte(self.datos_meses)
-        except:
-            self.consulta.mensaje_error("Error", "Error al cargar ventana")
+                
+                #Obtener ruta de donde guardar el archivo
+                directorio = QFileDialog.getExistingDirectory(None, "Selecciona la carpeta de destino")
+                if directorio:
+                # Uniendo ruta con el nombre del archivo
+                    ruta_final = Path(directorio) / Nombre_reporte
+                    ruta_final.write_text("Datos generados por el sistema.", encoding="utf-8")
+                
+                #exportanto reporte
+                self.Crear_Reporte(self.datos_meses, ruta_final)
+                self.consulta.mensaje_informativo("Informacion", "Reporte Guardado Exitosamente")
+        except Exception as e:
+            self.consulta.mensaje_error("Error", f"Error al cargar ventana: {e}")
 
-        
-        
     #------------------------------ creacion reporte --------------------------
-    def Crear_Reporte(self, datos_meses):
+    def Crear_Reporte(self, datos_meses, ruta_final):
         try:
             datos_reporte = self.consulta.Obtener_reporte_seleccionado()
             id_reporte = datos_reporte[0]
-            nombre_reporte = datos_reporte[1]
+            nombre_reporte = ruta_final
         except Exception as e:
             self.consulta.mensaje_error("Error", f"datos_reporte: {e}")
 
@@ -131,8 +140,7 @@ class controlador_consulta():
         #separando informacion de los meses    
         mes_1, mes_2, mes_3 = datos_meses
         
-        #Obteniendo fecha
-        #año = datetime.strftime("%Y")
+        año = datetime.now().strftime("%Y")
 
         listas_meses = [mes_1["mes"], mes_2["mes"], mes_3["mes"]]
         listas_ponderaciones = [mes_1["valores"], mes_2["valores"], mes_3["valores"]]
@@ -141,11 +149,11 @@ class controlador_consulta():
             "mes1": f"{listas_meses[0]}",
             "mes2": f"{listas_meses[1]}",
             "mes3": f"{listas_meses[2]}",
-            "año": f"2026"
+            "año": f"{año}"
         }
 
         return fecha, listas_meses, listas_ponderaciones
-    
+
     def Eliminar_reporte(self, id_reporte):
         if id_reporte != None:
             try:

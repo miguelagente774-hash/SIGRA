@@ -4,7 +4,7 @@ from pptx.enum.text import MSO_ANCHOR
 from pptx.enum.text import PP_ALIGN
 from pptx.dml.color import RGBColor
 
-def Tabla_resumen(pptx, total_actividades, porcentaje_meta):
+def Tabla_resumen(pptx, total_actividades, porcentaje_meta, año):
     #creando las presentacion y la diapositiva
     diapositiva1 = pptx.slides.add_slide(pptx.slide_layouts[3])
 
@@ -32,7 +32,7 @@ def Tabla_resumen(pptx, total_actividades, porcentaje_meta):
     texto.clear()
     p = texto.paragraphs[0]
     run = p.add_run()
-    run.text = "RESUMEN DE META CUMPLIDA 2024"
+    run.text = f"RESUMEN DE META CUMPLIDA {año}"
 
     tabla.rows[0].height = Inches(0.7)
 

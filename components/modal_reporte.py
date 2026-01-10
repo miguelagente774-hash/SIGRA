@@ -387,13 +387,25 @@ class Modal_exportar_Reporte(QDialog):
                         valor = campos[mes_index].text().strip()
                         valores_mes.append(valor)
             
-            # Crear el diccionario para este mes
+            #añadiendo valore
             item_mes = {
                 'mes': mes,
                 'valores': valores_mes
             }
-            
+                                
             lista_resultado.append(item_mes)
+        print(self.lista_trimestre)
+        if self.lista_trimestre.currentText() == "Trimestre 1":
+            lista_resultado.append("25%")
+        
+        elif self.lista_trimestre.currentText() == "Trimestre 2":
+            lista_resultado.append("50%")
+        
+        elif self.lista_trimestre.currentText() == "Trimestre 3":
+            lista_resultado.append("75%")
+
+        elif self.lista_trimestre.currentText() == "Trimestre 4":
+            lista_resultado.append("100%")
         
         return lista_resultado
 

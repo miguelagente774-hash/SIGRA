@@ -218,7 +218,6 @@ class Ventana_consulta(QFrame):
     def Obtener_reporte_seleccionado(self):
         #fila seleccionada
         fila_seleccionda = self.tabla.currentRow()
-        print(fila_seleccionda)
         if fila_seleccionda >= 0:
             id_reporte = self.tabla.item(fila_seleccionda, 0).text()
             nombre_reporte = self.tabla.item(fila_seleccionda, 1).text()

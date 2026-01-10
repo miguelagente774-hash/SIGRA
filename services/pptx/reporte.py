@@ -1,6 +1,7 @@
 from pptx import Presentation
 from .funciones.Portada import Portada
 from .funciones.tablas_acciones_actividades import Tabla_acciones_actividades
+from .funciones.tabla_resumen import Tabla_resumen
 from .funciones.actividades_por_mes import Actividad_por_mes
 from .funciones.Actividades_reporte import Actividad_reporte
 from .funciones.Proyecion import Proyeccion
@@ -23,6 +24,7 @@ def Reporte(Nombre_reporte, directora, fecha, lista_meses, lista_ponderaciones, 
     mes2 = fecha["mes2"]
     mes3 = fecha["mes3"]
     año = fecha["año"]
+    porcentaje_total = fecha["porcentaje"]
     meses = [mes1, mes2, mes3, año]
     Portada(pptx, directora, meses, logo)
     
@@ -58,6 +60,11 @@ def Reporte(Nombre_reporte, directora, fecha, lista_meses, lista_ponderaciones, 
     # Tabla actividad por mes
     for mes, ponderacion in zip(lista_meses, lista_ponderaciones):
         Actividad_por_mes(pptx, mes, fecha["año"], ponderacion)
+
+    #tabla resumen
+    #argumentos(pptx, total_actividades, total_cumplido, año)
+    total_actividades = len(datos_actividades)
+    tabla_resumen = Tabla_resumen(pptx, total_actividades, porcentaje_total, fecha["año"])
 
     # Evidencia fotográfica
     evidencia = pptx.slides.add_slide(pptx.slide_layouts[4])

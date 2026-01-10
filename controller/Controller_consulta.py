@@ -29,7 +29,6 @@ class controlador_consulta():
             modal = Modal_exportar_Reporte(Nombre_reporte, self)
             if modal.exec_() == QDialog.Accepted:
                 self.datos_meses = modal.obtener_lista_simple()
-                
                 #Obtener ruta de donde guardar el archivo
                 directorio = QFileDialog.getExistingDirectory(None, "Selecciona la carpeta de destino")
                 if directorio:
@@ -58,7 +57,7 @@ class controlador_consulta():
             self.consulta.mensaje_error("Error", f"nombre_dir: {e}")
 
         try:
-            fecha, listas_meses, listas_ponderaciones = self.Obtener_fechas(datos_meses)
+            fecha, listas_meses, listas_ponderaciones = self.Obtener_fechas_porcentajes(datos_meses)
         except Exception as e:
             self.consulta.mensaje_error("Error", f"fechas: {e}")
 
@@ -136,9 +135,9 @@ class controlador_consulta():
         
         return actividades_enviar
     
-    def Obtener_fechas(self, datos_meses):
+    def Obtener_fechas_porcentajes(self, datos_meses):
         #separando informacion de los meses    
-        mes_1, mes_2, mes_3 = datos_meses
+        mes_1, mes_2, mes_3, porcentaje = datos_meses
         
         año = datetime.now().strftime("%Y")
 
@@ -149,7 +148,8 @@ class controlador_consulta():
             "mes1": f"{listas_meses[0]}",
             "mes2": f"{listas_meses[1]}",
             "mes3": f"{listas_meses[2]}",
-            "año": f"{año}"
+            "año": año,
+            'porcentaje': porcentaje
         }
 
         return fecha, listas_meses, listas_ponderaciones

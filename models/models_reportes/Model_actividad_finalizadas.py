@@ -35,6 +35,10 @@ class Modelo_actividades_finalizadas():
 
         def Eliminar_datos(self, id_Actividad):
                 conexion = ConexionDB()
+                #actividando las claves foraneas (necesario en python)
+                sql1 = "PRAGMA foreign_keys = ON"
+                conexion.cursor.execute(sql1)
+                #eliminando actividad
                 sql = f"""DELETE FROM Actividad
                         WHERE id_Actividad = {id_Actividad}"""
                 conexion.cursor.execute(sql)

@@ -1,5 +1,4 @@
 from PySignal import Signal
-from PyQt5.QtCore import pyqtSignal
 
 class Comunicar():
     def __init__(self):

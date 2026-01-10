@@ -28,11 +28,12 @@ class controlador_consulta():
             modal = Modal_exportar_Reporte(Nombre_reporte, self)
             if modal.exec_() == QDialog.Accepted:
                 self.datos_meses = modal.obtener_lista_simple()
+                self.Crear_Reporte(self.datos_meses)
         except:
             self.consulta.mensaje_error("Error", "Error al cargar ventana")
 
         
-        self.Crear_Reporte(self.datos_meses)
+        
     #------------------------------ creacion reporte --------------------------
     def Crear_Reporte(self, datos_meses):
         try:

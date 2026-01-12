@@ -213,10 +213,12 @@ class Ventana_convertir_reporte(QFrame):
             return
         
         # Ordenar actividades por fecha (actividad[2] es la fecha)
-        actividades_ordenadas = sorted(self.actividades, key=lambda x: x[2])
+        actividades_ordenadas = sorted(self.actividades, key=lambda x: datetime.strptime(x[2], '%d-%m-%Y'), reverse=True)
         
         # Inicializar variables de control
-        mes_actual = None
+        mes_actual = actividades_ordenadas[0]
+
+        
         numero_fila = 0
         
         # Limpiar tabla completamente
@@ -364,7 +366,7 @@ class Ventana_convertir_reporte(QFrame):
         
         for fila in range(self.tabla_actividades.rowCount()):
             titulo = self.tabla_actividades.item(fila, 2).text().lower()
-            id_texto = self.tabla_actividades.item(fila, 1).text().lower()
+            id_texto = self.tabla_actividades.item(fila, 2).text().lower()
             
             # Mostrar u ocultar fila según coincidencia
             if texto in titulo or texto in id_texto:

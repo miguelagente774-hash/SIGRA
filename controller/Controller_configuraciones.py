@@ -48,7 +48,7 @@ class controlador_configuraciones(QWidget):
             }
             
             # Establecer en vista
-            self.vista.establecer_valores(datos)
+            self.establecer_valores(datos)
             
             print("✅ Datos cargados desde la base de datos")
             
@@ -60,7 +60,7 @@ class controlador_configuraciones(QWidget):
         """Maneja el evento de clic en guardar"""
         try:
             # 1. Obtener datos de la vista
-            datos_crudos = self.vista.obtener_valores()
+            datos_crudos = self.obtener_valores()
             
             # 2. Validar datos
             if not self.validar_datos(datos_crudos):
@@ -84,7 +84,7 @@ class controlador_configuraciones(QWidget):
     
     def validar_datos(self, datos):
         """Valida todos los datos antes de guardar"""
-        self.vista.limpiar_errores()
+        self.limpiar_errores()
         
         # Validar interfaz
         if not self.validar_interfaz(datos.get("interfaz", {})):
@@ -249,6 +249,66 @@ class controlador_configuraciones(QWidget):
             QMessageBox.information(self, titulo, mensaje)
     
     # ========== MÉTODOS PÚBLICOS ==========
+
+    
+
+    def obtener_valores(self):
+        # Retorna todos los valores actuales a los widgets
+        return {
+            "interfaz": {
+                "tema": "Claro" if self.vista.radio_tema_claro.isChecked() else "Oscuro",
+                "fuente": self.vista.combo_fuente.currentText(),
+                "tamaño": self.vista.spin_tamano.value(),
+                "negrita": self.vista.check_negrita.isChecked()
+            },
+            "direccion": {
+                "estado": self.vista.entry_estado.text(),
+                "municipio": self.vista.entry_municipio.text(),
+                "parroquia": self.vista.entry_parroquia.text(),
+                "institucion": self.vista.entry_institucion.text()
+            },
+            "jefaturas": {
+                "nombre_coordinacion": self.vista.entry_nombre_coord.text(),
+                "cedula_coordinacion": self.vista.entry_cedula_coord.text(),
+                "nombre_gobernacion": self.vista.entry_nombre_gob.text(),
+                "cedula_gobernacion": self.vista.entry_cedula_gob.text()
+            }
+        }
+    
+    
+
+    def establecer_valores(self, datos):
+        # -Establece los Valores de la Interfaz-
+        # Interfaz
+        if datos.get("interfaz"):
+            interfaz = datos["interfaz"]
+            if interfaz.get("tema") == "Claro":
+                self.vista.radio_tema_claro.setChecked(True)
+            else:
+                self.vista.radio_tema_oscuro.setChecked(True)
+            
+            index = self.vista.combo_fuente.findText(interfaz.get("fuente", "Arial"))
+            if index >= 0:
+                self.vista.combo_fuente.setCurrentIndex(index)
+            
+            self.vista.spin_tamano.setValue(interfaz.get("tamaño", 12))
+            self.vista.check_negrita.setChecked(interfaz.get("negrita", False))
+        
+        # Dirección
+        if datos.get("direccion"):
+            direccion = datos["direccion"]
+            self.vista.entry_estado.setText(direccion.get("estado", ""))
+            self.vista.entry_municipio.setText(direccion.get("municipio", ""))
+            self.vista.entry_parroquia.setText(direccion.get("parroquia", ""))
+            self.vista.entry_institucion.setText(direccion.get("institucion", ""))
+        
+        # Jefaturas
+        if datos.get("jefaturas"):
+            jefaturas = datos["jefaturas"]
+            self.vista.entry_nombre_coord.setText(jefaturas.get("nombre_coordinacion", ""))
+            self.vista.entry_cedula_coord.setText(jefaturas.get("cedula_coordinacion", ""))
+            self.vista.entry_nombre_gob.setText(jefaturas.get("nombre_gobernacion", ""))
+            self.vista.entry_cedula_gob.setText(jefaturas.get("cedula_gobernacion", ""))
     
     def get_widget(self):
         """Retorna el widget para integrar en la aplicación"""
@@ -256,7 +316,7 @@ class controlador_configuraciones(QWidget):
     
     def limpiar_formulario(self):
         """Limpia todos los campos del formulario"""
-        self.vista.limpiar_campos()
+        self.limpiar_campos()
     
     def cargar_datos_por_defecto(self):
         """Carga valores por defecto"""
@@ -280,8 +340,36 @@ class controlador_configuraciones(QWidget):
                 "cedula_gobernacion": ""
             }
         }
-        self.vista.establecer_valores(datos_default)
+        self.establecer_valores(datos_default)
     
+
+    def limpiar_campos(self):
+        """Limpia todos los campos"""
+        self.vista.radio_tema_claro.setChecked(True)
+        self.vista.combo_fuente.setCurrentIndex(0)
+        self.vista.spin_tamano.setValue(12)
+        self.vista.check_negrita.setChecked(False)
+        
+        self.vista.entry_estado.clear()
+        self.vista.entry_municipio.clear()
+        self.vista.entry_parroquia.clear()
+        self.vista.entry_institucion.clear()
+        
+        self.vista.entry_nombre_coord.clear()
+        self.vista.entry_cedula_coord.clear()
+        self.vista.entry_nombre_gob.clear()
+        self.vista.entry_cedula_gob.clear()
+    
+
+    def mostrar_error(self, campo, mensaje):
+        """Marca un campo con error"""
+        # Puedes implementar marcado visual de errores aquí
+        print(f"Error en {campo}: {mensaje}")
+    
+    def limpiar_errores(self):
+        """Limpia todos los marcadores de error"""
+        pass
+
     def cerrar(self):
         """Cierra conexiones"""
         self.modelo.cerrar_conexion()

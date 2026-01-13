@@ -131,7 +131,6 @@ class ConexionDB:
                     FOREIGN KEY (id_gobernacion) REFERENCES Gobernacion (id_gobernacion)
                 )
             ''')
-            print("✅ Tablas creadas exitosamente")
             
         except sqlite3.Error as e:
             print(f"❌ Error al crear tablas: {e}")

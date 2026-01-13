@@ -1,7 +1,9 @@
 import sys
 import os
+import re
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QMessageBox
-from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5.QtCore import QObject, pyqtSignal, QRegExp
+from PyQt5.QtGui import QRegExpValidator, QPalette, QColor
 
 # Configurar path
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -26,11 +28,101 @@ class controlador_configuraciones(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.vista)
         
+        # Configurar validadores con expresiones regulares
+        self.configurar_validadores()
+        
         # Conectar señales
         self.vista.guardar_clicked.connect(self.on_guardar_clicked)
         
         # Cargar datos iniciales
         self.cargar_datos_iniciales()
+    
+        
+        # Aplicar estilo a todos los QLineEdit de la vista
+        widgets_lineedit = [
+            self.vista.entry_estado,
+            self.vista.entry_municipio,
+            self.vista.entry_parroquia,
+            self.vista.entry_institucion,
+            self.vista.entry_nombre_coord,
+            self.vista.entry_cedula_coord,
+            self.vista.entry_nombre_gob,
+            self.vista.entry_cedula_gob
+        ]
+        
+        # Aplicar el Estilo a cada uno de lso Widgets
+        for widget in widgets_lineedit:
+            if widget:
+                widget.setStyleSheet(self.vista.get_style())
+    
+    def configurar_validadores(self):
+        """Configura validadores con expresiones regulares para todos los campos"""
+        
+        # Validadores para campos de dirección (solo letras, espacios y algunos caracteres especiales)
+        regex_solo_texto = QRegExp(r'^[A-Za-zÁáÉéÍíÓóÚúÑñ\s\.\-\(\)]+$')
+        validador_texto = QRegExpValidator(regex_solo_texto, self)
+        
+        # Aplicar a campos de dirección
+        self.vista.entry_estado.setValidator(validador_texto)
+        self.vista.entry_municipio.setValidator(validador_texto)
+        self.vista.entry_parroquia.setValidator(validador_texto)
+        self.vista.entry_institucion.setValidator(validador_texto)
+        
+        # Validadores para nombres de jefaturas (similar a dirección pero puede incluir comas)
+        regex_nombres = QRegExp(r'^[A-Za-zÁáÉéÍíÓóÚúÑñ\s\.\-\(\)\,\']+$')
+        validador_nombres = QRegExpValidator(regex_nombres, self)
+        
+        # Aplicar a nombres de jefaturas
+        self.vista.entry_nombre_coord.setValidator(validador_nombres)
+        self.vista.entry_nombre_gob.setValidator(validador_nombres)
+        
+        # Validadores para cédulas (formato V/E-12345678)
+        regex_cedula = QRegExp(r'^[VE]-\d{5,9}$')
+        validador_cedula = QRegExpValidator(regex_cedula, self)
+        
+        # Aplicar a cédulas
+        self.vista.entry_cedula_coord.setValidator(validador_cedula)
+        self.vista.entry_cedula_gob.setValidator(validador_cedula)
+        
+        # Validador para tamaño de fuente (solo números)
+        regex_numeros = QRegExp(r'^\d+$')
+        validador_numeros = QRegExpValidator(regex_numeros, self)
+        
+        # Aplicar al spin de tamaño
+        self.vista.spin_tamano.lineEdit().setValidator(validador_numeros)
+        
+        # Configurar placeholder y tooltips para ayudar al usuario
+        self.configurar_placeholders_y_tooltips()
+    
+    def configurar_placeholders_y_tooltips(self):
+        """Configura placeholders y tooltips para los campos"""
+        
+        # Campos de dirección
+        self.vista.entry_estado.setPlaceholderText("Ej: Miranda")
+        self.vista.entry_estado.setToolTip("Solo letras, espacios y caracteres .-()")
+        
+        self.vista.entry_municipio.setPlaceholderText("Ej: Sucre")
+        self.vista.entry_municipio.setToolTip("Solo letras, espacios y caracteres .-()")
+        
+        self.vista.entry_parroquia.setPlaceholderText("Ej: Petare")
+        self.vista.entry_parroquia.setToolTip("Solo letras, espacios y caracteres .-()")
+        
+        self.vista.entry_institucion.setPlaceholderText("Ej: Instituto Nacional de...")
+        self.vista.entry_institucion.setToolTip("Solo letras, espacios y caracteres .-()")
+        
+        # Campos de nombres de jefaturas
+        self.vista.entry_nombre_coord.setPlaceholderText("Ej: María Pérez")
+        self.vista.entry_nombre_coord.setToolTip("Solo letras, espacios y caracteres .-(),'")
+        
+        self.vista.entry_nombre_gob.setPlaceholderText("Ej: Juan Rodríguez")
+        self.vista.entry_nombre_gob.setToolTip("Solo letras, espacios y caracteres .-(),'")
+        
+        # Campos de cédulas
+        self.vista.entry_cedula_coord.setPlaceholderText("Ej: V-12345678")
+        self.vista.entry_cedula_coord.setToolTip("Formato: V-12345678 o E-12345678")
+        
+        self.vista.entry_cedula_gob.setPlaceholderText("Ej: E-87654321")
+        self.vista.entry_cedula_gob.setToolTip("Formato: V-12345678 o E-12345678")
     
     def cargar_datos_iniciales(self):
         """Carga los datos desde la base de datos al iniciar"""
@@ -49,8 +141,6 @@ class controlador_configuraciones(QWidget):
             
             # Establecer en vista
             self.establecer_valores(datos)
-            
-            print("✅ Datos cargados desde la base de datos")
             
         except Exception as e:
             print(f"❌ Error al cargar datos iniciales: {e}")
@@ -75,6 +165,8 @@ class controlador_configuraciones(QWidget):
             # 5. Mostrar resultado
             if exito:
                 self.mostrar_mensaje("Éxito", "Los cambios se guardaron correctamente", "success")
+                # Limpiar errores después de guardar exitosamente
+                self.limpiar_errores()
             else:
                 self.mostrar_mensaje("Error", "No se pudieron guardar los cambios", "error")
                 
@@ -105,19 +197,20 @@ class controlador_configuraciones(QWidget):
         # Validar tema
         tema = datos_interfaz.get("tema", "").lower()
         if tema not in ["claro", "oscuro"]:
-            self.vista.mostrar_error("tema", "Seleccione un tema válido")
+            # Para radios, mostramos un mensaje general
+            self.mostrar_mensaje("Error", "Seleccione un tema válido (Claro u Oscuro)", "error")
             return False
         
         # Validar fuente
         fuente = datos_interfaz.get("fuente", "").strip()
         if len(fuente) < 3:
-            self.vista.mostrar_error("fuente", "La fuente es requerida")
+            self.mostrar_error(self.vista.combo_fuente, "La fuente es requerida")
             return False
         
         # Validar tamaño
         tamaño = datos_interfaz.get("tamaño", 0)
         if not (8 <= tamaño <= 24):
-            self.vista.mostrar_error("tamaño", "Tamaño debe estar entre 8 y 24")
+            self.mostrar_error(self.vista.spin_tamano, "Tamaño debe estar entre 8 y 24")
             return False
         
         return True
@@ -125,28 +218,23 @@ class controlador_configuraciones(QWidget):
     def validar_direccion(self, datos_direccion):
         """Valida datos de dirección"""
         campos = [
-            ("estado", "Estado"),
-            ("municipio", "Municipio"),
-            ("parroquia", "Parroquia"),
-            ("institucion", "Institución")
+            ("estado", self.vista.entry_estado, "Estado"),
+            ("municipio", self.vista.entry_municipio, "Municipio"),
+            ("parroquia", self.vista.entry_parroquia, "Parroquia"),
+            ("institucion", self.vista.entry_institucion, "Institución")
         ]
         
-        for campo_key, campo_nombre in campos:
+        for campo_key, widget, campo_nombre in campos:
             valor = datos_direccion.get(campo_key, "").strip()
             
             # Validar requerido
             if not valor:
-                self.vista.mostrar_error(campo_key, f"{campo_nombre} es requerido")
+                self.mostrar_error(widget, f"{campo_nombre} es requerido")
                 return False
             
             # Validar longitud mínima
             if len(valor) < 3:
-                self.vista.mostrar_error(campo_key, f"{campo_nombre} debe tener al menos 3 caracteres")
-                return False
-            
-            # Validar solo letras y espacios
-            if not all(c.isalpha() or c.isspace() or c in ".-()" for c in valor):
-                self.vista.mostrar_error(campo_key, f"{campo_nombre} contiene caracteres inválidos")
+                self.mostrar_error(widget, f"{campo_nombre} debe tener al menos 3 caracteres")
                 return False
         
         return True
@@ -155,28 +243,34 @@ class controlador_configuraciones(QWidget):
         """Valida datos de jefaturas"""
         # Validar nombres
         nombres = [
-            ("nombre_coordinacion", "Nombre de Coordinación"),
-            ("nombre_gobernacion", "Nombre de Gobernación")
+            ("nombre_coordinacion", self.vista.entry_nombre_coord, "Nombre de Coordinación"),
+            ("nombre_gobernacion", self.vista.entry_nombre_gob, "Nombre de Gobernación")
         ]
         
-        for campo_key, campo_nombre in nombres:
+        for campo_key, widget, campo_nombre in nombres:
             valor = datos_jefaturas.get(campo_key, "").strip()
             
             if not valor or len(valor) < 5:
-                self.vista.mostrar_error(campo_key, f"{campo_nombre} es requerido (mínimo 5 caracteres)")
+                self.mostrar_error(widget, f"{campo_nombre} es requerido (mínimo 5 caracteres)")
                 return False
         
         # Validar cédulas
         cedulas = [
-            ("cedula_coordinacion", "Cédula de Coordinación"),
-            ("cedula_gobernacion", "Cédula de Gobernación")
+            ("cedula_coordinacion", self.vista.entry_cedula_coord, "Cédula de Coordinación"),
+            ("cedula_gobernacion", self.vista.entry_cedula_gob, "Cédula de Gobernación")
         ]
         
-        for campo_key, campo_nombre in cedulas:
+        for campo_key, widget, campo_nombre in cedulas:
             valor = datos_jefaturas.get(campo_key, "").strip()
             
-            if not self.modelo.validar_cedula(valor):
-                self.vista.mostrar_error(campo_key, f"{campo_nombre} inválida. Formato: V-12345678")
+            if not valor:
+                self.mostrar_error(widget, f"{campo_nombre} es requerida")
+                return False
+            
+            # Validar formato con regex (usando QRegExp)
+            regex_cedula = QRegExp(r'^[VE]-\d{5,9}$')
+            if not regex_cedula.exactMatch(valor):
+                self.mostrar_error(widget, f"{campo_nombre} inválida. Formato: V-12345678 o E-12345678")
                 return False
         
         return True
@@ -198,9 +292,9 @@ class controlador_configuraciones(QWidget):
             },
             "jefaturas": {
                 "nombre_coordinacion": datos_crudos["jefaturas"]["nombre_coordinacion"].strip(),
-                "cedula_coordinacion": datos_crudos["jefaturas"]["cedula_coordinacion"].strip(),
+                "cedula_coordinacion": datos_crudos["jefaturas"]["cedula_coordinacion"].strip().upper(),
                 "nombre_gobernacion": datos_crudos["jefaturas"]["nombre_gobernacion"].strip(),
-                "cedula_gobernacion": datos_crudos["jefaturas"]["cedula_gobernacion"].strip()
+                "cedula_gobernacion": datos_crudos["jefaturas"]["cedula_gobernacion"].strip().upper()
             }
         }
     
@@ -237,23 +331,10 @@ class controlador_configuraciones(QWidget):
             print(f"❌ Error al guardar en BD: {e}")
             return False
     
-    def mostrar_mensaje(self, titulo, mensaje, tipo="info"):
-        """Muestra un mensaje al usuario"""
-        if tipo == "error":
-            QMessageBox.critical(self, titulo, mensaje)
-        elif tipo == "warning":
-            QMessageBox.warning(self, titulo, mensaje)
-        elif tipo == "success":
-            QMessageBox.information(self, titulo, mensaje)
-        else:
-            QMessageBox.information(self, titulo, mensaje)
+    # ========== MÉTODOS GENERALES ==========
     
-    # ========== MÉTODOS PÚBLICOS ==========
-
-    
-
     def obtener_valores(self):
-        # Retorna todos los valores actuales a los widgets
+        """Retorna todos los valores actuales a los widgets"""
         return {
             "interfaz": {
                 "tema": "Claro" if self.vista.radio_tema_claro.isChecked() else "Oscuro",
@@ -275,23 +356,24 @@ class controlador_configuraciones(QWidget):
             }
         }
     
-    
-
     def establecer_valores(self, datos):
-        # -Establece los Valores de la Interfaz-
+        """Establece los Valores de la Interfaz"""
         # Interfaz
         if datos.get("interfaz"):
             interfaz = datos["interfaz"]
+            # Tema
             if interfaz.get("tema") == "Claro":
                 self.vista.radio_tema_claro.setChecked(True)
             else:
                 self.vista.radio_tema_oscuro.setChecked(True)
-            
+            # Fuente
             index = self.vista.combo_fuente.findText(interfaz.get("fuente", "Arial"))
             if index >= 0:
                 self.vista.combo_fuente.setCurrentIndex(index)
             
+            # Tamaño de Fuente
             self.vista.spin_tamano.setValue(interfaz.get("tamaño", 12))
+            # Negrita
             self.vista.check_negrita.setChecked(interfaz.get("negrita", False))
         
         # Dirección
@@ -305,18 +387,18 @@ class controlador_configuraciones(QWidget):
         # Jefaturas
         if datos.get("jefaturas"):
             jefaturas = datos["jefaturas"]
+            # Asegurar que las cédulas se carguen (convertir a mayúsculas si vienen de BD)
+            cedula_coord = jefaturas.get("cedula_coordinacion", "")
+            cedula_gob = jefaturas.get("cedula_gobernacion", "")
+            
             self.vista.entry_nombre_coord.setText(jefaturas.get("nombre_coordinacion", ""))
-            self.vista.entry_cedula_coord.setText(jefaturas.get("cedula_coordinacion", ""))
+            self.vista.entry_cedula_coord.setText(cedula_coord.upper() if cedula_coord else "")
             self.vista.entry_nombre_gob.setText(jefaturas.get("nombre_gobernacion", ""))
-            self.vista.entry_cedula_gob.setText(jefaturas.get("cedula_gobernacion", ""))
+            self.vista.entry_cedula_gob.setText(cedula_gob.upper() if cedula_gob else "")
     
     def get_widget(self):
         """Retorna el widget para integrar en la aplicación"""
         return self
-    
-    def limpiar_formulario(self):
-        """Limpia todos los campos del formulario"""
-        self.limpiar_campos()
     
     def cargar_datos_por_defecto(self):
         """Carga valores por defecto"""
@@ -342,34 +424,131 @@ class controlador_configuraciones(QWidget):
         }
         self.establecer_valores(datos_default)
     
-
     def limpiar_campos(self):
         """Limpia todos los campos"""
+        # Interfaz
         self.vista.radio_tema_claro.setChecked(True)
         self.vista.combo_fuente.setCurrentIndex(0)
         self.vista.spin_tamano.setValue(12)
         self.vista.check_negrita.setChecked(False)
-        
+        # Dirección
         self.vista.entry_estado.clear()
         self.vista.entry_municipio.clear()
         self.vista.entry_parroquia.clear()
         self.vista.entry_institucion.clear()
-        
+        # Jefaturas
         self.vista.entry_nombre_coord.clear()
         self.vista.entry_cedula_coord.clear()
         self.vista.entry_nombre_gob.clear()
         self.vista.entry_cedula_gob.clear()
+        # Limpiar errores
+        self.limpiar_errores()
     
-
-    def mostrar_error(self, campo, mensaje):
-        """Marca un campo con error"""
-        # Puedes implementar marcado visual de errores aquí
-        print(f"Error en {campo}: {mensaje}")
+    def mostrar_mensaje(self, titulo, mensaje, tipo="info"):
+        """Muestra un mensaje al usuario"""
+        if tipo == "error":
+            QMessageBox.critical(self, titulo, mensaje)
+        elif tipo == "warning":
+            QMessageBox.warning(self, titulo, mensaje)
+        elif tipo == "success":
+            QMessageBox.information(self, titulo, mensaje)
+        else:
+            QMessageBox.information(self, titulo, mensaje)
+    
+    def mostrar_error(self, widget, mensaje):
+        """Resalta un campo con error en rojo y muestra tooltip"""
+        if widget:
+            # NO cambiamos el estilo completo, solo añadimos un borde rojo
+            # Mantenemos el estilo original y añadimos un borde rojo
+            estilo_actual = widget.styleSheet()
+            
+            # Separar las reglas CSS existentes
+            lineas = estilo_actual.split('}')
+            nuevo_estilo = ""
+            
+            # Buscar y modificar la regla QLineEdit (o QComboBox/QSpinBox)
+            encontrado = False
+            for linea in lineas:
+                if linea.strip():
+                    # Si encontramos el selector del widget
+                    if 'QLineEdit' in linea or 'QComboBox' in linea or 'QSpinBox' in linea:
+                        # Añadir borde rojo al estilo
+                        if 'border:' not in linea:
+                            linea += ' border: 2px solid #ff0000;'
+                        else:
+                            # Reemplazar el borde existente
+                            linea = re.sub(r'border:\s*[^;]+;', 'border: 2px solid #ff0000 !important;', linea)
+                        encontrado = True
+                    nuevo_estilo += linea + '}'
+            
+            # Si no se encontró regla específica, crear una nueva
+            if not encontrado:
+                tipo_widget = 'QLineEdit'
+                if hasattr(widget, 'clear'):  # Es QLineEdit
+                    tipo_widget = 'QLineEdit'
+                elif hasattr(widget, 'clearEditText'):  # Es QComboBox
+                    tipo_widget = 'QComboBox'
+                elif hasattr(widget, 'setMaximum'):  # Es QSpinBox
+                    tipo_widget = 'QSpinBox'
+                
+                nuevo_estilo = f"{tipo_widget} {{ border: 2px solid #ff0000 !important; }}"
+            
+            widget.setStyleSheet(nuevo_estilo)
+            
+            # Establecer tooltip con mensaje de error
+            widget.setToolTip(f"ERROR: {mensaje}")
+            
+            # Cambiar color de fondo a rojo claro usando QPalette (no CSS)
+            palette = widget.palette()
+            palette.setColor(QPalette.Base, QColor(255, 240, 240))
+            widget.setPalette(palette)
+            
+            # Enfocar el widget
+            widget.setFocus()
+    
+    def limpiar_formulario(self):
+        """Limpia todos los campos del formulario"""
+        self.limpiar_campos()
     
     def limpiar_errores(self):
         """Limpia todos los marcadores de error"""
-        pass
-
+        # NO restauramos los estilos CSS completos
+        # Solo eliminamos el borde rojo y restauramos el color de fondo
+        
+        widgets_entrada = [
+            self.vista.entry_estado,
+            self.vista.entry_municipio,
+            self.vista.entry_parroquia,
+            self.vista.entry_institucion,
+            self.vista.entry_nombre_coord,
+            self.vista.entry_cedula_coord,
+            self.vista.entry_nombre_gob,
+            self.vista.entry_cedula_gob,
+            self.vista.combo_fuente,
+            self.vista.spin_tamano
+        ]
+        
+        # Restaurar solo color de fondo y tooltips, NO los estilos CSS
+        for widget in widgets_entrada:
+            if widget:
+                # Restaurar color de fondo
+                palette = widget.palette()
+                palette.setColor(QPalette.Base, QColor(255, 255, 255))
+                widget.setPalette(palette)
+                
+                # Regresar los widgets a como eran
+                estilo_actual = widget.styleSheet()
+                if 'border: 2px solid #ff0000' in estilo_actual:
+                    # Volver a aplicar el estilo original llamando a configurar_estilos
+                    if widget in [self.vista.entry_estado, self.vista.entry_municipio, 
+                                 self.vista.entry_parroquia, self.vista.entry_institucion,
+                                 self.vista.entry_nombre_coord, self.vista.entry_cedula_coord,
+                                 self.vista.entry_nombre_gob, self.vista.entry_cedula_gob]:
+                        widget.setStyleSheet(self.vista.get_style())
+        
+        # Restaurar tooltips originales
+        self.configurar_placeholders_y_tooltips()
+    
     def cerrar(self):
         """Cierra conexiones"""
         self.modelo.cerrar_conexion()

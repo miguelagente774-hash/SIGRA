@@ -1,8 +1,8 @@
-#integrantes del grupo
-#Miguel Lagente
-#Carlos Campos
-#Ezequiel Rojas
-#archivo .py usado como punto de entrada se comenzara a trabajar con el patron de arcquictura mvc
+# integrantes del grupo
+# Miguel Lagente
+# Carlos Campos
+# Ezequiel Rojas
+# archivo .py usado como punto de entrada se comenzara a trabajar con el patron de arcquictura mvc
 from PyQt5.QtWidgets import (QApplication, QMainWindow)
 from PyQt5.QtGui import QIcon
 from controller.Controller_main import Controlador_principal

@@ -31,7 +31,7 @@ class Model_Configuraciones:
             """)
             
             conn.commit()
-            print("✅ Configuración de interfaz guardada")
+
             return True
             
         except Exception as e:
@@ -74,7 +74,6 @@ class Model_Configuraciones:
             """, (estado, municipio, parroquia, institucion))
             
             self.db.conexion.commit()
-            print("✅ Datos de dirección guardados")
             return True
             
         except Exception as e:

@@ -373,46 +373,21 @@ class Ventana_configuracion(QFrame):
         layout_grid.setHorizontalSpacing(15)
         self.grupo_direccion.setLayout(layout_grid)
         
-        # Estilos para labels y entries
-        label_style = """
-            QLabel{
-                font-size: 12px;
-                font-weight: bold;
-                color: #37474F;
-                padding: 2px 0px;
-            }
-        """
-        
-        entry_style = """
-            QLineEdit{
-                padding: 8px 10px;
-                border: 1px solid #BDBDBD;
-                border-radius: 6px;
-                background: white;
-                font-size: 12px;
-                min-width: 150px;
-            }
-            QLineEdit:focus{
-                border: 1px solid #4FC3F7;
-                background: #F5FDFF;
-            }
-        """
-        
         # Crear campos
         self.entry_estado = QLineEdit()
-        self.entry_estado.setStyleSheet(entry_style)
+        self.entry_estado.setStyleSheet(self.get_style())
         self.entry_estado.setPlaceholderText("Ingrese el estado")
         
         self.entry_municipio = QLineEdit()
-        self.entry_municipio.setStyleSheet(entry_style)
+        self.entry_municipio.setStyleSheet(self.get_style())
         self.entry_municipio.setPlaceholderText("Ingrese el municipio")
         
         self.entry_parroquia = QLineEdit()
-        self.entry_parroquia.setStyleSheet(entry_style)
+        self.entry_parroquia.setStyleSheet(self.get_style())
         self.entry_parroquia.setPlaceholderText("Ingrese la parroquia")
         
         self.entry_institucion = QLineEdit()
-        self.entry_institucion.setStyleSheet(entry_style)
+        self.entry_institucion.setStyleSheet(self.get_style())
         self.entry_institucion.setPlaceholderText("Ingrese comunidad o institución")
         
         # Agregar al grid (diseño original: 2 columnas)
@@ -502,40 +477,17 @@ class Ventana_configuracion(QFrame):
         layout_coordinacion.setSpacing(15)
         self.grupo_coordinacion.setLayout(layout_coordinacion)
         
-        # Campos coordinación
-        label_style = """
-            QLabel{
-                font-size: 12px;
-                font-weight: bold;
-                color: #37474F;
-                padding: 2px 0px;
-            }
-        """
-        
-        entry_style = """
-            QLineEdit{
-                padding: 8px 10px;
-                border: 1px solid #BDBDBD;
-                border-radius: 6px;
-                background: white;
-                font-size: 12px;
-            }
-            QLineEdit:focus{
-                border: 1px solid #4FC3F7;
-                background: #F5FDFF;
-            }
-        """
-        
+        # Campos coordinación        
         self.label_nombre_coord = QLabel("Nombre completo:")
-        self.label_nombre_coord.setStyleSheet(label_style)
+        self.label_nombre_coord.setStyleSheet(self.get_style())
         self.entry_nombre_coord = QLineEdit()
-        self.entry_nombre_coord.setStyleSheet(entry_style)
+        self.entry_nombre_coord.setStyleSheet(self.get_style())
         self.entry_nombre_coord.setPlaceholderText("Ingrese nombre completo")
         
         self.label_cedula_coord = QLabel("Cédula de identidad:")
-        self.label_cedula_coord.setStyleSheet(label_style)
+        self.label_cedula_coord.setStyleSheet(self.get_style())
         self.entry_cedula_coord = QLineEdit()
-        self.entry_cedula_coord.setStyleSheet(entry_style)
+        self.entry_cedula_coord.setStyleSheet(self.get_style())
         self.entry_cedula_coord.setPlaceholderText("Ej: V-12345678")
         
         layout_coordinacion.addWidget(self.label_nombre_coord)
@@ -570,15 +522,15 @@ class Ventana_configuracion(QFrame):
         self.grupo_gobernacion.setLayout(layout_gobernacion)
         
         self.label_nombre_gob = QLabel("Nombre completo:")
-        self.label_nombre_gob.setStyleSheet(label_style)
+        self.label_nombre_gob.setStyleSheet(self.get_style())
         self.entry_nombre_gob = QLineEdit()
-        self.entry_nombre_gob.setStyleSheet(entry_style)
+        self.entry_nombre_gob.setStyleSheet(self.get_style())
         self.entry_nombre_gob.setPlaceholderText("Ingrese nombre completo")
         
         self.label_cedula_gob = QLabel("Cédula de identidad:")
-        self.label_cedula_gob.setStyleSheet(label_style)
+        self.label_cedula_gob.setStyleSheet(self.get_style())
         self.entry_cedula_gob = QLineEdit()
-        self.entry_cedula_gob.setStyleSheet(entry_style)
+        self.entry_cedula_gob.setStyleSheet(self.get_style())
         self.entry_cedula_gob.setPlaceholderText("Ej: V-12345678")
         
         layout_gobernacion.addWidget(self.label_nombre_gob)
@@ -615,94 +567,6 @@ class Ventana_configuracion(QFrame):
         layout_boton.addItem(QSpacerItem(20, 20, QSizePolicy.Expanding, QSizePolicy.Minimum))
         
         self.layout_main.addLayout(layout_boton)
-    
-    # ========== MÉTODOS PÚBLICOS PARA EL CONTROLADOR ==========
-    
-    def obtener_valores(self):
-        """Retorna todos los valores de los widgets"""
-        return {
-            "interfaz": {
-                "tema": "Claro" if self.radio_tema_claro.isChecked() else "Oscuro",
-                "fuente": self.combo_fuente.currentText(),
-                "tamaño": self.spin_tamano.value(),
-                "negrita": self.check_negrita.isChecked()
-            },
-            "direccion": {
-                "estado": self.entry_estado.text(),
-                "municipio": self.entry_municipio.text(),
-                "parroquia": self.entry_parroquia.text(),
-                "institucion": self.entry_institucion.text()
-            },
-            "jefaturas": {
-                "nombre_coordinacion": self.entry_nombre_coord.text(),
-                "cedula_coordinacion": self.entry_cedula_coord.text(),
-                "nombre_gobernacion": self.entry_nombre_gob.text(),
-                "cedula_gobernacion": self.entry_cedula_gob.text()
-            }
-        }
-    
-    def establecer_valores(self, datos):
-        """Establece valores en los widgets"""
-        if not datos:
-            return
-            
-        # Interfaz
-        if "interfaz" in datos:
-            interfaz = datos["interfaz"]
-            
-            # Tema
-            if interfaz.get("tema") == "Claro":
-                self.radio_tema_claro.setChecked(True)
-            else:
-                self.radio_tema_oscuro.setChecked(True)
-            
-            # Fuente
-            fuente = interfaz.get("fuente", "Arial")
-            index = self.combo_fuente.findText(fuente)
-            if index >= 0:
-                self.combo_fuente.setCurrentIndex(index)
-            
-            # Tamaño
-            self.spin_tamano.setValue(interfaz.get("tamaño", 12))
-            
-            # Negrita
-            self.check_negrita.setChecked(interfaz.get("negrita", False))
-        
-        # Dirección
-        if "direccion" in datos:
-            direccion = datos["direccion"]
-            self.entry_estado.setText(direccion.get("estado", ""))
-            self.entry_municipio.setText(direccion.get("municipio", ""))
-            self.entry_parroquia.setText(direccion.get("parroquia", ""))
-            self.entry_institucion.setText(direccion.get("institucion", ""))
-        
-        # Jefaturas
-        if "jefaturas" in datos:
-            jefaturas = datos["jefaturas"]
-            self.entry_nombre_coord.setText(jefaturas.get("nombre_coordinacion", ""))
-            self.entry_cedula_coord.setText(jefaturas.get("cedula_coordinacion", ""))
-            self.entry_nombre_gob.setText(jefaturas.get("nombre_gobernacion", ""))
-            self.entry_cedula_gob.setText(jefaturas.get("cedula_gobernacion", ""))
-    
-    def limpiar_campos(self):
-        """Limpia todos los campos"""
-        # Interfaz
-        self.radio_tema_claro.setChecked(True)
-        self.combo_fuente.setCurrentIndex(0)
-        self.spin_tamano.setValue(12)
-        self.check_negrita.setChecked(False)
-        
-        # Dirección
-        self.entry_estado.clear()
-        self.entry_municipio.clear()
-        self.entry_parroquia.clear()
-        self.entry_institucion.clear()
-        
-        # Jefaturas
-        self.entry_nombre_coord.clear()
-        self.entry_cedula_coord.clear()
-        self.entry_nombre_gob.clear()
-        self.entry_cedula_gob.clear()
     
     # ========== MÉTODOS DE ESTILO ==========
     
@@ -741,3 +605,53 @@ class Ventana_configuracion(QFrame):
                 background: #00485a;
             }
         """
+
+    def get_style(self):
+        return"""
+             QLabel{
+                font-size: 12px;
+                font-weight: bold;
+                color: #37474F;
+                padding: 2px 0px;
+            }
+            QLineEdit{
+                padding: 8px 10px;
+                border: 1px solid #BDBDBD;
+                border-radius: 6px;
+                background: white;
+                font-size: 12px;
+                min-width: 150px;
+            }
+            QLineEdit:focus{
+                border: 2px solid #005a6e;
+            }
+            QComboBox {
+                border: 1px solid #cccccc;
+                border-radius: 3px;
+                padding: 5px;
+                background-color: white;
+            }
+            QComboBox:focus {
+                border: 2px solid #005a6e;
+                background-color: #f0f9ff;
+            }
+            QComboBox:hover {
+                border: 1px solid #999999;
+            }
+            QComboBox::drop-down {
+                border: none;
+            }    
+            QSpinBox {
+                border: 1px solid #cccccc;
+                border-radius: 3px;
+                padding: 5px;
+                background-color: white;
+            }
+            QSpinBox:focus {
+                border: 2px solid #005a6e;
+                background-color: #f0f9ff;
+            }
+            QSpinBox:hover {
+                border: 1px solid #999999;
+            }
+            """

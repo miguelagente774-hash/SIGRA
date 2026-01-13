@@ -14,7 +14,7 @@ from view.vista_configuracion import Ventana_configuracion
 from models.Modelo_configuracion import Model_Configuraciones
 
 class controlador_configuraciones(QWidget):
-    """Controlador que maneja TODA la lógica de configuraciones"""
+    # == Controlador que maneja TODA la lógica de configuraciones== 
     
     def __init__(self):
         super().__init__()
@@ -56,7 +56,7 @@ class controlador_configuraciones(QWidget):
                 widget.setStyleSheet(self.vista.get_style())
     
     def configurar_validadores(self):
-        """Configura validadores con expresiones regulares para todos los campos"""
+        # == Configura validadores con expresiones regulares para todos los campos== 
         
         # Validadores para campos de dirección (solo letras, espacios y algunos caracteres especiales)
         regex_solo_texto = QRegExp(r'^[A-Za-zÁáÉéÍíÓóÚúÑñ\s\.\-\(\)]+$')
@@ -95,7 +95,7 @@ class controlador_configuraciones(QWidget):
         self.configurar_placeholders_y_tooltips()
     
     def configurar_placeholders_y_tooltips(self):
-        """Configura placeholders y tooltips para los campos"""
+        # == Configura placeholders y tooltips para los campos== 
         
         # Campos de dirección
         self.vista.entry_estado.setPlaceholderText("Ej: Miranda")
@@ -125,7 +125,7 @@ class controlador_configuraciones(QWidget):
         self.vista.entry_cedula_gob.setToolTip("Formato: V-12345678 o E-12345678")
     
     def cargar_datos_iniciales(self):
-        """Carga los datos desde la base de datos al iniciar"""
+        # == Carga los datos desde la base de datos al iniciar== 
         try:
             # Obtener datos del modelo
             datos_interfaz = self.modelo.cargar_configuracion_interfaz()
@@ -147,7 +147,7 @@ class controlador_configuraciones(QWidget):
             self.mostrar_mensaje("Error", f"No se pudieron cargar los datos: {str(e)}", "error")
     
     def on_guardar_clicked(self):
-        """Maneja el evento de clic en guardar"""
+        # == Maneja el evento de clic en guardar== 
         try:
             # 1. Obtener datos de la vista
             datos_crudos = self.obtener_valores()
@@ -175,7 +175,7 @@ class controlador_configuraciones(QWidget):
             self.mostrar_mensaje("Error", f"Ocurrió un error: {str(e)}", "error")
     
     def validar_datos(self, datos):
-        """Valida todos los datos antes de guardar"""
+        # == Valida todos los datos antes de guardar== 
         self.limpiar_errores()
         
         # Validar interfaz
@@ -193,7 +193,7 @@ class controlador_configuraciones(QWidget):
         return True
     
     def validar_interfaz(self, datos_interfaz):
-        """Valida datos de interfaz"""
+        # == Valida datos de interfaz== 
         # Validar tema
         tema = datos_interfaz.get("tema", "").lower()
         if tema not in ["claro", "oscuro"]:
@@ -216,7 +216,7 @@ class controlador_configuraciones(QWidget):
         return True
     
     def validar_direccion(self, datos_direccion):
-        """Valida datos de dirección"""
+        # == Valida datos de dirección== 
         campos = [
             ("estado", self.vista.entry_estado, "Estado"),
             ("municipio", self.vista.entry_municipio, "Municipio"),
@@ -240,7 +240,7 @@ class controlador_configuraciones(QWidget):
         return True
     
     def validar_jefaturas(self, datos_jefaturas):
-        """Valida datos de jefaturas"""
+        # == Valida datos de jefaturas== 
         # Validar nombres
         nombres = [
             ("nombre_coordinacion", self.vista.entry_nombre_coord, "Nombre de Coordinación"),
@@ -276,7 +276,7 @@ class controlador_configuraciones(QWidget):
         return True
     
     def preparar_datos_para_guardar(self, datos_crudos):
-        """Prepara y limpia los datos para guardar en BD"""
+        # == Prepara y limpia los datos para guardar en BD== 
         return {
             "interfaz": {
                 "tema": datos_crudos["interfaz"]["tema"],
@@ -299,7 +299,7 @@ class controlador_configuraciones(QWidget):
         }
     
     def guardar_en_bd(self, datos):
-        """Guarda los datos en la base de datos"""
+        # == Guarda los datos en la base de datos== 
         try:
             # Guardar interfaz
             exito_interfaz = self.modelo.guardar_configuracion_interfaz(
@@ -334,7 +334,7 @@ class controlador_configuraciones(QWidget):
     # ========== MÉTODOS GENERALES ==========
     
     def obtener_valores(self):
-        """Retorna todos los valores actuales a los widgets"""
+        # == Retorna todos los valores actuales a los widgets== 
         return {
             "interfaz": {
                 "tema": "Claro" if self.vista.radio_tema_claro.isChecked() else "Oscuro",
@@ -357,7 +357,7 @@ class controlador_configuraciones(QWidget):
         }
     
     def establecer_valores(self, datos):
-        """Establece los Valores de la Interfaz"""
+        # == Establece los Valores de la Interfaz== 
         # Interfaz
         if datos.get("interfaz"):
             interfaz = datos["interfaz"]
@@ -397,11 +397,11 @@ class controlador_configuraciones(QWidget):
             self.vista.entry_cedula_gob.setText(cedula_gob.upper() if cedula_gob else "")
     
     def get_widget(self):
-        """Retorna el widget para integrar en la aplicación"""
+        # ==Retorna el widget para integrar en la aplicación==
         return self
     
     def cargar_datos_por_defecto(self):
-        """Carga valores por defecto"""
+        # ==Carga valores por defecto==
         datos_default = {
             "interfaz": {
                 "tema": "Claro",
@@ -425,7 +425,7 @@ class controlador_configuraciones(QWidget):
         self.establecer_valores(datos_default)
     
     def limpiar_campos(self):
-        """Limpia todos los campos"""
+        # ==Limpia todos los campos==
         # Interfaz
         self.vista.radio_tema_claro.setChecked(True)
         self.vista.combo_fuente.setCurrentIndex(0)
@@ -445,7 +445,7 @@ class controlador_configuraciones(QWidget):
         self.limpiar_errores()
     
     def mostrar_mensaje(self, titulo, mensaje, tipo="info"):
-        """Muestra un mensaje al usuario"""
+        # == Muestra un mensaje al usuario== 
         if tipo == "error":
             QMessageBox.critical(self, titulo, mensaje)
         elif tipo == "warning":
@@ -456,7 +456,7 @@ class controlador_configuraciones(QWidget):
             QMessageBox.information(self, titulo, mensaje)
     
     def mostrar_error(self, widget, mensaje):
-        """Resalta un campo con error en rojo y muestra tooltip"""
+        # ==Resalta un campo con error en rojo y muestra tooltip== 
         if widget:
             # NO cambiamos el estilo completo, solo añadimos un borde rojo
             # Mantenemos el estilo original y añadimos un borde rojo
@@ -507,11 +507,11 @@ class controlador_configuraciones(QWidget):
             widget.setFocus()
     
     def limpiar_formulario(self):
-        """Limpia todos los campos del formulario"""
+        # == Limpia todos los campos del formulario== 
         self.limpiar_campos()
     
     def limpiar_errores(self):
-        """Limpia todos los marcadores de error"""
+        # == Limpia todos los marcadores de error== 
         # NO restauramos los estilos CSS completos
         # Solo eliminamos el borde rojo y restauramos el color de fondo
         
@@ -544,11 +544,12 @@ class controlador_configuraciones(QWidget):
                                  self.vista.entry_parroquia, self.vista.entry_institucion,
                                  self.vista.entry_nombre_coord, self.vista.entry_cedula_coord,
                                  self.vista.entry_nombre_gob, self.vista.entry_cedula_gob]:
+                        
                         widget.setStyleSheet(self.vista.get_style())
         
         # Restaurar tooltips originales
         self.configurar_placeholders_y_tooltips()
     
     def cerrar(self):
-        """Cierra conexiones"""
+        # == Cierra conexiones== 
         self.modelo.cerrar_conexion()

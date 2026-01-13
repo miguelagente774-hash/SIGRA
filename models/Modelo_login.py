@@ -8,9 +8,7 @@ class Model_Login:
         # Inicializar conexión a la base de datos SIGRA.db
         self.conexion_db = ConexionDB()
         self.usuario_actual: Optional[Dict[str, Any]] = None
-        
-        print(f"🔗 Conectado a: {self.conexion_db.base_datos}")
-        
+    
         # Verificar que la tabla Usuario exista con la estructura básica
         self._verificar_tabla_usuario()
         self._crear_usuario_admin()
@@ -68,7 +66,6 @@ class Model_Login:
             existe = cursor.fetchone()[0]
             
             if existe == 0:
-                print("📝 Creando usuario admin...")
                 # Crear la contraseña para el usuario
                 password_hash = self._hash_password("admin")
                 
@@ -96,8 +93,6 @@ class Model_Login:
         if not password or not password.strip():
             return False, "La contraseña es requerida", None
         
-        print(f"🔐 Autenticando: {username}")
-        
         try:
             cursor = self.conexion_db.cursor
             
@@ -123,11 +118,8 @@ class Model_Login:
             
             # Verificar contraseña
             password_hash = self._hash_password(password)
-            print(f"Hash ingresado: {password_hash[:10]}...")
-            print(f"Hash en BD:     {usuario_dict['password'][:10]}...")
             
             if usuario_dict['password'] != password_hash:
-                print("❌ Contraseña incorrecta")
                 return False, "Contraseña incorrecta", None
             
             # Limpiar datos sensibles antes de devolver
@@ -137,12 +129,10 @@ class Model_Login:
             # Guardar usuario actual
             self.usuario_actual = usuario_dict
             
-            print(f"✅ Autenticación exitosa para: {username}")
             return True, f"¡Bienvenido, {username}!", usuario_dict
             
         except Exception as e:
             error_msg = str(e)
-            print(f"❌ Error en autenticación: {error_msg}")
             return False, f"Error del sistema: {error_msg}", None
     
     def obtener_usuario_actual(self) -> Optional[Dict[str, Any]]:
@@ -152,7 +142,6 @@ class Model_Login:
     def cerrar_sesion(self):
         """Cierra la sesión del usuario actual"""
         self.usuario_actual = None
-        print("✅ Sesión cerrada en el modelo")
     
     def verificar_usuario_existe(self, username: str) -> bool:
         """Verifica si un usuario existe en la base de datos"""

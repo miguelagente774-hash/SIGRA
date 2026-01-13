@@ -1,15 +1,11 @@
 from view.ventana_login import Ventana_login
-from models.Model_login import Model_Login
+from models.Modelo_login import Model_Login
 from PyQt5.QtWidgets import QMessageBox
 
 class controlador_login():
-    """
-    Controlador simplificado para la estructura básica de Usuario.
-    """
-    
+    # Controlador simplificado para la estructura básica de Usuario.
+
     def __init__(self):
-        print("🔧 Inicializando controlador_login...")
-        
         # Inicializar vista
         self.login = Ventana_login()
         
@@ -48,7 +44,7 @@ class controlador_login():
         self.login.login_exitoso.connect(self.on_login_exitoso)
     
     def verificar_login(self):
-        # Método principal para la verificación del Logueo
+        # --Método principal para la verificación del Logueo--
         
         # Obtener las credenciales previamente adquiridas de la vista
         username = self.login.input_usuario.text().strip()
@@ -70,7 +66,6 @@ class controlador_login():
         
         if resultado:
             # Login exitoso
-            print(f"✅ Login exitoso para: {username}")
             self.usuario_actual = datos_usuario
             
             # Mostrar mensaje y emitir señal
@@ -84,21 +79,19 @@ class controlador_login():
             self.login.input_password.setFocus()
     
     def on_login_exitoso(self):
-        #Método llamado cuando login es exitoso
-        print("🎯 Login exitoso - Controlador notificado")
-        
+        # --Método llamado cuando login es exitoso--
         if self.usuario_actual:
             print(f"   Usuario ID: {self.usuario_actual.get('id_usuario')}")
             print(f"   Username: {self.usuario_actual.get('user')}")
     
     def get_widget(self):
-        """Retorna el widget de login"""
+        # Retorna el widget de login
         return self.login
     
     def get_usuario_actual(self):
-        """Obtiene usuario autenticado"""
+        # Obtiene usuario autenticado
         return self.usuario_actual
     
     def get_modelo(self):
-        """Obtiene el modelo"""
+        # Obtiene el modelo
         return self.modelo

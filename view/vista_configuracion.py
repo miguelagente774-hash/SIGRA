@@ -21,30 +21,7 @@ class Ventana_configuracion(QFrame):
         self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        self.scroll_area.setStyleSheet("""
-            QScrollArea {
-                border: none;
-                background: transparent;
-            }
-            QScrollBar:vertical {
-                background: #f0f0f0;
-                width: 12px;
-                margin: 0px;
-                border-radius: 6px;
-            }
-            QScrollBar::handle:vertical {
-                background: #c0c0c0;
-                border-radius: 6px;
-                min-height: 20px;
-            }
-            QScrollBar::handle:vertical:hover {
-                background: #a0a0a0;
-            }
-            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
-                border: none;
-                background: none;
-            }
-        """)
+        self.scroll_area.setStyleSheet(self.get_scroll_style())
         
         # Widget contenedor para el scroll
         self.scroll_widget = QWidget()
@@ -347,25 +324,7 @@ class Ventana_configuracion(QFrame):
         
         # ===== GRUPO DIRECCIÓN CON ESTILO ORIGINAL =====
         self.grupo_direccion = QGroupBox("Configuración de Dirección")
-        self.grupo_direccion.setStyleSheet("""
-            QGroupBox{
-                font-size: 14px;
-                font-weight: bold;
-                color: #37474F;
-                margin: 0;
-                padding: 20px 15px;
-                border: 2px solid #E3F2FD;
-                border-radius: 8px;
-                background: #FAFAFA;
-                min-width: 250px;
-            }
-            QGroupBox::title{
-                subcontrol-origin: margin;
-                left: 8px;
-                padding: 0 6px 0 6px;
-                color: #1565C0;
-            }
-        """)
+        self.grupo_direccion.setStyleSheet(self.get_group_style())
         
         # Layout grid para campos (diseño original en 2 columnas)
         layout_grid = QGridLayout()
@@ -453,25 +412,7 @@ class Ventana_configuracion(QFrame):
         
         # ===== GRUPO COORDINACIÓN CON ESTILO ORIGINAL =====
         self.grupo_coordinacion = QGroupBox("Jefe de Coordinación")
-        self.grupo_coordinacion.setStyleSheet("""
-            QGroupBox{
-                font-size: 14px;
-                font-weight: bold;
-                color: #37474F;
-                margin: 0;
-                padding: 20px 15px;
-                border: 2px solid #E3F2FD;
-                border-radius: 8px;
-                background: #FAFAFA;
-                min-width: 250px;
-            }
-            QGroupBox::title{
-                subcontrol-origin: margin;
-                left: 8px;
-                padding: 0 6px 0 6px;
-                color: #1565C0;
-            }
-        """)
+        self.grupo_coordinacion.setStyleSheet(self.get_group_style())
         
         layout_coordinacion = QVBoxLayout()
         layout_coordinacion.setSpacing(15)
@@ -559,7 +500,7 @@ class Ventana_configuracion(QFrame):
         
         # Botón guardar con estilo original
         self.boton_guardar = QPushButton("Guardar Cambios")
-        self.boton_guardar.setStyleSheet(self.get_btn_style())
+        self.boton_guardar.setStyleSheet(self.get_style())
         self.boton_guardar.clicked.connect(self.guardar_clicked.emit)
         layout_boton.addWidget(self.boton_guardar)
         
@@ -585,27 +526,52 @@ class Ventana_configuracion(QFrame):
             }}
         """
     
-    def get_btn_style(self):
-        return """
-            QPushButton{
-                background: #005a6e;
-                color: White;
+    def get_group_style(self):
+        return  """
+            QGroupBox{
+                font-size: 14px;
                 font-weight: bold;
-                font-size: 18px;
-                min-width: 100px;
-                padding: 15px;
-                border-radius: 15px;
-                text-align: left;
-                border: none;
-            }  
-            QPushButton:hover{
-                background: #007a94;
-            }    
-            QPushButton:pressed{
-                background: #00485a;
+                color: #37474F;
+                margin: 0;
+                padding: 20px 15px;
+                border: 2px solid #E3F2FD;
+                border-radius: 8px;
+                background: #FAFAFA;
+                min-width: 250px;
+            }
+            QGroupBox::title{
+                subcontrol-origin: margin;
+                left: 8px;
+                padding: 0 6px 0 6px;
+                color: #1565C0;
             }
         """
-
+    
+    def get_scroll_style(self):
+         return """
+            QScrollArea {
+                border: none;
+                background: transparent;
+            }
+            QScrollBar:vertical {
+                background: #f0f0f0;
+                width: 12px;
+                margin: 0px;
+                border-radius: 6px;
+            }
+            QScrollBar::handle:vertical {
+                background: #c0c0c0;
+                border-radius: 6px;
+                min-height: 20px;
+            }
+            QScrollBar::handle:vertical:hover {
+                background: #a0a0a0;
+            }
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                border: none;
+                background: none;
+            }
+        """
     def get_style(self):
         return"""
              QLabel{
@@ -654,4 +620,23 @@ class Ventana_configuracion(QFrame):
             QSpinBox:hover {
                 border: 1px solid #999999;
             }
-            """
+    
+            QPushButton{
+                background: #005a6e;
+                color: White;
+                font-weight: bold;
+                font-size: 18px;
+                min-width: 100px;
+                padding: 15px;
+                border-radius: 15px;
+                text-align: left;
+                border: none;
+            }  
+            QPushButton:hover{
+                background: #007a94;
+            }    
+            QPushButton:pressed{
+                background: #00485a;
+            }
+        """
+    

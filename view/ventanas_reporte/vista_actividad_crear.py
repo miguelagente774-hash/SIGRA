@@ -5,35 +5,17 @@ from PyQt5.QtWidgets import (QFrame, QLabel, QVBoxLayout, QHBoxLayout,
 from PyQt5.QtCore import Qt, QSize, QDate
 from PyQt5.QtGui import QPixmap, QIcon, QFont
 from services.Cargar_imagenes import ImageFrame
+from components.app_style import estilo_app
 
 FONT_FAMILY = "Arial"
 COLOR_PRIMARIO = "#005a6e" 
 COLOR_AZUL_HOVER = "#00485a"
 
-BTN_STYLE = """
-        QPushButton{
-        background: #005a6e;
-        color: White;
-        font-weight: bold;
-        font-size: 18px;
-        min-width: 100px;
-        padding: 15px;
-        border-radius: 15px;
-        text-align: left;
-        border: none;
-        margin: 15px 15px;
-        }  
-        QPushButton:hover{
-        background: #007a94;
-        }    
-        QPushButton:pressed{
-        background: #00485a;
-        }"""
-
 class Ventana_reporte_crear(QFrame):
     def __init__(self, controller):
         super().__init__()
         self.controller = controller
+        self.estilo = estilo_app.obtener_estilo_completo()
         self.layout_main = QVBoxLayout()
         self.setLayout(self.layout_main)
         self.layout_main.setContentsMargins(40, 40, 40, 40)
@@ -44,6 +26,13 @@ class Ventana_reporte_crear(QFrame):
                         border-bottom-right-radius: 15px;
                         }""")
         
+
+        # Estilo de los Botones
+        BTN_STYLE = self.estilo["styles"]["boton"]
+
+        # Aplicar el estilo
+        self.setStyleSheet(self.estilo["styles"]["fondo"])
+
         # Variables para almacenar las rutas de las imágenes
         self.imagen1_path = None
         self.imagen2_path = None
@@ -249,7 +238,7 @@ class Ventana_reporte_crear(QFrame):
     def crear_boton_guardar(self):
         """Crea el botón para guardar la actividad"""
         btn_guardar = QPushButton("Guardar Actividad")
-        btn_guardar.setStyleSheet(BTN_STYLE)
+
 
 
         btn_guardar.setCursor(Qt.PointingHandCursor)
@@ -259,7 +248,7 @@ class Ventana_reporte_crear(QFrame):
     
     def btn_limpiar_campos(self):
         btn_limpiar = QPushButton("Limpiar Campos")
-        btn_limpiar.setStyleSheet(BTN_STYLE)
+
 
         btn_limpiar.clicked.connect(self.limpiar_formulario)
 

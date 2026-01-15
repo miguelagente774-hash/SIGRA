@@ -1,4 +1,5 @@
 import sys
+from components.app_style import estilo_app
 from PyQt5.QtWidgets import (
     QHBoxLayout, QVBoxLayout, QFrame, QLabel, QGraphicsDropShadowEffect,
     QSizePolicy, QWidget, QGridLayout, QApplication
@@ -6,13 +7,18 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt, QRectF
 from PyQt5.QtGui import QPainter, QBrush, QColor, QPen, QFont
 
-# Variables globales para consistencia
-FONT_FAMILY = "Arial"
-COLOR_PRIMARIO = "#005a6e" 
-COLOR_AZUL_HOVER = "#00485a"
-COLOR_SECUNDARIO = "#F44336"
-BG_COLOR_PANEL = "rgba(255, 255, 255, 0.9)"
-BG_COLOR_FONDO = "#E3EFF3"
+
+# Instancia global para el uso en toda la aplicación
+estilo = estilo_app.obtener_estilo_completo()
+
+# Variables globales para la consistencia
+FONT_FAMILY = estilo["font_family"]
+COLOR_PRIMARIO = estilo["color_primario"]
+COLOR_AZUL_HOVER = estilo["color_hover"]
+COLOR_SECUNDARIO = estilo["color_secundario"]
+BG_COLOR_PANEL = estilo["colors"]["bg_panel"]
+BG_COLOR_FONDO = estilo["colors"]["bg_fondo"]
+
 SHADOW_RADIUS_L = 25
 SHADOW_RADIUS_S = 15
 
@@ -25,35 +31,7 @@ def get_shadow_effect(radius, color=Qt.gray, offset_x=1, offset_y=1):
     sombra.setOffset(offset_x, offset_y)
     return sombra
 
-def create_card(title, amount, border_color):
-    """Crea una tarjeta de resumen estilizada."""
-    layout = QVBoxLayout()
-    layout.setContentsMargins(15, 5, 15, 5)
-
-    frame = QFrame()
-    frame.setStyleSheet(f"""
-        background: white;
-        border-radius: 10px;
-        border-left: 5px solid {border_color};
-        padding: 0;""")
-    frame.setLayout(layout)
-    frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-    frame.setGraphicsEffect(get_shadow_effect(SHADOW_RADIUS_S, QColor(0, 0, 0, 50)))
-
-    # Título
-    title_label = QLabel(title)
-    title_label.setStyleSheet("margin: 0; background: none; border: none; font-size: 14px; color: #555555; font-weight: bold;")
-    layout.addWidget(title_label)
-
-    # Cantidad
-    amount_label = QLabel(amount)
-    amount_label.setStyleSheet(f"margin: 0; background: none; border: none; font-size: 28px; color: {border_color}; font-weight: bold;")
-    layout.addWidget(amount_label)
-
-    layout.addStretch(1)
-    return frame
-
-# --- Clase para el Widget del Gráfico Circular Nativo (QPainter) ---
+# ==Clase para el Widget del Gráfico Circular Nativo (QPainter)==
 class CustomPieChartWidget(QFrame):
     """Un QFrame que dibuja un gráfico circular simple usando QPainter."""
 
@@ -75,10 +53,10 @@ class CustomPieChartWidget(QFrame):
 
         # Layout y Título
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(5, 5, 5, 5)
+        main_layout.setContentsMargins(5, 5, 15, 5)
 
         chart_title = QLabel(title)
-        chart_title.setStyleSheet(f"font-family: {FONT_FAMILY}; font-size: 12px; font-weight: bold; color: black; background: none; qproperty-alignment: 'AlignRight';")
+        chart_title.setStyleSheet(estilo["styles"]["label"])
         chart_title.setWordWrap(True)
 
         main_layout.addWidget(chart_title)
@@ -156,7 +134,7 @@ class Ventana_principal(QFrame):
     def __init__(self):
         super().__init__()
         self.layout_main = QVBoxLayout(self)
-        self.setStyleSheet(f"background: {BG_COLOR_FONDO};")
+        self.setStyleSheet(estilo["theme"])
         self.setup_panel()
         self.setup_charts_panel()
         # Asegurar que el último layout tenga el stretch
@@ -172,7 +150,7 @@ class Ventana_principal(QFrame):
         Contenedor_panel.setMinimumHeight(250)
         Contenedor_panel.setMaximumHeight(300)
         Contenedor_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        Contenedor_panel.setStyleSheet(f"background: {BG_COLOR_PANEL}; margin: 20px 40px; border-radius: 20px; font-family: {FONT_FAMILY};")
+        Contenedor_panel.setStyleSheet(estilo["styles"]["panel"])
         Contenedor_panel.setGraphicsEffect(get_shadow_effect(SHADOW_RADIUS_L))
         
         Contenedor_panel.setLayout(layout_content)
@@ -181,24 +159,9 @@ class Ventana_principal(QFrame):
 
         # Titulo Principal
         titulo = QLabel("Bienvenido al Sistema de Gestión")
-        titulo.setStyleSheet("background: none; font-size: 30px; color: black; font-weight: bold; margin: 0; padding: 5px;")
+        titulo.setStyleSheet(estilo["styles"]["header"])
         titulo.setAlignment(Qt.AlignCenter)
         layout_content.addWidget(titulo)
-
-        # Titulo de Resumen
-        #titulo2 = QLabel("Resumen de Reportes Creados")
-        #titulo2.setStyleSheet("background: none; font-size: 16px; color: black; font-weight: bold; padding: 5px; margin: 0 10px;") # Se ajusta el margen inferior para el espaciado
-        #titulo2.setAlignment(Qt.AlignCenter)
-        #layout_content.addWidget(titulo2)
-
-        # Crear y agregar tarjetas
-        #layout_h_cards.addWidget(create_card("Creados Hoy", "42", "#21BCFF"))
-        #layout_h_cards.addWidget(create_card("Creados Último Mes", "785", "#FFC107"))
-        #layout_h_cards.addWidget(create_card("Total Histórico", "3450", "#4CAF50"))
-        #layout_h_cards.setSpacing(20)
-        
-        #layout_content.addLayout(layout_h_cards)
-        #layout_content.addStretch(1)
 
         self.layout_main.addWidget(Contenedor_panel, 0, alignment=Qt.AlignTop)
 
@@ -220,15 +183,14 @@ class Ventana_principal(QFrame):
 
         # Titulo general de la sección
         titulo = QLabel("Control de Reportes")
-        titulo.setStyleSheet("font-size: 22px; color: black; font-weight: bold; margin: 0;; padding: 5px 0;")
+        titulo.setStyleSheet(estilo["styles"]["header"])
         titulo.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
         layout_estadistica.addWidget(titulo)
 
         # Contenedor y Layout de rejilla (GridLayout) para los 4 gráficos
         layout_charts = QGridLayout()
         layout_charts.setContentsMargins(15, 15, 15, 15)
-        layout_charts.setSpacing(15)
-        
+        layout_charts.setSpacing(15)        
         charts_container = QFrame()
         charts_container.setLayout(layout_charts)
         

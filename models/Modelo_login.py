@@ -158,3 +158,23 @@ class Model_Login:
             self.conexion_db.Cerrar()
         except:
             pass
+
+    def inicializar_configuracion(self):
+        db = ConexionDB()
+        
+        # Insertar tema por defecto
+        db.cursor.execute("INSERT OR IGNORE INTO Tema (tema) VALUES ('claro')")
+        db.cursor.execute("INSERT OR IGNORE INTO Tema (tema) VALUES ('oscuro')")
+        
+        # Insertar configuración de fuente por defecto
+        db.cursor.execute("""
+            INSERT OR IGNORE INTO Fuente (tamano, famila, font) 
+            VALUES (12, 'Arial', 'normal')
+        """)
+        
+        # Insertar configuración por defecto
+        db.cursor.execute("""
+            INSERT OR IGNORE INTO Configuracion (id_tema, id_fuente) 
+            VALUES (1, 1)
+        """)
+    

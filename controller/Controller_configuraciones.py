@@ -37,24 +37,6 @@ class controlador_configuraciones(QWidget):
         # Cargar datos iniciales
         self.cargar_datos_iniciales()
     
-        
-        # Aplicar estilo a todos los QLineEdit de la vista
-        widgets_lineedit = [
-            self.vista.entry_estado,
-            self.vista.entry_municipio,
-            self.vista.entry_parroquia,
-            self.vista.entry_institucion,
-            self.vista.entry_nombre_coord,
-            self.vista.entry_cedula_coord,
-            self.vista.entry_nombre_gob,
-            self.vista.entry_cedula_gob
-        ]
-        
-        # Aplicar el Estilo a cada uno de lso Widgets
-        for widget in widgets_lineedit:
-            if widget:
-                widget.setStyleSheet(self.vista.get_style())
-    
     def configurar_validadores(self):
         # == Configura validadores con expresiones regulares para todos los campos== 
         
@@ -173,6 +155,8 @@ class controlador_configuraciones(QWidget):
         except Exception as e:
             print(f"❌ Error en on_guardar_clicked: {e}")
             self.mostrar_mensaje("Error", f"Ocurrió un error: {str(e)}", "error")
+
+            
     
     def validar_datos(self, datos):
         # == Valida todos los datos antes de guardar== 
@@ -410,8 +394,8 @@ class controlador_configuraciones(QWidget):
                 "negrita": False
             },
             "direccion": {
-                "estado": "",
-                "municipio": "",
+                "estado": "Monagas",
+                "municipio": "Maturín",
                 "parroquia": "",
                 "institucion": ""
             },
@@ -458,7 +442,6 @@ class controlador_configuraciones(QWidget):
     def mostrar_error(self, widget, mensaje):
         # ==Resalta un campo con error en rojo y muestra tooltip== 
         if widget:
-            # NO cambiamos el estilo completo, solo añadimos un borde rojo
             # Mantenemos el estilo original y añadimos un borde rojo
             estilo_actual = widget.styleSheet()
             
@@ -506,10 +489,6 @@ class controlador_configuraciones(QWidget):
             # Enfocar el widget
             widget.setFocus()
     
-    def limpiar_formulario(self):
-        # == Limpia todos los campos del formulario== 
-        self.limpiar_campos()
-    
     def limpiar_errores(self):
         # == Limpia todos los marcadores de error== 
         # NO restauramos los estilos CSS completos
@@ -545,11 +524,16 @@ class controlador_configuraciones(QWidget):
                                  self.vista.entry_nombre_coord, self.vista.entry_cedula_coord,
                                  self.vista.entry_nombre_gob, self.vista.entry_cedula_gob]:
                         
-                        widget.setStyleSheet(self.vista.get_style())
+                        widget.setStyleSheet(f"""
+                            {self.vista.estilo["styles"]["label"]}
+                            {self.vista.estilo["styles"]["input"]}
+                            {self.vista.estilo["styles"]["boton"]}
+                            """)
         
         # Restaurar tooltips originales
         self.configurar_placeholders_y_tooltips()
     
+
     def cerrar(self):
         # == Cierra conexiones== 
         self.modelo.cerrar_conexion()

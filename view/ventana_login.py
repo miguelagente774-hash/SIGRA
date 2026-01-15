@@ -88,7 +88,7 @@ class Ventana_login(QFrame):
         #---------- logo ---------------
         imagen = QLabel()
         imagen.setStyleSheet("margin: 0;")
-        pixmap = QPixmap("img/imagen.png")
+        pixmap = QPixmap("img/logos/login_logo.png")
         imagen.setPixmap(pixmap)
         imagen.setContentsMargins(0, 0, 1, 1)
         layout_panel_v.addWidget(imagen, alignment=Qt.AlignCenter)

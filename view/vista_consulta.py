@@ -5,30 +5,21 @@ from PyQt5.QtWidgets import (
     QGraphicsDropShadowEffect, QLineEdit, QComboBox, QSizePolicy, QWidget, QMessageBox, QDialog
 )
 from PyQt5.QtCore import Qt
+from components.app_style import estilo_app
 
 
-# Definición de la familia de fuente y colores
-FONT_FAMILY = "Arial"
-COLOR_PRIMARIO = "#005a6e" 
-COLOR_AZUL_HOVER = "#00485a"
+# Instancia global para el uso en toda la aplicación
+estilo = estilo_app.obtener_estilo_completo()
 
-BTN_STYLE = """
-        QPushButton{
-        background: #005a6e;
-        color: White;
-        font-weight: bold;
-        font-size: 18px;
-        padding: 15px;
-        border-radius: 15px;
-        text-align: left;
-        border: none;
-        }  
-        QPushButton:hover{
-        background: #007a94;
-        }    
-        QPushButton:pressed{
-        background: #00485a;
-        }"""
+# Variables globales para la consistencia
+FONT_FAMILY = estilo["font_family"]
+COLOR_PRIMARIO = estilo["color_primario"]
+COLOR_AZUL_HOVER = estilo["color_hover"]
+COLOR_SECUNDARIO = estilo["color_secundario"]
+BG_COLOR_PANEL = estilo["colors"]["bg_panel"]
+BG_COLOR_FONDO = estilo["colors"]["bg_fondo"]
+
+BTN_STYLE = estilo["styles"]["boton"]
 
 # --- CLASE: Ventana_Consulta (Contenido Principal) ---
 
@@ -47,8 +38,8 @@ class Ventana_consulta(QFrame):
         self._conectar_senales()
     
     def _configurar_interfaz(self):
-        """Configura el estilo base, layout principal y los subcomponentes."""
-        self.setStyleSheet("background-color: white;")
+        # ==Configura el estilo base, layout principal y los subcomponentes==
+        self.setStyleSheet(f"background-color: {BG_COLOR_FONDO};")
         
         self.layout_principal.setContentsMargins(40, 20, 40, 20)
         self.layout_principal.setSpacing(0)
@@ -64,13 +55,7 @@ class Ventana_consulta(QFrame):
         self.combo_ordenacion.setFixedHeight(40)
         self.combo_ordenacion.setMinimumWidth(120)
         self.combo_ordenacion.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
-        self.combo_ordenacion.setStyleSheet("""
-            QComboBox {
-                background-color: #f0f0f0; border: 1px solid #ccc;
-                border-radius: 5px; padding: 1px 10px 1px 3px;
-            }
-            QComboBox::drop-down { border: 0px; }
-        """)
+        self.combo_ordenacion.setStyleSheet(estilo["styles"]["input"])
         
     def _configurar_tabla(self):
         """Configura los encabezados y el estilo de la tabla."""
@@ -83,12 +68,7 @@ class Ventana_consulta(QFrame):
         self.tabla.verticalHeader().setDefaultSectionSize(70) # Modificar altura de celdas
         
         cabecera = self.tabla.horizontalHeader()
-        cabecera.setStyleSheet("""
-            QHeaderView::section {
-                background-color: #f0f0f0; padding: 8px;
-                border: 2px solid #ddd; font-weight: bold;
-            }
-        """)
+        cabecera.setStyleSheet(estilo["styles"]["tabla"])
         cabecera.setSectionResizeMode(QHeaderView.Stretch)
         cabecera.setStretchLastSection(False)
 
@@ -126,12 +106,7 @@ class Ventana_consulta(QFrame):
         
         # Título Consulta
         titulo = QLabel("Consulta")
-        titulo.setStyleSheet(f"""
-            background: {COLOR_PRIMARIO}; font-family: {FONT_FAMILY};
-            font-size: 28px; color: white; font-weight: bold;
-            padding: 15px 20px; border-top-left-radius: 5px;
-            border-top-right-radius: 5px;
-        """)
+        titulo.setStyleSheet(estilo["styles"]["label"])
         titulo.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         titulo.setMaximumHeight(60)
         layout_panel.addWidget(titulo, alignment = Qt.AlignTop)
@@ -238,7 +213,7 @@ class Ventana_consulta(QFrame):
             boton = QPushButton(texto)
             boton.setFixedSize(450, 50)
             # Estilo de botón
-            boton.setStyleSheet(BTN_STYLE)
+            boton.setStyleSheet(estilo["styles"]["boton"])
             return boton
 
         boton_excel = crear_boton("Excel-Reporte")

@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import (QFrame, QLabel, QVBoxLayout, QHBoxLayout,
                              QScrollArea, QWidget)
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont
+from components.app_style import estilo_app
 
 class Ventana_configuracion(QFrame):
     # Señales simplificadas
@@ -12,6 +13,7 @@ class Ventana_configuracion(QFrame):
     
     def __init__(self):
         super().__init__()
+        self.estilo = estilo_app.obtener_estilo_completo()
         self.setup_ui()
     
     def setup_ui(self):
@@ -21,7 +23,7 @@ class Ventana_configuracion(QFrame):
         self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        self.scroll_area.setStyleSheet(self.get_scroll_style())
+        self.scroll_area.setStyleSheet(self.estilo["styles"]["scroll"])
         
         # Widget contenedor para el scroll
         self.scroll_widget = QWidget()
@@ -36,6 +38,8 @@ class Ventana_configuracion(QFrame):
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.addWidget(self.scroll_area)
         
+        self.setStyleSheet(self.estilo["styles"]["fondo"])
+
         # Crear paneles con diseño original
         self.crear_panel_interfaz_con_estilo()
         self.crear_panel_direccion_con_estilo()
@@ -75,7 +79,7 @@ class Ventana_configuracion(QFrame):
         
         # Título con estilo header
         titulo = QLabel("Configuración de Interfaz")
-        titulo.setStyleSheet(self.get_header_style())
+        titulo.setStyleSheet(self.estilo["styles"]["header"])
         titulo.setMinimumHeight(50)
         titulo.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         layout_panel.addWidget(titulo)
@@ -184,67 +188,22 @@ class Ventana_configuracion(QFrame):
         
         # Combobox de fuentes
         label_tipo = QLabel("Tipo de Letra")
-        label_tipo.setStyleSheet("""
-            QLabel{
-                font-size: 12px; 
-                margin: 0; 
-                background: none; 
-                font-weight: bold;
-                color: #37474F;
-            }
-        """)
+        label_tipo.setStyleSheet(self.estilo["styles"]["label"])
         layout_fuente.addWidget(label_tipo)
         
         self.combo_fuente = QComboBox()
         self.combo_fuente.addItems(["Arial", "Segoe UI", "Verdana", "Tahoma", "Georgia"])
-        self.combo_fuente.setStyleSheet("""
-            QComboBox{
-                padding: 6px 10px;
-                border: 1px solid #BDBDBD;
-                border-radius: 6px;
-                background: white;
-                font-size: 12px;
-                min-height: 12px;
-                min-width: 120px;
-            }
-            QComboBox::drop-down{
-                border: none;
-                width: 20px;
-            }
-            QComboBox::down-arrow{
-                image: none;
-                border-left: 4px solid transparent;
-                border-right: 4px solid transparent;
-                border-top: 4px solid #757575;
-            }
-        """)
+        self.combo_fuente.setStyleSheet(self.estilo["styles"]["input"])
         layout_fuente.addWidget(self.combo_fuente)
         
         # Tamaño de fuente
         label_tamano = QLabel("Tamaño de la fuente")
-        label_tamano.setStyleSheet("""
-            QLabel{
-                font-size: 12px; 
-                margin: 0; 
-                background: none; 
-                font-weight: bold;
-                color: #37474F;
-            }
-        """)
+        label_tamano.setStyleSheet(self.estilo["styles"]["label"])
         layout_fuente.addWidget(label_tamano)
         
         self.spin_tamano = QSpinBox()
-        self.spin_tamano.setStyleSheet("""
-            QSpinBox{
-                padding: 6px 10px;
-                border: 1px solid #BDBDBD;
-                border-radius: 6px;
-                background: white;
-                font-size: 12px;
-                min-width: 80px;
-            }
-        """)
-        self.spin_tamano.setMinimum(8)
+        self.spin_tamano.setStyleSheet(self.estilo["styles"]["input"])
+        self.spin_tamano.setMinimum(12)
         self.spin_tamano.setMaximum(18)
         self.spin_tamano.setValue(12)
         layout_fuente.addWidget(self.spin_tamano)
@@ -310,7 +269,7 @@ class Ventana_configuracion(QFrame):
         
         # Título
         titulo = QLabel("Configuración de Datos de Dirección")
-        titulo.setStyleSheet(self.get_header_style())
+        titulo.setStyleSheet(self.estilo["styles"]["header"])
         titulo.setMinimumHeight(50)
         layout_panel.addWidget(titulo)
         
@@ -324,7 +283,7 @@ class Ventana_configuracion(QFrame):
         
         # ===== GRUPO DIRECCIÓN CON ESTILO ORIGINAL =====
         self.grupo_direccion = QGroupBox("Configuración de Dirección")
-        self.grupo_direccion.setStyleSheet(self.get_group_style())
+        self.grupo_direccion.setStyleSheet(self.estilo["styles"]["grupo"])
         
         # Layout grid para campos (diseño original en 2 columnas)
         layout_grid = QGridLayout()
@@ -334,19 +293,19 @@ class Ventana_configuracion(QFrame):
         
         # Crear campos
         self.entry_estado = QLineEdit()
-        self.entry_estado.setStyleSheet(self.get_style())
+        self.entry_estado.setStyleSheet(self.estilo["styles"]["input"])
         self.entry_estado.setPlaceholderText("Ingrese el estado")
         
         self.entry_municipio = QLineEdit()
-        self.entry_municipio.setStyleSheet(self.get_style())
+        self.entry_municipio.setStyleSheet(self.estilo["styles"]["input"])
         self.entry_municipio.setPlaceholderText("Ingrese el municipio")
         
         self.entry_parroquia = QLineEdit()
-        self.entry_parroquia.setStyleSheet(self.get_style())
+        self.entry_parroquia.setStyleSheet(self.estilo["styles"]["input"])
         self.entry_parroquia.setPlaceholderText("Ingrese la parroquia")
         
         self.entry_institucion = QLineEdit()
-        self.entry_institucion.setStyleSheet(self.get_style())
+        self.entry_institucion.setStyleSheet(self.estilo["styles"]["input"])
         self.entry_institucion.setPlaceholderText("Ingrese comunidad o institución")
         
         # Agregar al grid (diseño original: 2 columnas)
@@ -392,7 +351,7 @@ class Ventana_configuracion(QFrame):
         
         # Título
         titulo = QLabel("Datos de Jefaturas")
-        titulo.setStyleSheet(self.get_header_style())
+        titulo.setStyleSheet(self.estilo["styles"]["header"])
         titulo.setMinimumHeight(50)
         layout_panel.addWidget(titulo)
         
@@ -412,7 +371,7 @@ class Ventana_configuracion(QFrame):
         
         # ===== GRUPO COORDINACIÓN CON ESTILO ORIGINAL =====
         self.grupo_coordinacion = QGroupBox("Jefe de Coordinación")
-        self.grupo_coordinacion.setStyleSheet(self.get_group_style())
+        self.grupo_coordinacion.setStyleSheet(self.estilo["styles"]["grupo"])
         
         layout_coordinacion = QVBoxLayout()
         layout_coordinacion.setSpacing(15)
@@ -420,15 +379,15 @@ class Ventana_configuracion(QFrame):
         
         # Campos coordinación        
         self.label_nombre_coord = QLabel("Nombre completo:")
-        self.label_nombre_coord.setStyleSheet(self.get_style())
+        self.label_nombre_coord.setStyleSheet(self.estilo["styles"]["label"])
         self.entry_nombre_coord = QLineEdit()
-        self.entry_nombre_coord.setStyleSheet(self.get_style())
+        self.entry_nombre_coord.setStyleSheet(self.estilo["styles"]["input"])
         self.entry_nombre_coord.setPlaceholderText("Ingrese nombre completo")
         
         self.label_cedula_coord = QLabel("Cédula de identidad:")
-        self.label_cedula_coord.setStyleSheet(self.get_style())
+        self.label_cedula_coord.setStyleSheet(self.estilo["styles"]["label"])
         self.entry_cedula_coord = QLineEdit()
-        self.entry_cedula_coord.setStyleSheet(self.get_style())
+        self.entry_cedula_coord.setStyleSheet(self.estilo["styles"]["input"])
         self.entry_cedula_coord.setPlaceholderText("Ej: V-12345678")
         
         layout_coordinacion.addWidget(self.label_nombre_coord)
@@ -463,15 +422,15 @@ class Ventana_configuracion(QFrame):
         self.grupo_gobernacion.setLayout(layout_gobernacion)
         
         self.label_nombre_gob = QLabel("Nombre completo:")
-        self.label_nombre_gob.setStyleSheet(self.get_style())
+        self.label_nombre_gob.setStyleSheet(self.estilo["styles"]["label"])
         self.entry_nombre_gob = QLineEdit()
-        self.entry_nombre_gob.setStyleSheet(self.get_style())
+        self.entry_nombre_gob.setStyleSheet(self.estilo["styles"]["input"])
         self.entry_nombre_gob.setPlaceholderText("Ingrese nombre completo")
         
         self.label_cedula_gob = QLabel("Cédula de identidad:")
-        self.label_cedula_gob.setStyleSheet(self.get_style())
+        self.label_cedula_gob.setStyleSheet(self.estilo["styles"]["label"])
         self.entry_cedula_gob = QLineEdit()
-        self.entry_cedula_gob.setStyleSheet(self.get_style())
+        self.entry_cedula_gob.setStyleSheet(self.estilo["styles"]["input"])
         self.entry_cedula_gob.setPlaceholderText("Ej: V-12345678")
         
         layout_gobernacion.addWidget(self.label_nombre_gob)
@@ -500,7 +459,7 @@ class Ventana_configuracion(QFrame):
         
         # Botón guardar con estilo original
         self.boton_guardar = QPushButton("Guardar Cambios")
-        self.boton_guardar.setStyleSheet(self.get_style())
+        self.boton_guardar.setStyleSheet(self.estilo["styles"]["boton"])
         self.boton_guardar.clicked.connect(self.guardar_clicked.emit)
         layout_boton.addWidget(self.boton_guardar)
         
@@ -508,135 +467,4 @@ class Ventana_configuracion(QFrame):
         layout_boton.addItem(QSpacerItem(20, 20, QSizePolicy.Expanding, QSizePolicy.Minimum))
         
         self.layout_main.addLayout(layout_boton)
-    
-    # ========== MÉTODOS DE ESTILO ==========
-    
-    def get_header_style(self):
-        COLOR_PRIMARIO = "#005a6e"
-        return f"""
-            QLabel{{
-                font-size: 16px; 
-                font-weight: bold; 
-                background: {COLOR_PRIMARIO};
-                color: white;
-                padding: 15px 15px;
-                margin: 0;
-                border-top-left-radius: 12px;
-                border-top-right-radius: 12px;
-            }}
-        """
-    
-    def get_group_style(self):
-        return  """
-            QGroupBox{
-                font-size: 14px;
-                font-weight: bold;
-                color: #37474F;
-                margin: 0;
-                padding: 20px 15px;
-                border: 2px solid #E3F2FD;
-                border-radius: 8px;
-                background: #FAFAFA;
-                min-width: 250px;
-            }
-            QGroupBox::title{
-                subcontrol-origin: margin;
-                left: 8px;
-                padding: 0 6px 0 6px;
-                color: #1565C0;
-            }
-        """
-    
-    def get_scroll_style(self):
-         return """
-            QScrollArea {
-                border: none;
-                background: transparent;
-            }
-            QScrollBar:vertical {
-                background: #f0f0f0;
-                width: 12px;
-                margin: 0px;
-                border-radius: 6px;
-            }
-            QScrollBar::handle:vertical {
-                background: #c0c0c0;
-                border-radius: 6px;
-                min-height: 20px;
-            }
-            QScrollBar::handle:vertical:hover {
-                background: #a0a0a0;
-            }
-            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
-                border: none;
-                background: none;
-            }
-        """
-    def get_style(self):
-        return"""
-             QLabel{
-                font-size: 12px;
-                font-weight: bold;
-                color: #37474F;
-                padding: 2px 0px;
-            }
-            QLineEdit{
-                padding: 8px 10px;
-                border: 1px solid #BDBDBD;
-                border-radius: 6px;
-                background: white;
-                font-size: 12px;
-                min-width: 150px;
-            }
-            QLineEdit:focus{
-                border: 2px solid #005a6e;
-            }
-            QComboBox {
-                border: 1px solid #cccccc;
-                border-radius: 3px;
-                padding: 5px;
-                background-color: white;
-            }
-            QComboBox:focus {
-                border: 2px solid #005a6e;
-                background-color: #f0f9ff;
-            }
-            QComboBox:hover {
-                border: 1px solid #999999;
-            }
-            QComboBox::drop-down {
-                border: none;
-            }    
-            QSpinBox {
-                border: 1px solid #cccccc;
-                border-radius: 3px;
-                padding: 5px;
-                background-color: white;
-            }
-            QSpinBox:focus {
-                border: 2px solid #005a6e;
-                background-color: #f0f9ff;
-            }
-            QSpinBox:hover {
-                border: 1px solid #999999;
-            }
-    
-            QPushButton{
-                background: #005a6e;
-                color: White;
-                font-weight: bold;
-                font-size: 18px;
-                min-width: 100px;
-                padding: 15px;
-                border-radius: 15px;
-                text-align: left;
-                border: none;
-            }  
-            QPushButton:hover{
-                background: #007a94;
-            }    
-            QPushButton:pressed{
-                background: #00485a;
-            }
-        """
     

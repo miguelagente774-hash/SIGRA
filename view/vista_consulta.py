@@ -72,10 +72,10 @@ class Ventana_consulta(QFrame):
         cabecera.setSectionResizeMode(QHeaderView.Stretch)
         cabecera.setStretchLastSection(False)
 
-        self.actulizar_tabla()
+        self.actualizar_tabla()
         
         
-    def actulizar_tabla(self):
+    def actualizar_tabla(self):
         self.datos_prueba = self.controlador.Obtener_reportes()
         self._cargar_datos_en_tabla(self.datos_prueba)
 

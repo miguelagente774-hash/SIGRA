@@ -23,6 +23,7 @@ class Modal_actulizar_actividades(QDialog):
     def __init__(self, id_actividad, titulo, descripcion, ruta1, ruta2, fecha, controlador, parent = None):
         super().__init__(parent)
         #valores de la actividad a modificar
+        estilo_app.estilos_actualizados.connect(self.actualizar_estilos)
         self.controller = controlador
         self.id_actividad = id_actividad
         self.titulo = titulo
@@ -30,6 +31,7 @@ class Modal_actulizar_actividades(QDialog):
         self.imagen2 = ruta2
         self.descripcion = descripcion
         self.fecha = fecha
+        
         self.setWindowTitle("Actividad_actualizacion")
         self.setWindowModality(Qt.ApplicationModal)
 

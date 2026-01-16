@@ -37,8 +37,6 @@ class Ventana_configuracion(QFrame):
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.addWidget(self.scroll_area)
-        
-        self.setStyleSheet(self.estilo["styles"]["fondo"])
 
         # Crear paneles con diseño original
         self.crear_panel_interfaz_con_estilo()
@@ -133,7 +131,7 @@ class Ventana_configuracion(QFrame):
         
         # Combobox de fuentes
         label_tipo = QLabel("Tipo de Letra")
-        label_tipo.setStyleSheet(self.estilo["styles"]["label"])
+        label_tipo.setStyleSheet(self.estilo["styles"]["title"])
         layout_fuente.addWidget(label_tipo)
         
         self.combo_fuente = QComboBox()
@@ -143,7 +141,7 @@ class Ventana_configuracion(QFrame):
         
         # Tamaño de fuente
         label_tamano = QLabel("Tamaño de la fuente")
-        label_tamano.setStyleSheet(self.estilo["styles"]["label"])
+        label_tamano.setStyleSheet(self.estilo["styles"]["title"])
         layout_fuente.addWidget(label_tamano)
         
         self.spin_tamano = QSpinBox()
@@ -290,13 +288,13 @@ class Ventana_configuracion(QFrame):
         
         # Campos coordinación        
         self.label_nombre_coord = QLabel("Nombre completo:")
-        self.label_nombre_coord.setStyleSheet(self.estilo["styles"]["label"])
+        self.label_nombre_coord.setStyleSheet(self.estilo["styles"]["title"])
         self.entry_nombre_coord = QLineEdit()
         self.entry_nombre_coord.setStyleSheet(self.estilo["styles"]["input"])
         self.entry_nombre_coord.setPlaceholderText("Ingrese nombre completo")
         
         self.label_cedula_coord = QLabel("Cédula de identidad:")
-        self.label_cedula_coord.setStyleSheet(self.estilo["styles"]["label"])
+        self.label_cedula_coord.setStyleSheet(self.estilo["styles"]["title"])
         self.entry_cedula_coord = QLineEdit()
         self.entry_cedula_coord.setStyleSheet(self.estilo["styles"]["input"])
         self.entry_cedula_coord.setPlaceholderText("Ej: V-12345678")
@@ -315,13 +313,13 @@ class Ventana_configuracion(QFrame):
         self.grupo_gobernacion.setLayout(layout_gobernacion)
         
         self.label_nombre_gob = QLabel("Nombre completo:")
-        self.label_nombre_gob.setStyleSheet(self.estilo["styles"]["label"])
+        self.label_nombre_gob.setStyleSheet(self.estilo["styles"]["title"])
         self.entry_nombre_gob = QLineEdit()
         self.entry_nombre_gob.setStyleSheet(self.estilo["styles"]["input"])
         self.entry_nombre_gob.setPlaceholderText("Ingrese nombre completo")
         
         self.label_cedula_gob = QLabel("Cédula de identidad:")
-        self.label_cedula_gob.setStyleSheet(self.estilo["styles"]["label"])
+        self.label_cedula_gob.setStyleSheet(self.estilo["styles"]["title"])
         self.entry_cedula_gob = QLineEdit()
         self.entry_cedula_gob.setStyleSheet(self.estilo["styles"]["input"])
         self.entry_cedula_gob.setPlaceholderText("Ej: V-12345678")

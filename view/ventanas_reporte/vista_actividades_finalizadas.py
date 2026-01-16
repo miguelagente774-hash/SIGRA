@@ -39,14 +39,14 @@ class Ventana_reporte_finalizados(QFrame):
         
         Panel_R_finalizado = QFrame()
         Panel_R_finalizado.setLayout(self.Panel_layout)
-        Panel_R_finalizado.setStyleSheet("""
-                                         QFrame{
-                                         background: rgba(255, 255, 255, 0.9);
+        Panel_R_finalizado.setStyleSheet(f"""
+                                         QFrame{{
+                                         background: {BG_COLOR_PANEL};
                                          border-top-left-radius: 15px;
                                          border-top-right-radius: 15px;
                                          border-bottom-left-radius: 15px;
                                          border-bottom-right-radius: 15px;
-                                         }""")
+                                         }}""")
         #sombra del panel
         sombra = QGraphicsDropShadowEffect()
         sombra.setBlurRadius(20)

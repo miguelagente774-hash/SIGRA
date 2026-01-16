@@ -23,7 +23,7 @@ class Ventana_reporte_crear(QFrame):
     def __init__(self, controller):
         super().__init__()
         self.controller = controller
-        self.estilo = estilo_app.obtener_estilo_completo()
+
         self.layout_main = QVBoxLayout()
         self.setLayout(self.layout_main)
         self.layout_main.setContentsMargins(40, 40, 40, 40)
@@ -33,9 +33,6 @@ class Ventana_reporte_crear(QFrame):
                         border-bottom-left-radius: 15px;
                         border-bottom-right-radius: 15px;
                         }""")
-
-        # Aplicar el estilo
-        self.setStyleSheet(self.estilo["styles"]["fondo"])
 
         # Variables para almacenar las rutas de las imágenes
         self.imagen1_path = None

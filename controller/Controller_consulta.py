@@ -14,7 +14,7 @@ class controlador_consulta():
 
     def get_widget(self):
         self.consulta = Ventana_consulta(self)
-        Comunicador_global.Reporte_agregado.connect(self.consulta.actulizar_tabla)
+        Comunicador_global.Reporte_agregado.connect(self.consulta.actualizar_tabla)
         return self.consulta
     
     def Obtener_reportes(self):

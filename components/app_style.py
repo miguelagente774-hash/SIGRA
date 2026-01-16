@@ -1,12 +1,14 @@
 import hashlib
 from typing import Optional, Tuple, Dict, Any
 from models.conexion_db import ConexionDB
-from PyQt5.QtCore import QSettings
+from PyQt5.QtCore import QObject, pyqtSignal
 import os
 
-class AppStyle:
-    # ==Clase para gestionar los estilos de toda la aplicación==
-    
+# ==Clase para gestionar los estilos de toda la aplicación==
+class AppStyle(QObject):
+    # PyQtSignal para Estilos_Actualizados
+    estilos_actualizados = pyqtSignal()
+
     # Variables de clase para configuración global
     FONT_FAMILY = "Arial" 
     FONT_SIZE = 12
@@ -304,7 +306,7 @@ class AppStyle:
         radio_style = f"""
         QRadioButton{{
             font-family: {self.FONT_FAMILY};
-            font-size: {self.FONT_SIZE}px;
+            font-size: {self.FONT_SIZE + 5}px;
             color: {colores['text_secondary']};
             padding: 6px 5px;
             spacing: 8px;
@@ -404,35 +406,85 @@ class AppStyle:
         vista.setStyleSheet(estilo["styles"]["fondo"])
         
         return estilo
-
+    
     def actualizar_configuracion(self, tema=None, fuente_familia=None, fuente_tamano=None, fuente_negrita=None):
-        """Actualiza la configuración en la base de datos y en memoria"""
-        db = ConexionDB()
-        
-        if tema:
-            db.cursor.execute("UPDATE Tema SET tema = ? WHERE id_tema = 1", (tema,))
-            self.THEME = tema
-        
-        if fuente_familia or fuente_tamano or fuente_negrita:
-            # Actualizar configuración de fuente
-            font_value = "bold" if fuente_negrita else "normal"
-            db.cursor.execute("""
-                UPDATE Fuente 
-                SET tamano = COALESCE(?, tamano),
-                    famila = COALESCE(?, famila),
-                    font = COALESCE(?, font)
-                WHERE id_fuente = 1
-            """, (fuente_tamano, fuente_familia, font_value))
+        """Actualiza la configuración y notifica a toda la aplicación"""
+        try:
+            from models.Modelo_configuracion import Model_Configuraciones
+            modelo = Model_Configuraciones()
             
-            if fuente_tamano:
-                self.FONT_SIZE = fuente_tamano
-            if fuente_familia:
-                self.FONT_FAMILY = fuente_familia
-            if fuente_negrita is not None:
-                self.FONT_BOLD = fuente_negrita
+            if tema:
+                # Guardar en BD
+                modelo.guardar_configuracion_interfaz(
+                    tema=tema,
+                    fuente=fuente_familia or self.FONT_FAMILY,
+                    tamaño=fuente_tamano or self.FONT_SIZE,
+                    negrita=fuente_negrita if fuente_negrita is not None else self.FONT_BOLD
+                )
+                self.THEME = tema.lower()
+            
+            if fuente_familia or fuente_tamano or fuente_negrita is not None:
+                # Guardar en BD
+                modelo.guardar_configuracion_interfaz(
+                    tema=self.THEME,
+                    fuente=fuente_familia or self.FONT_FAMILY,
+                    tamaño=fuente_tamano or self.FONT_SIZE,
+                    negrita=fuente_negrita if fuente_negrita is not None else self.FONT_BOLD
+                )
+                
+                if fuente_familia:
+                    self.FONT_FAMILY = fuente_familia
+                if fuente_tamano:
+                    self.FONT_SIZE = fuente_tamano
+                if fuente_negrita is not None:
+                    self.FONT_BOLD = fuente_negrita
+            
+            # Emitir señal para notificar a toda la aplicación
+            self.notificar_cambio_estilos()
+            
+            return True
+            
+        except Exception as e:
+            print(f"❌ Error al actualizar configuración: {e}")
+            return False
+    
+    def notificar_cambio_estilos(self):
+        """Notifica a toda la aplicación que los estilos cambiaron"""
+        # Cargar configuración fresca
+        self.cargar_configuracion()
         
-        db.conexion.commit()
-        db.Cerrar()
+        # Obtener estilos actualizados
+        estilos = self.obtener_estilo_completo()
+        
+        # Emitir señal
+        self.estilos_actualizados.emit(estilos)
+
+        # Actualizar widgets registrados
+        actualizar_estilos_todos_widgets()
+        
+        print("🔄 Estilos actualizados y notificados a la aplicación")
 
 # Instancia global para uso en toda la aplicación
 estilo_app = AppStyle()
+
+# Lista global para registrar widgets que necesitan actualizarse
+_widgets_registrados = []
+
+def registrar_widget(widget):
+    """Registra un widget para recibir actualizaciones de estilo"""
+    if widget not in _widgets_registrados:
+        _widgets_registrados.append(widget)
+
+def desregistrar_widget(widget):
+    """Elimina un widget de la lista de registrados"""
+    if widget in _widgets_registrados:
+        _widgets_registrados.remove(widget)
+
+def actualizar_estilos_todos_widgets():
+    """Actualiza estilos en todos los widgets registrados"""
+    for widget in _widgets_registrados:
+        if widget and hasattr(widget, 'actualizar_estilos'):
+            widget.actualizar_estilos()
+        elif widget:
+            # Si no tiene método específico, aplicar estilos básicos
+            widget.setStyleSheet(estilo_app.obtener_fondo_aplicacion())

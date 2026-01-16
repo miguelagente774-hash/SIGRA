@@ -2,35 +2,23 @@ from PyQt5.QtWidgets import (QFrame, QLabel, QVBoxLayout,
                             QHBoxLayout, QGraphicsDropShadowEffect, QPushButton,
                             QTableWidget, QTableWidgetItem, QHeaderView, 
                             QAbstractItemView, QScrollArea, QWidget, QSizePolicy, QMessageBox)
-from PyQt5.QtCore import (Qt)
+from PyQt5.QtCore import Qt, pyqtSignal
+from components.app_style import estilo_app
 
+# Instancia global para el uso en toda la aplicación
+estilo = estilo_app.obtener_estilo_completo()
 
-FONT_FAMILY = "Arial"
-COLOR_PRIMARIO = "#005a6e" 
-COLOR_AZUL_HOVER = "#00485a"
-
-BTN_STYLE = """
-        QPushButton{
-        background: #005a6e;
-        color: White;
-        font-weight: bold;
-        font-size: 18px;
-        min-width: 100px;
-        padding: 15px;
-        border-radius: 15px;
-        text-align: left;
-        border: none;
-        margin: 0 15px 20px;
-        }  
-        QPushButton:hover{
-        background: #007a94;
-        }    
-        QPushButton:pressed{
-        background: #00485a;
-        }"""
-
+# Variables globales para la consistencia
+FONT_FAMILY = estilo["font_family"]
+COLOR_PRIMARIO = estilo["color_primario"]
+COLOR_AZUL_HOVER = estilo["color_hover"]
+COLOR_SECUNDARIO = estilo["color_secundario"]
+BG_COLOR_PANEL = estilo["colors"]["bg_panel"]
+BG_COLOR_FONDO = estilo["colors"]["bg_fondo"]
 
 class Ventana_reporte_finalizados(QFrame):
+    modificar_actividad = pyqtSignal()
+    eliminar_actividad = pyqtSignal()
     def __init__(self, controller):
         super().__init__()
         self.controller = controller
@@ -67,25 +55,9 @@ class Ventana_reporte_finalizados(QFrame):
         Panel_R_finalizado.setGraphicsEffect(sombra)
 
         titulo = QLabel("Actividades Finalizadas")
-        titulo.setStyleSheet("""
-                             QLabel{
-                             font-family: arial;
-                             font-size: 28px; 
-                             color: white;
-                             font-weight: bold;
-                             padding: 20px 15px;
-                             margin: 0;
-                             background: #005a6e;
-                             border-bottom-left-radius: 0;
-                             border-bottom-right-radius: 0;
-                             }""")
-        titulo.setAlignment(Qt.AlignLeft)
+        titulo.setStyleSheet(estilo["styles"]["header"])
+        titulo.setAlignment(Qt.AlignCenter)
         self.Panel_layout.addWidget(titulo)
-
-        #tabla
-        
-
-        #----------no tocar-------------------------
         self.Main_layout.addWidget(Panel_R_finalizado)
 
     def tabla_actividade(self):
@@ -105,30 +77,8 @@ class Ventana_reporte_finalizados(QFrame):
 
         self.tabla_actividades.setRowCount(len(datos))
 
-        self.tabla_actividades.setStyleSheet("""
-                                        QTableWidget {
-                                        background-color: #f0f0f0; /* Color de fondo de la tabla */
-                                        color: #333; /* Color de texto predeterminado */
-                                        font-size: 14px;
-                                        border: 1px solid #ccc;
-                                        margin: 0;
-                                        font-family: arial;
-                                        }
-                                        QHeaderView::section {
-                                        background-color: #005a6e;
-                                        color: White;
-                                        font-size: 16px;
-                                        font-weight: bold;
-                                        border: 1px solid gray;
-                                        text-align: center;
-                                        padding: 8px;
-                                        margin: 0;
-                                        }
-                                        QTableWidget::item:selected {
-                                             background-color: #a0c0ff;
-                                             color: white;
-            }
-                                        """)
+        self.tabla_actividades.setStyleSheet(estilo["styles"]["tabla"])
+
         encabezados = ["ID", "Titulo", "Descripcion", "Fecha"]
         self.tabla_actividades.setHorizontalHeaderLabels(encabezados)
 
@@ -165,58 +115,17 @@ class Ventana_reporte_finalizados(QFrame):
         self.Panel_layout.addLayout(layout_botones)
 
         boton_modificar = QPushButton("Modificar")
-        boton_modificar.setStyleSheet(BTN_STYLE)
-        boton_modificar.clicked.connect(self.Abrir_modal)
+        boton_modificar.setStyleSheet(estilo["styles"]["boton"])
+        boton_modificar.clicked.connect(self.modificar_actividad.emit)
         layout_botones.addWidget(boton_modificar)
 
 
         boton_eliminar = QPushButton("Eliminar")
-        boton_eliminar.setStyleSheet(BTN_STYLE)
-        boton_eliminar.clicked.connect(self.Elminar_actividad)
+        boton_eliminar.setStyleSheet(estilo["styles"]["boton"])
+        boton_eliminar.clicked.connect(self.eliminar_actividad.emit)
         layout_botones.addWidget(boton_eliminar)
 
-
-    def actulizar_tabla(self):
-        datos_nuevo = self.controller.Obtener_datos_tabla()
-        #limpiar tabla
-        self.tabla_actividades.setRowCount(0)
-
-        self.tabla_actividades.setRowCount(len(datos_nuevo))
-        #insertamos los nuevos datos
-        for indice_fila, fila_datos in enumerate(datos_nuevo):
-            #obteniendo columna y los valores
-            for indice_columna, valores in enumerate(fila_datos):
-                #volviendo tdos los valores en string
-                item = QTableWidgetItem(str(valores))
-                item.setTextAlignment(Qt.AlignCenter)
-                #insertando los datos en sus posiciones correspondiente
-                self.tabla_actividades.setItem(indice_fila, indice_columna, item)
-        
-
-    def Obtener_indice_tabla(self):
-        self.fila_seleccionada = self.tabla_actividades.currentRow()
-        
-        if self.fila_seleccionada >= 0:
-            item = self.tabla_actividades.item(self.fila_seleccionada, 0)
-            id_actividad = item.text()
-        else:
-            id_actividad = None
-
-        return id_actividad
     
-    def Limpiar_seleccion_fila(self):
-        self.fila_seleccionada = None
-
-
-    def Abrir_modal(self):
-        #self.tabla_actividades.viewport().installEventFilter(self)
-        self.controller.Abrir_modal()
-
-    def Elminar_actividad(self):
-        id_actividad = self.Obtener_indice_tabla()
-        self.tabla_actividades.viewport().installEventFilter(self)
-        self.controller.Eliminar_actividad(id_actividad)
-
     def Mensaje_error(self, titulo, mensaje):
         QMessageBox.critical(self, titulo, mensaje)
     

@@ -106,7 +106,7 @@ class Ventana_consulta(QFrame):
         
         # Título Consulta
         titulo = QLabel("Consulta")
-        titulo.setStyleSheet(estilo["styles"]["label"])
+        titulo.setStyleSheet(estilo["styles"]["header"])
         titulo.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         titulo.setMaximumHeight(60)
         layout_panel.addWidget(titulo, alignment = Qt.AlignTop)
@@ -125,12 +125,7 @@ class Ventana_consulta(QFrame):
         self.campo_busqueda.setPlaceholderText("Buscar por ID o Título...")
         self.campo_busqueda.setMaximumHeight(60)
         self.campo_busqueda.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.campo_busqueda.setStyleSheet(f"""
-            QLineEdit {{ padding: 10px; border: 1px solid #ccc;
-                         border-radius: 3px; margin: 10px;}}
-            QLineEdit:hover, QLineEdit:focus {{ border: 1px solid {COLOR_AZUL_HOVER};
-                                            }}
-        """)
+        self.campo_busqueda.setStyleSheet(estilo["styles"]["input"])
         
         etiqueta_ordenar = QLabel("Buscar de manera")
         etiqueta_ordenar.setFixedHeight(30)
@@ -187,8 +182,33 @@ class Ventana_consulta(QFrame):
 
     def Eliminar_reporte(self):
         datos_reporte = self.Obtener_reporte_seleccionado()
-        id_reporte = datos_reporte[0]
-        self.controlador.Eliminar_reporte(id_reporte)
+        if datos_reporte:
+            id_reporte = datos_reporte[0]
+            nombre_reporte = datos_reporte[1]
+            
+            # Confirmación antes de eliminar
+            respuesta = QMessageBox.question(
+                self, 
+                "Confirmar eliminación",
+                f"¿Está seguro de eliminar el reporte '{nombre_reporte}' (ID: {id_reporte})?",
+                QMessageBox.Yes | QMessageBox.No
+            )
+            
+            if respuesta == QMessageBox.Yes:
+                try:
+                    # Prueba diferentes nombres de método
+                    if hasattr(self.controlador, 'Eliminar_actividad'):
+                        self.controlador.Eliminar_actividad(id_reporte)
+                    elif hasattr(self.controlador, 'Eliminar_reporte'):
+                        self.controlador.Eliminar_reporte(id_reporte)
+                    else:
+                        self.mensaje_error("Error", "No se encontró el método para eliminar")
+                except TypeError as e:
+                    self.mensaje_error("Error", f"Error en los argumentos: {str(e)}")
+                except Exception as e:
+                    self.mensaje_error("Error", f"Error al eliminar: {str(e)}")
+        else:
+            self.mensaje_advertencia("Advertencia", "Por favor seleccione un Reporte")
 
     def Obtener_reporte_seleccionado(self):
         #fila seleccionada

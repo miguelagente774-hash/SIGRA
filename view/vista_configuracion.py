@@ -101,25 +101,7 @@ class Ventana_configuracion(QFrame):
         # ===== GRUPO TEMA CON ESTILO ORIGINAL =====
         self.grupo_tema = QGroupBox("Tema de la aplicación")
         self.grupo_tema.setMinimumWidth(200)
-        self.grupo_tema.setStyleSheet("""
-            QGroupBox{
-                font-size: 14px;
-                font-weight: bold;
-                color: #37474F;
-                margin: 0;
-                padding: 15px 12px;
-                border: 2px solid #E3F2FD;
-                border-radius: 8px;
-                background: #FAFAFA;
-                min-width: 200px;
-            }
-            QGroupBox::title{
-                subcontrol-origin: margin;
-                left: 8px;
-                padding: 0 6px 0 6px;
-                color: #1565C0;
-            }
-        """)
+        self.grupo_tema.setStyleSheet(self.estilo["styles"]["checkbox"])
         
         layout_tema = QVBoxLayout()
         layout_tema.setSpacing(12)
@@ -129,28 +111,9 @@ class Ventana_configuracion(QFrame):
         self.tema_group = QButtonGroup()
         self.radio_tema_claro = QRadioButton("Tema Claro")
         self.radio_tema_oscuro = QRadioButton("Tema Oscuro")
-        
-        radio_style = """
-            QRadioButton{
-                font-size: 13px;
-                color: #455A64;
-                padding: 6px 5px;
-                spacing: 8px;
-                min-height: 20px;
-            }
-            QRadioButton::indicator{
-                width: 16px;
-                height: 16px;
-                border-radius: 8px;
-                border: 2px solid #90A4AE;
-            }
-            QRadioButton::indicator:checked{
-                background-color: #4FC3F7;
-                border: 2px solid #29B6F6;
-            }
-        """
-        self.radio_tema_claro.setStyleSheet(radio_style)
-        self.radio_tema_oscuro.setStyleSheet(radio_style)
+    
+        self.radio_tema_claro.setStyleSheet(self.estilo["styles"]["radio"])
+        self.radio_tema_oscuro.setStyleSheet(self.estilo["styles"]["radio"])
         
         self.tema_group.addButton(self.radio_tema_claro)
         self.tema_group.addButton(self.radio_tema_oscuro)
@@ -162,25 +125,7 @@ class Ventana_configuracion(QFrame):
         # ===== GRUPO FUENTE CON ESTILO ORIGINAL =====
         self.grupo_fuente = QGroupBox("Configuración de Fuente")
         self.grupo_fuente.setMinimumWidth(200)
-        self.grupo_fuente.setStyleSheet("""
-            QGroupBox{
-                font-size: 14px;
-                font-weight: bold;
-                color: #37474F;
-                margin: 0;
-                padding: 15px 12px;
-                border: 2px solid #E3F2FD;
-                border-radius: 8px;
-                background: #FAFAFA;
-                min-width: 200px;
-            }
-            QGroupBox::title{
-                subcontrol-origin: margin;
-                left: 8px;
-                padding: 0 6px 0 6px;
-                color: #1565C0;
-            }
-        """)
+        self.grupo_fuente.setStyleSheet(self.estilo["styles"]["checkbox"])
         
         layout_fuente = QVBoxLayout()
         layout_fuente.setSpacing(15)
@@ -203,32 +148,14 @@ class Ventana_configuracion(QFrame):
         
         self.spin_tamano = QSpinBox()
         self.spin_tamano.setStyleSheet(self.estilo["styles"]["input"])
-        self.spin_tamano.setMinimum(12)
+        self.spin_tamano.setMinimum(10)
         self.spin_tamano.setMaximum(18)
         self.spin_tamano.setValue(12)
         layout_fuente.addWidget(self.spin_tamano)
         
         # Checkbox de negrita
         self.check_negrita = QCheckBox("Negrita en títulos")
-        self.check_negrita.setStyleSheet("""
-            QCheckBox{
-                font-size: 12px;
-                color: #455A64;
-                padding: 8px 0px;
-                spacing: 8px;
-            }
-            QCheckBox::indicator{
-                width: 16px;
-                height: 16px;
-                border: 2px solid #90A4AE;
-                border-radius: 3px;
-                background: white;
-            }
-            QCheckBox::indicator:checked{
-                background-color: #4FC3F7;
-                border: 2px solid #29B6F6;
-            }
-        """)
+        self.check_negrita.setStyleSheet(self.estilo["styles"]["checkbox"])
         layout_fuente.addWidget(self.check_negrita)
         layout_fuente.addItem(QSpacerItem(20, 10, QSizePolicy.Minimum, QSizePolicy.Expanding))
         
@@ -245,15 +172,7 @@ class Ventana_configuracion(QFrame):
         """Crea panel de dirección con el diseño original"""
         # Frame principal
         self.panel_direccion = QFrame()
-        self.panel_direccion.setStyleSheet("""
-            QFrame{
-                background: rgba(255, 255, 255, 0.95);
-                padding: 0;
-                border-radius: 12px;
-                border: 1px solid #E0E0E0;
-                min-width: 300px;
-            }
-        """)
+        self.panel_direccion.setStyleSheet(self.estilo["styles"]["panel"])
         
         # Sombra
         sombra = QGraphicsDropShadowEffect()
@@ -327,15 +246,7 @@ class Ventana_configuracion(QFrame):
         """Crea panel de jefaturas con el diseño original"""
         # Frame principal
         self.panel_jefaturas = QFrame()
-        self.panel_jefaturas.setStyleSheet("""
-            QFrame{
-                background: rgba(255, 255, 255, 0.95);
-                padding: 0;
-                border-radius: 12px;
-                border: 1px solid #E0E0E0;
-                min-width: 300px;
-            }
-        """)
+        self.panel_jefaturas.setStyleSheet(self.estilo["styles"]["panel"])
         
         # Sombra
         sombra = QGraphicsDropShadowEffect()
@@ -397,25 +308,7 @@ class Ventana_configuracion(QFrame):
         
         # ===== GRUPO GOBERNACIÓN CON ESTILO ORIGINAL =====
         self.grupo_gobernacion = QGroupBox("Jefa de Gobernación")
-        self.grupo_gobernacion.setStyleSheet("""
-            QGroupBox{
-                font-size: 14px;
-                font-weight: bold;
-                color: #37474F;
-                margin: 0;
-                padding: 20px 15px;
-                border: 2px solid #E3F2FD;
-                border-radius: 8px;
-                background: #FAFAFA;
-                min-width: 250px;
-            }
-            QGroupBox::title{
-                subcontrol-origin: margin;
-                left: 8px;
-                padding: 0 6px 0 6px;
-                color: #1565C0;
-            }
-        """)
+        self.grupo_gobernacion.setStyleSheet(self.estilo["styles"]["grupo"])
         
         layout_gobernacion = QVBoxLayout()
         layout_gobernacion.setSpacing(15)

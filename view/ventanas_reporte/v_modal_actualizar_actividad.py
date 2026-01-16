@@ -5,30 +5,19 @@ from PyQt5.QtWidgets import (QFrame, QLabel, QVBoxLayout, QHBoxLayout,
 from PyQt5.QtCore import Qt, QSize, QDate
 from PyQt5.QtGui import QPixmap, QIcon, QFont
 from services.Cargar_imagenes import ImageFrame
+from components.app_style import estilo_app
 
-FONT_FAMILY = "Arial"
-COLOR_PRIMARIO = "#005a6e" 
-COLOR_AZUL_HOVER = "#00485a"
+# Instancia global para el uso en toda la aplicación
+estilo = estilo_app.obtener_estilo_completo()
 
-BTN_STYLE = """
-        QPushButton{
-        background: #005a6e;
-        color: White;
-        font-weight: bold;
-        font-size: 18px;
-        min-width: 100px;
-        padding: 15px;
-        border-radius: 15px;
-        text-align: left;
-        border: none;
-        margin: 15px 15px;
-        }  
-        QPushButton:hover{
-        background: #007a94;
-        }    
-        QPushButton:pressed{
-        background: #00485a;
-        }"""
+# Variables globales para la consistencia
+FONT_FAMILY = estilo["font_family"]
+COLOR_PRIMARIO = estilo["color_primario"]
+COLOR_AZUL_HOVER = estilo["color_hover"]
+COLOR_SECUNDARIO = estilo["color_secundario"]
+BG_COLOR_PANEL = estilo["colors"]["bg_panel"]
+BG_COLOR_FONDO = estilo["colors"]["bg_fondo"]
+
 
 class Modal_actulizar_actividades(QDialog):
     def __init__(self, id_actividad, titulo, descripcion, ruta1, ruta2, fecha, controlador, parent = None):
@@ -41,7 +30,7 @@ class Modal_actulizar_actividades(QDialog):
         self.imagen2 = ruta2
         self.descripcion = descripcion
         self.fecha = fecha
-        self.setWindowTitle("Actividad_actulizacion")
+        self.setWindowTitle("Actividad_actualizacion")
         self.setWindowModality(Qt.ApplicationModal)
 
         self.setGeometry(100, 100, 700, 300)
@@ -108,23 +97,8 @@ class Modal_actulizar_actividades(QDialog):
     def crear_titulo_seccion(self):
         """Crea el título de la sección"""
         titulo = QLabel("Actualizar Actividad")
-        titulo.setStyleSheet(f"""
-            font-family: {FONT_FAMILY};
-            background: #005a6e;
-            font-size: 28px; 
-            color: white;
-            font-weight: bold;
-            margin: 0;
-            padding: 20px 15px;
-            border-radius: 0;
-            text-align: left;
-            border-top-left-radius: 15px;
-            border-top-right-radius: 15px;
-            border-bottom-left-radius: 0;
-            border-bottom-right-radius: 0;
-                        
-        """)
-        titulo.setAlignment(Qt.AlignLeft)
+        titulo.setStyleSheet(estilo["styles"]["header"])
+        titulo.setAlignment(Qt.AlignCenter)
         titulo.setMaximumHeight(70)
         return titulo
 
@@ -132,15 +106,7 @@ class Modal_actulizar_actividades(QDialog):
         """Crea el campo de entrada para el título de la actividad"""
         self.titulo_actividad = QLineEdit(self.titulo)
         self.titulo_actividad.setPlaceholderText("Ingrese el título de la actividad")
-        self.titulo_actividad.setStyleSheet(f"""
-            font-family: {FONT_FAMILY};
-            font-size: 16px;
-            padding: 12px;
-            margin: 10px;
-            border: 2px solid #e5e7eb;
-            border-radius: 10px;
-            background: white;
-        """)
+        self.titulo_actividad.setStyleSheet(estilo["styles"]["input"])
         return self.titulo_actividad
 
     def crear_contenedor_imagenes(self):
@@ -161,15 +127,7 @@ class Modal_actulizar_actividades(QDialog):
         
         # Título de la sección de imágenes
         titulo_imagenes = QLabel("Imágenes de la actividad")
-        titulo_imagenes.setStyleSheet(f"""
-            font-family: {FONT_FAMILY};
-            font-size: 24px;
-            color: #374151;
-            font-weight: bold;
-            margin: 30px;
-            padding: 0;
-            border: none;
-        """)
+        titulo_imagenes.setStyleSheet(estilo["styles"]["title"])
         titulo_imagenes.setAlignment(Qt.AlignCenter)
         layout_contenedor.addWidget(titulo_imagenes)
         
@@ -179,7 +137,6 @@ class Modal_actulizar_actividades(QDialog):
         layout_fila = QHBoxLayout(fila_imagenes)
         layout_fila.setContentsMargins(0, 0, 0, 0)
         layout_fila.setSpacing(20)
-        #layout_fila.setAlignment(Qt.AlignCenter)
         
         # Crear frames de imágenes
         self.frame_imagen1 = ImageFrame(1, self.imagen1, self)
@@ -213,16 +170,9 @@ class Modal_actulizar_actividades(QDialog):
         return self.input_reporte
     
     def Campo_fecha(self):
-        layout = QVBoxLayout()
+        layout = QHBoxLayout()
         titulo = QLabel("fecha de la actividad")
-        titulo.setStyleSheet("""            
-            font-family: {FONT_FAMILY};
-            font-size: 24px;
-            color: #374151;
-            font-weight: bold;
-            margin: 20px;
-            padding: 0;
-            border: none;""")
+        titulo.setStyleSheet(estilo["styles"]["title"])
         layout.addWidget(titulo)
 
         fecha_actividad = self.fecha
@@ -240,6 +190,7 @@ class Modal_actulizar_actividades(QDialog):
         background-color: #FFFFFF;       /* Fondo blanco */
         color: #333333;                  /* Color del texto */
         font-size: 14px;                 /* Tamaño de fuente */
+        margin-right: 30px;
         selection-background-color: #0056b3; /* Color de fondo del texto seleccionado */
         }
 
@@ -261,8 +212,8 @@ class Modal_actulizar_actividades(QDialog):
 
     def crear_boton_guardar(self):
         """Crea el botón para guardar la actividad"""
-        btn_guardar = QPushButton("Actulizar Actividad")
-        btn_guardar.setStyleSheet(BTN_STYLE)
+        btn_guardar = QPushButton("Actualizar Actividad")
+        btn_guardar.setStyleSheet(estilo["styles"]["boton"])
 
 
         btn_guardar.setCursor(Qt.PointingHandCursor)
@@ -280,7 +231,7 @@ class Modal_actulizar_actividades(QDialog):
         fecha = fecha.toString("dd-MM-yyyy")
         #tipo_actividad = "Anexo"
 
-        self.controller.Actulizar_actividad(id_actividad, titulo, descripcion, imagen1, imagen2, fecha, self.imagen1, self.imagen2)
+        self.controller.Actualizar_actividad(id_actividad, titulo, descripcion, imagen1, imagen2, fecha, self.imagen1, self.imagen2)
     
     def mensaje_advertencia(self, titulo, mensaje):
         QMessageBox.warning(self, titulo, mensaje)

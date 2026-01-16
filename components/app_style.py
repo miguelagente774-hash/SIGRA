@@ -131,6 +131,7 @@ class AppStyle:
             border-top-right-radius: 15px;
             border-bottom-left-radius: 15px;
             border-bottom-right-radius: 0px;
+            max-height: 50px;
         }}
         """
     
@@ -167,9 +168,9 @@ class AppStyle:
         return f"""
         QLabel{{
             font-family: {self.FONT_FAMILY};
-            font-size: {self.FONT_SIZE + 10}px;
+            font-size: {self.FONT_SIZE + 5}px;
             color: {colores['text_label']};
-            font-weight: {font_weight};
+            font-weight: bold;
             margin: 5px;
             padding: 5px;
             background: none;
@@ -303,7 +304,7 @@ class AppStyle:
         radio_style = f"""
         QRadioButton{{
             font-family: {self.FONT_FAMILY};
-            font-size: {self.FONT_SIZE + 1}px;
+            font-size: {self.FONT_SIZE}px;
             color: {colores['text_secondary']};
             padding: 6px 5px;
             spacing: 8px;
@@ -382,8 +383,8 @@ class AppStyle:
                 "boton": self.obtener_estilo_boton(),
                 "header": self.obtener_estilo_header(),
                 "input": self.obtener_estilo_input(),
-                "title": self.obtener_estilo_title(),
                 "label": self.obtener_estilo_label(),
+                "title": self.obtener_estilo_title(),
                 "panel": self.obtener_estilo_panel(),
                 "tabla": self.obtener_estilo_tabla(),
                 "scroll": self.obtener_estilo_scroll(),

@@ -7,9 +7,17 @@ from PyQt5.QtGui import QPixmap, QIcon, QFont
 from services.Cargar_imagenes import ImageFrame
 from components.app_style import estilo_app
 
-FONT_FAMILY = "Arial"
-COLOR_PRIMARIO = "#005a6e" 
-COLOR_AZUL_HOVER = "#00485a"
+
+# Instancia global para el uso en toda la aplicación
+estilo = estilo_app.obtener_estilo_completo()
+
+# Variables globales para la consistencia
+FONT_FAMILY = estilo["font_family"]
+COLOR_PRIMARIO = estilo["color_primario"]
+COLOR_AZUL_HOVER = estilo["color_hover"]
+COLOR_SECUNDARIO = estilo["color_secundario"]
+BG_COLOR_PANEL = estilo["colors"]["bg_panel"]
+BG_COLOR_FONDO = estilo["colors"]["bg_fondo"]
 
 class Ventana_reporte_crear(QFrame):
     def __init__(self, controller):
@@ -25,10 +33,6 @@ class Ventana_reporte_crear(QFrame):
                         border-bottom-left-radius: 15px;
                         border-bottom-right-radius: 15px;
                         }""")
-        
-
-        # Estilo de los Botones
-        BTN_STYLE = self.estilo["styles"]["boton"]
 
         # Aplicar el estilo
         self.setStyleSheet(self.estilo["styles"]["fondo"])
@@ -88,23 +92,8 @@ class Ventana_reporte_crear(QFrame):
     def crear_titulo_seccion(self):
         """Crea el título de la sección"""
         titulo = QLabel("Crear Actividad")
-        titulo.setStyleSheet(f"""
-            font-family: {FONT_FAMILY};
-            background: #005a6e;
-            font-size: 28px; 
-            color: white;
-            font-weight: bold;
-            margin: 0;
-            padding: 20px 15px;
-            border-radius: 0;
-            text-align: left;
-            border-top-left-radius: 15px;
-            border-top-right-radius: 15px;
-            border-bottom-left-radius: 0;
-            border-bottom-right-radius: 0;
-                        
-        """)
-        titulo.setAlignment(Qt.AlignLeft)
+        titulo.setStyleSheet(estilo["styles"]["header"])
+        titulo.setAlignment(Qt.AlignCenter)
         titulo.setMaximumHeight(70)
         return titulo
 
@@ -112,15 +101,7 @@ class Ventana_reporte_crear(QFrame):
         """Crea el campo de entrada para el título de la actividad"""
         self.titulo_actividad = QLineEdit()
         self.titulo_actividad.setPlaceholderText("Ingrese el título de la actividad")
-        self.titulo_actividad.setStyleSheet(f"""
-            font-family: {FONT_FAMILY};
-            font-size: 16px;
-            padding: 12px;
-            margin: 10px;
-            border: 2px solid #e5e7eb;
-            border-radius: 10px;
-            background: white;
-        """)
+        self.titulo_actividad.setStyleSheet(estilo["styles"]["input"])
         return self.titulo_actividad
 
     def crear_contenedor_imagenes(self):
@@ -141,15 +122,7 @@ class Ventana_reporte_crear(QFrame):
         
         # Título de la sección de imágenes
         titulo_imagenes = QLabel("Imágenes de la actividad")
-        titulo_imagenes.setStyleSheet(f"""
-            font-family: {FONT_FAMILY};
-            font-size: 24px;
-            color: #374151;
-            font-weight: bold;
-            margin: 30px;
-            padding: 0;
-            border: none;
-        """)
+        titulo_imagenes.setStyleSheet(estilo["styles"]["header"])
         titulo_imagenes.setAlignment(Qt.AlignCenter)
         layout_contenedor.addWidget(titulo_imagenes)
         
@@ -194,16 +167,9 @@ class Ventana_reporte_crear(QFrame):
         return self.input_reporte
     
     def Campo_fecha(self):
-        layout = QVBoxLayout()
-        titulo = QLabel("fecha de la actividad")
-        titulo.setStyleSheet("""            
-            font-family: {FONT_FAMILY};
-            font-size: 24px;
-            color: #374151;
-            font-weight: bold;
-            margin: 20px;
-            padding: 0;
-            border: none;""")
+        layout = QHBoxLayout()
+        titulo = QLabel("Fecha de la actividad")
+        titulo.setStyleSheet(estilo["styles"]["title"])
         layout.addWidget(titulo)
 
         self.fecha = QDateEdit(self)
@@ -238,9 +204,7 @@ class Ventana_reporte_crear(QFrame):
     def crear_boton_guardar(self):
         """Crea el botón para guardar la actividad"""
         btn_guardar = QPushButton("Guardar Actividad")
-
-
-
+        btn_guardar.setStyleSheet(estilo["styles"]["boton"])
         btn_guardar.setCursor(Qt.PointingHandCursor)
         btn_guardar.clicked.connect(self.Guardar_datos_actividad)
 
@@ -248,8 +212,7 @@ class Ventana_reporte_crear(QFrame):
     
     def btn_limpiar_campos(self):
         btn_limpiar = QPushButton("Limpiar Campos")
-
-
+        btn_limpiar.setStyleSheet(estilo["styles"]["boton"])
         btn_limpiar.clicked.connect(self.limpiar_formulario)
 
         return btn_limpiar

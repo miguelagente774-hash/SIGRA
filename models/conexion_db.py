@@ -63,7 +63,7 @@ class ConexionDB:
                     id_coordinador INTEGER PRIMARY KEY AUTOINCREMENT,
                     nombres TEXT NOT NULL,
                     apellidos TEXT NOT NULL,
-                    telefono TEXT
+                    cedula INTENGER UNIQUE
                 )
             ''')
             
@@ -72,7 +72,8 @@ class ConexionDB:
                 CREATE TABLE IF NOT EXISTS Gobernacion (
                     id_jefe INTEGER PRIMARY KEY AUTOINCREMENT,
                     nombres TEXT NOT NULL,
-                    apellidos TEXT NOT NULL
+                    apellidos TEXT NOT NULL,
+                    cedula INTENGER UNIQUE
                 )
             ''')
             

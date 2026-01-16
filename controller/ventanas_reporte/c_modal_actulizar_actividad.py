@@ -1,5 +1,5 @@
-from view.ventanas_reporte.v_modal_actulizar_actividad import Modal_actulizar_actividades
-from models.models_reportes.m_modal_actulizar_actividad import Modelo_actualizar
+from view.ventanas_reporte.v_modal_actualizar_actividad import Modal_actulizar_actividades
+from models.models_reportes.m_modal_actualizar_actividad import Modelo_actualizar
 from comunicador import Comunicador_global
 import os
 from services.gestor_imgenes import Gestor_imagenes
@@ -23,7 +23,7 @@ class Controller_modal():
         self.vista.exec_()
 
 
-    def Actulizar_actividad(self, id_actividad, titulo, descripcion, ruta1, ruta2, fecha, imagen_vieja1, imagen_vieja2):
+    def Actualizar_actividad(self, id_actividad, titulo, descripcion, ruta1, ruta2, fecha, imagen_vieja1, imagen_vieja2):
         try:
             #respaldando la imagen en el programa
             imagenes_guardar = Gestor_imagenes(ruta1, ruta2)
@@ -43,7 +43,7 @@ class Controller_modal():
             except:
                 self.vista.mensaje_advertencia("Info", "No se pudo guardar las imagenes")
 
-            self.modelos.Actulizar_actividad(id_actividad, titulo, descripcion, imagenes_guardada1, imagenes_guardada2, fecha)
+            self.modelos.Actualizar_actividad(id_actividad, titulo, descripcion, imagenes_guardada1, imagenes_guardada2, fecha)
             self.eliminar_imagenes_anteriores(imagen_vieja1, imagen_vieja2)
             
         except Exception as e:

@@ -14,11 +14,10 @@ class App(QMainWindow):
         #propiedades de la ventana
         self.setWindowTitle("Sistema Integral de Gestión de Reportes de Actividades")
         self.setWindowIcon(QIcon("img/icon.ico"))
-        #seria bueno cambiarlo por un max y min weihg
-        #self.resize(900, 690)
-        #self.setMinimumHeight(900)
+        
         self.setCentralWidget(Controlador_principal(self))
-        #cargar aqui el controlador principal (necesario importar el modulo)
+        
+        self.move(250, 100)
         
 if __name__ == "__main__":
     app = QApplication(sys.argv)

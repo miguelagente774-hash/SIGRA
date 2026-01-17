@@ -12,6 +12,7 @@ class Model_Login:
         # Verificar que la tabla Usuario exista con la estructura básica
         self._verificar_tabla_usuario()
         self._crear_usuario_admin()
+        self._crear_tabla()
 
     def _verificar_tabla_usuario(self):
         #Verifica que la tabla Usuario exista
@@ -42,9 +43,8 @@ class Model_Login:
     def _hash_password(self, password: str) -> str:
         # Genera hash SHA-256 de la contraseña, encriptando la contraseña
         return hashlib.sha256(password.encode()).hexdigest()
+
     
-    def _crear_tablas(self):
-        self.database.crear_tablas
     def _crear_tabla(self):
         cursor = self.conexion_db.cursor
 

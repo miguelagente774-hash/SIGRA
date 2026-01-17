@@ -13,7 +13,7 @@ class controlador_login():
         try:
             self.modelo = Model_Login()
         except Exception as e:
-            print("💡 Asegúrate de ejecutar database.py para crear las tablas")
+            QMessageBox(self,"Error", f"{e}")
             raise
         
         # Usuario actual
@@ -33,15 +33,13 @@ class controlador_login():
             self.login.boton_login.clicked.connect(self.verificar_login)
         
         # Conectar atajo de teclado (Enter)
-        if hasattr(self.login, 'login_btn'):
+        if hasattr(self.login, 'login_action'):
             try:
-                self.login.login_btn.triggered.disconnect()
+                self.login.login_action.triggered.disconnect()
             except:
                 pass
-            self.login.login_btn.triggered.connect(self.verificar_login)
+            self.login.login_action.triggered.connect(self.verificar_login)
         
-        # Conectar señal de login exitoso
-        self.login.login_exitoso.connect(self.on_login_exitoso)
     
     def verificar_login(self):
         # --Método principal para la verificación del Logueo--
@@ -78,11 +76,6 @@ class controlador_login():
             self.login.input_password.clear()
             self.login.input_password.setFocus()
     
-    def on_login_exitoso(self):
-        # --Método llamado cuando login es exitoso--
-        if self.usuario_actual:
-            print(f"   Usuario ID: {self.usuario_actual.get('id_usuario')}")
-            print(f"   Username: {self.usuario_actual.get('user')}")
     
     def get_widget(self):
         # Retorna el widget de login

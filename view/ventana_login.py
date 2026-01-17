@@ -17,7 +17,7 @@ COLOR_TEXTO = "#333"
 COLOR_ERROR = "#e74c3c"
 
 class Ventana_login(QFrame):
-    login_exitoso = pyqtSignal(str)  # Modificado para enviar el nombre de usuario
+    login_exitoso = pyqtSignal()  # Modificado para enviar el nombre de usuario
     
     def __init__(self):
         super().__init__()
@@ -358,13 +358,6 @@ class Ventana_login(QFrame):
             self.mostrar_error("La contraseña debe tener al menos 5 caracteres")
             return
             
-        # Aquí iría la lógica real de autenticación
-        # Por ahora, simulamos un login exitoso
-        self.limpiar_error()
-        print(f"Intentando login con usuario: {usuario}")
-        
-        # Emitir señal de login exitoso
-        self.login_exitoso.emit(usuario)
         
     def mostrar_error(self, mensaje):
         """Muestra un mensaje de error"""

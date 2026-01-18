@@ -49,7 +49,7 @@ class Ventana_consulta(QFrame):
         self._crear_panel_consulta_centrado()
 
     def _configurar_combo_ordenacion(self):
-        """Configura los ítems y el estilo inicial del QComboBox."""
+        # Configura los ítems y el estilo inicial del QComboBox.
         self.combo_ordenacion.addItem("Ascendente")
         self.combo_ordenacion.addItem("Descendente")
         self.combo_ordenacion.setFixedHeight(40)
@@ -58,7 +58,7 @@ class Ventana_consulta(QFrame):
         self.combo_ordenacion.setStyleSheet(estilo["styles"]["input"])
         
     def _configurar_tabla(self):
-        """Configura los encabezados y el estilo de la tabla."""
+        # =Configura los encabezados y el estilo de la tabla
         self.tabla.setColumnCount(3)
         self.tabla.setHorizontalHeaderLabels([ "ID", "Titulo", "Fecha" ])
         self.tabla.setEditTriggers(QTableWidget.NoEditTriggers)
@@ -80,7 +80,7 @@ class Ventana_consulta(QFrame):
         self._cargar_datos_en_tabla(self.datos_prueba)
 
     def _conectar_senales(self):
-        """Conecta las señales de los widgets a sus métodos."""
+        # Conecta las señales de los widgets a sus métodos
         self.campo_busqueda.textChanged.connect(self._aplicar_filtro)
         self.combo_ordenacion.currentIndexChanged.connect(self._aplicar_filtro)
         

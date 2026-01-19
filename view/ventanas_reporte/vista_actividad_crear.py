@@ -16,7 +16,8 @@ BTN_STYLE = """
         color: White;
         font-weight: bold;
         font-size: 18px;
-        min-width: 100px;
+        min-width: 200px;
+        min-height: 20px;
         padding: 15px;
         border-radius: 15px;
         text-align: left;
@@ -205,7 +206,7 @@ class Ventana_reporte_crear(QFrame):
         return self.input_reporte
     
     def Campo_fecha(self):
-        layout = QVBoxLayout()
+        layout = QHBoxLayout()
         titulo = QLabel("fecha de la actividad")
         titulo.setStyleSheet("""            
             font-family: {FONT_FAMILY};

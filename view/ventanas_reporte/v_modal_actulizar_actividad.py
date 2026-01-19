@@ -16,7 +16,8 @@ BTN_STYLE = """
         color: White;
         font-weight: bold;
         font-size: 18px;
-        min-width: 100px;
+        min-width: 200px;
+        min-height: 20px;
         padding: 15px;
         border-radius: 15px;
         text-align: left;
@@ -166,7 +167,7 @@ class Modal_actulizar_actividades(QDialog):
             font-size: 24px;
             color: #374151;
             font-weight: bold;
-            margin: 30px;
+            margin: 20px;
             padding: 0;
             border: none;
         """)
@@ -203,8 +204,8 @@ class Modal_actulizar_actividades(QDialog):
         self.input_reporte.setStyleSheet(f"""
             font-family: {FONT_FAMILY};
             font-size: 16px;
-            padding: 12px;
-            margin: 15px;
+            padding: 5px;
+            margin: 5px;
             border: 2px solid #e5e7eb;
             border-radius: 10px;
             background: white;
@@ -213,14 +214,14 @@ class Modal_actulizar_actividades(QDialog):
         return self.input_reporte
     
     def Campo_fecha(self):
-        layout = QVBoxLayout()
+        layout = QHBoxLayout()
         titulo = QLabel("fecha de la actividad")
         titulo.setStyleSheet("""            
             font-family: {FONT_FAMILY};
             font-size: 24px;
             color: #374151;
             font-weight: bold;
-            margin: 20px;
+            margin: 10px;
             padding: 0;
             border: none;""")
         layout.addWidget(titulo)
@@ -253,7 +254,7 @@ class Modal_actulizar_actividades(QDialog):
         }   
                             """)
         self.fecha.setCalendarPopup(True)
-        self.fecha.setFixedWidth(250)
+        self.fecha.setFixedWidth(150)
 
         layout.addWidget(self.fecha)
 

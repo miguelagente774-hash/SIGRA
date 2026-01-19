@@ -1,6 +1,7 @@
+import sys
 from PyQt5.QtWidgets import (QFrame, QPushButton, QLabel,
                              QVBoxLayout, QSizePolicy, QSpacerItem,
-                             QGraphicsDropShadowEffect, QWidget)
+                             QGraphicsDropShadowEffect, QWidget, QMessageBox)
 from PyQt5.QtGui import (QPixmap, QFont)
 from PyQt5.QtCore import Qt
 
@@ -203,12 +204,12 @@ class Menu(QFrame):
         self.boton_reporte_crear.clicked.connect(lambda: self.Cambiar_ventana(1))
         layout_submenu_botones.addWidget(self.boton_reporte_crear)
 
-        self.boton_reporte_finalizado = QPushButton("✅ Activiades Finalizadas")
+        self.boton_reporte_finalizado = QPushButton("✅ Actividades Finalizadas")
         self.boton_reporte_finalizado.setStyleSheet(botones_estilos_submenu)
         self.boton_reporte_finalizado.clicked.connect(lambda: self.Cambiar_ventana(2))
         layout_submenu_botones.addWidget(self.boton_reporte_finalizado)
 
-        self.boton_reporte_eliminar = QPushButton("📋 convertir reporte")
+        self.boton_reporte_eliminar = QPushButton("📋 Convertir Reporte")
         self.boton_reporte_eliminar.setStyleSheet(botones_estilos_submenu)
         self.boton_reporte_eliminar.clicked.connect(lambda: self.Cambiar_ventana(3))
         layout_submenu_botones.addWidget(self.boton_reporte_eliminar)
@@ -251,7 +252,7 @@ class Menu(QFrame):
         QPushButton:pressed{
         background: #600000;
         }""")
-        boton_salir.clicked.connect(self.ventana.close)
+        boton_salir.clicked.connect(self.exit_app)
         layout_botones.addWidget(boton_salir)
   
         # Espacio para empujar los botones hacia arriba
@@ -337,3 +338,10 @@ class Menu(QFrame):
        else:
              self.boton_reporte.setStyleSheet(botones_estilos)
              self.contenedor_submenu.setVisible(False)
+
+    def exit_app(self):
+          confirmacion = QMessageBox.question(self, 'Salir del Programa', "¿Estás seguro de que deseas salir del programa?", QMessageBox.Yes | QMessageBox.No)
+
+          if confirmacion == QMessageBox.Yes:
+                sys.exit()
+        

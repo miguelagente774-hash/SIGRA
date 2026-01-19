@@ -15,7 +15,8 @@ BTN_STYLE = """
         color: White;
         font-weight: bold;
         font-size: 18px;
-        min-width: 100px;
+        min-width: 200px;
+        min-height: 20px;
         padding: 15px;
         border-radius: 15px;
         text-align: left;

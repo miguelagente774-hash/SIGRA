@@ -107,28 +107,46 @@ class Model_Configuraciones:
     # ========== MÉTODOS PARA DATOS DE JEFATURAS ==========
     
     def guardar_datos_jefaturas(self, 
-                               nombre_coordinacion: str, 
-                               cedula_coordinacion: str,
-                               nombre_gobernacion: str, 
-                               cedula_gobernacion: str) -> bool:
-        """Guarda los datos de jefaturas en la BD"""
+                           nombre_coordinacion: str, 
+                           cedula_coordinacion: str,
+                           nombre_gobernacion: str, 
+                           cedula_gobernacion: str) -> bool:
+        # ==Guarda los datos de jefaturas en la BD==
         try:
             conn = self.db.conexion
             cursor = conn.cursor()
             
+            # Separar nombres y apellidos para coordinación
+            if nombre_coordinacion:
+                partes_nombre = nombre_coordinacion.split()
+                nombres_coord = partes_nombre[0] if len(partes_nombre) > 0 else ""
+                apellidos_coord = " ".join(partes_nombre[1:]) if len(partes_nombre) > 1 else ""
+            else:
+                nombres_coord = ""
+                apellidos_coord = ""
+            
             # Guardar coordinación
             cursor.execute("""
                 INSERT OR REPLACE INTO Coordinacion 
-                (id_coordinador, nombres, apellidos) 
-                VALUES (1, ?, ?)
-            """, (nombre_coordinacion.split()[0], " ".join(nombre_coordinacion.split()[1:])))
+                (id_coordinador, nombres, apellidos, cedula) 
+                VALUES (1, ?, ?, ?)
+            """, (nombres_coord, apellidos_coord, cedula_coordinacion))
+            
+            # Separar nombres y apellidos para gobernación
+            if nombre_gobernacion:
+                partes_nombre = nombre_gobernacion.split()
+                nombres_gob = partes_nombre[0] if len(partes_nombre) > 0 else ""
+                apellidos_gob = " ".join(partes_nombre[1:]) if len(partes_nombre) > 1 else ""
+            else:
+                nombres_gob = ""
+                apellidos_gob = ""
             
             # Guardar gobernación
             cursor.execute("""
                 INSERT OR REPLACE INTO Gobernacion 
-                (id_jefe, nombres, apellidos) 
-                VALUES (1, ?, ?)
-            """, (nombre_gobernacion.split()[0], " ".join(nombre_gobernacion.split()[1:])))
+                (id_jefe, nombres, apellidos, cedula) 
+                VALUES (1, ?, ?, ?)
+            """, (nombres_gob, apellidos_gob, cedula_gobernacion))
             
             # Actualizar configuración
             cursor.execute("""
@@ -143,32 +161,112 @@ class Model_Configuraciones:
             
         except Exception as e:
             print(f"❌ Error al guardar jefaturas: {e}")
+            import traceback
+            traceback.print_exc()
             return False
-    
+
     def cargar_datos_jefaturas(self) -> Dict[str, str]:
-        """Carga los datos de jefaturas desde la BD"""
+        # ==Carga los datos de las Jefaturas desde la Base de Datos==
         try:
             cursor = self.db.conexion.cursor()
-            
+
             cursor.execute("""
-                SELECT nombres, apellidos FROM Coordinacion WHERE id_coordinador = 1
+                SELECT nombres, apellidos, cedula FROM Coordinacion WHERE id_coordinador = 1
             """)
             coord = cursor.fetchone()
-            
+
             cursor.execute("""
-                SELECT nombres, apellidos FROM Gobernacion WHERE id_jefe = 1
+                           SELECT nombres, apellidos, cedula FROM Gobernacion WHERE id_jefe = 1
             """)
+            
             gob = cursor.fetchone()
-            
+
+            # Construir nombres completos y cédulas
+            nombre_completo_coord = ""
+            cedula_coord = ""
+            if coord and coord[0] and coord[1]:
+                nombre_completo_coord = f"{coord[0]} {coord[1]}"
+            elif coord and coord[0]:
+                nombre_completo_coord = coord[0]
+
+            if coord and coord[2]:
+                cedula_coord = coord[2]
+
+            nombre_completo_gob = ""
+            cedula_gob = ""
+            if gob and gob[0] and gob[1]:
+                nombre_completo_gob = f"{gob[0]} {gob[1]}"
+            elif gob and gob[0]:
+                nombre_completo_gob = gob[0]
+
+            if gob and gob[2]:
+                cedula_gob = gob[2]
+
             return {
-                "nombre_coordinacion": f"{coord[0]} {coord[1]}" if coord else "",
-                "nombre_gobernacion": f"{gob[0]} {gob[1]}" if gob else ""
+                "nombre_coordinacion": nombre_completo_coord,
+                "cedula_coordinacion": cedula_coord,
+                "nombre_gobernacion": nombre_completo_gob,
+                "cedula_gobernacion": cedula_gob
             }
-            
+        
         except Exception as e:
-            print(f"❌ Error al cargar jefaturas: {e}")
-            return {"nombre_coordinacion": "", "nombre_gobernacion": ""}
-    
+            print("Ha ocurrido un error a cargar la base de datos: {e}")
+            return {
+                "nombre_coordinacion": "",
+                "nombre_cedula": "",
+                "nombre_gobernacion": "",
+                "nombre_cedula": ""
+            }
+
+    # == MÉTODOS PARA DATOS DE GACETA==
+            
+    def guardar_datos_gaceta(self,
+                             decreto: str,
+                             fecha_publicacion: str) -> bool:
+        # ==Guardar los datos en la Base de Dato==
+        try: 
+            conn = self.db.conexion
+            cursor = conn.cursor()
+
+            # Guardar Datos de la Gaceta
+            cursor.execute("""
+                INSERT OR REPLACE INTO Gaceta
+                (id_coordinador, decreto, fecha_publicacion)
+                VALUES (1, ?, ?)
+            """, (decreto, fecha_publicacion))
+
+            conn.commit()
+            print("Datos de la Gaceta Guardados")
+            return True
+        
+        except Exception as e:
+            print(f"Error al guaradr Gacetas: {e}")
+            import traceback
+            traceback.print_exc()
+            return False
+
+        
+    def cargar_datos_gaceta(self) -> Dict[str, str]:
+        try:
+            cursor = self.db.conexion.cursor()
+
+            cursor.execute("""
+                SELECT decreto, fecha_publicacion 
+                FROM Gaceta WHERE id_coordinador = 1
+            """)
+            datos = cursor.fetchone()
+            
+            if datos:
+                return {
+                    "decreto": datos[0],
+                    "fecha_publicacion": datos[1]
+                }
+            return {"decreto": "", "fecha_publicacion": ""}
+        
+        except Exception as e:
+            print(f"Error al cargar Gaceta: {e}")
+            return {"decreto": "", "fecha_publicacion": ""}
+
     # ========== MÉTODOS DE VALIDACIÓN ==========
     
     @staticmethod

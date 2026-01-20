@@ -37,24 +37,6 @@ class controlador_configuraciones(QWidget):
         # Cargar datos iniciales
         self.cargar_datos_iniciales()
     
-        
-        # Aplicar estilo a todos los QLineEdit de la vista
-        widgets_lineedit = [
-            self.vista.entry_estado,
-            self.vista.entry_municipio,
-            self.vista.entry_parroquia,
-            self.vista.entry_institucion,
-            self.vista.entry_nombre_coord,
-            self.vista.entry_cedula_coord,
-            self.vista.entry_nombre_gob,
-            self.vista.entry_cedula_gob
-        ]
-        
-        # Aplicar el Estilo a cada uno de lso Widgets
-        for widget in widgets_lineedit:
-            if widget:
-                widget.setStyleSheet(self.vista.get_style())
-    
     def configurar_validadores(self):
         # == Configura validadores con expresiones regulares para todos los campos== 
         
@@ -123,6 +105,12 @@ class controlador_configuraciones(QWidget):
         
         self.vista.entry_cedula_gob.setPlaceholderText("Ej: E-87654321")
         self.vista.entry_cedula_gob.setToolTip("Formato: V-12345678 o E-12345678")
+
+        # Campos de Gaceta
+        self.vista.entry_decreto.setPlaceholderText("Ingrese el Decreto de la Gaceta Coordinador")
+        self.vista.entry_decreto.setToolTip("Ingrese los datos necesarios")
+        self.vista.entry_fechaPublicacion.setPlaceholderText("Ingrese un dato Válido")
+        self.vista.entry_fechaPublicacion.setToolTip("Ingrese los datos de la efcha de publicacion")
     
     def cargar_datos_iniciales(self):
         # == Carga los datos desde la base de datos al iniciar== 
@@ -131,12 +119,14 @@ class controlador_configuraciones(QWidget):
             datos_interfaz = self.modelo.cargar_configuracion_interfaz()
             datos_direccion = self.modelo.cargar_datos_direccion()
             datos_jefaturas = self.modelo.cargar_datos_jefaturas()
+            datos_gaceta = self.modelo.cargar_datos_gaceta()
             
             # Preparar datos para la vista
             datos = {
                 "interfaz": datos_interfaz,
                 "direccion": datos_direccion,
-                "jefaturas": datos_jefaturas
+                "jefaturas": datos_jefaturas,
+                "gaceta": datos_gaceta
             }
             
             # Establecer en vista
@@ -148,20 +138,25 @@ class controlador_configuraciones(QWidget):
     
     def on_guardar_clicked(self):
         # == Maneja el evento de clic en guardar== 
+        print("Se ha ejecutado el botón")
         try:
             # 1. Obtener datos de la vista
             datos_crudos = self.obtener_valores()
+            print("Se ha adquirido los datos") 
             
             # 2. Validar datos
             if not self.validar_datos(datos_crudos):
                 return
-            
+            print("Se ha validado los datos")
+
             # 3. Preparar datos para guardar
             datos_validados = self.preparar_datos_para_guardar(datos_crudos)
+            print("Se han preparado los datos para guardar")
             
             # 4. Guardar en base de datos
             exito = self.guardar_en_bd(datos_validados)
-            
+            print("Se ha guardado los datos")
+
             # 5. Mostrar resultado
             if exito:
                 self.mostrar_mensaje("Éxito", "Los cambios se guardaron correctamente", "success")
@@ -173,6 +168,8 @@ class controlador_configuraciones(QWidget):
         except Exception as e:
             print(f"❌ Error en on_guardar_clicked: {e}")
             self.mostrar_mensaje("Error", f"Ocurrió un error: {str(e)}", "error")
+
+            
     
     def validar_datos(self, datos):
         # == Valida todos los datos antes de guardar== 
@@ -188,6 +185,10 @@ class controlador_configuraciones(QWidget):
         
         # Validar jefaturas
         if not self.validar_jefaturas(datos.get("jefaturas", {})):
+            return False
+        
+        # Validar Gaceta
+        if not self.validar_gaceta(datos.get("gaceta", {})):
             return False
         
         return True
@@ -274,7 +275,26 @@ class controlador_configuraciones(QWidget):
                 return False
         
         return True
-    
+
+    def validar_gaceta(self, datos_gaceta):
+         # Validar nombres
+        entradas = [
+            ("decreto", self.vista.entry_decreto, "Decreto"),
+            ("fecha_publicacion", self.vista.entry_fechaPublicacion, "Fecha de Publicacion")
+        ]
+        print("Empezar a validar")
+        for campo_key, widget, campo_nombre in entradas:
+            valor = datos_gaceta.get(campo_key, "").strip()
+            print("Datos validando")
+
+            if not valor or len(valor) < 5:
+                self.mostrar_error(widget, f"{campo_nombre} es requerido (mínimo 5 caracteres)")
+                return False
+        return True
+        
+            
+        # Validar Fecha de Publicacion
+
     def preparar_datos_para_guardar(self, datos_crudos):
         # == Prepara y limpia los datos para guardar en BD== 
         return {
@@ -295,6 +315,10 @@ class controlador_configuraciones(QWidget):
                 "cedula_coordinacion": datos_crudos["jefaturas"]["cedula_coordinacion"].strip().upper(),
                 "nombre_gobernacion": datos_crudos["jefaturas"]["nombre_gobernacion"].strip(),
                 "cedula_gobernacion": datos_crudos["jefaturas"]["cedula_gobernacion"].strip().upper()
+            },
+            "gaceta": {
+                "decreto": datos_crudos["gaceta"]["decreto"].strip(),
+                "fecha_publicacion": datos_crudos["gaceta"]["fecha_publicacion"].strip()
             }
         }
     
@@ -324,8 +348,14 @@ class controlador_configuraciones(QWidget):
                 datos["jefaturas"]["nombre_gobernacion"],
                 datos["jefaturas"]["cedula_gobernacion"]
             )
+
+            # Guardar Gaceta
+            exito_gaceta = self.modelo.guardar_datos_gaceta(
+                datos["gaceta"]["decreto"],
+                datos["gaceta"]["fecha_publicacion"]
+            )
             
-            return exito_interfaz and exito_direccion and exito_jefaturas
+            return exito_interfaz and exito_direccion and exito_jefaturas and exito_gaceta
             
         except Exception as e:
             print(f"❌ Error al guardar en BD: {e}")
@@ -353,6 +383,10 @@ class controlador_configuraciones(QWidget):
                 "cedula_coordinacion": self.vista.entry_cedula_coord.text(),
                 "nombre_gobernacion": self.vista.entry_nombre_gob.text(),
                 "cedula_gobernacion": self.vista.entry_cedula_gob.text()
+            },
+            "gaceta": {
+                "decreto": self.vista.entry_decreto.text(),
+                "fecha_publicacion": self.vista.entry_fechaPublicacion.text()
             }
         }
     
@@ -395,6 +429,13 @@ class controlador_configuraciones(QWidget):
             self.vista.entry_cedula_coord.setText(cedula_coord.upper() if cedula_coord else "")
             self.vista.entry_nombre_gob.setText(jefaturas.get("nombre_gobernacion", ""))
             self.vista.entry_cedula_gob.setText(cedula_gob.upper() if cedula_gob else "")
+
+        # Gaceta
+        if datos.get("gaceta"):
+            gaceta = datos["gaceta"]
+            self.vista.entry_decreto.setText(gaceta.get("decreto", ""))
+            self.vista.entry_fechaPublicacion.setText(gaceta.get("fecha_publicacion", ""))
+
     
     def get_widget(self):
         # ==Retorna el widget para integrar en la aplicación==
@@ -410,8 +451,8 @@ class controlador_configuraciones(QWidget):
                 "negrita": False
             },
             "direccion": {
-                "estado": "",
-                "municipio": "",
+                "estado": "Monagas",
+                "municipio": "Maturín",
                 "parroquia": "",
                 "institucion": ""
             },
@@ -420,6 +461,10 @@ class controlador_configuraciones(QWidget):
                 "cedula_coordinacion": "",
                 "nombre_gobernacion": "",
                 "cedula_gobernacion": ""
+            },
+            "gaceta": {
+                "decreto": "",
+                "fecha_publicacion": ""
             }
         }
         self.establecer_valores(datos_default)
@@ -441,6 +486,9 @@ class controlador_configuraciones(QWidget):
         self.vista.entry_cedula_coord.clear()
         self.vista.entry_nombre_gob.clear()
         self.vista.entry_cedula_gob.clear()
+        # Gaceta
+        self.vista.entry_decreto.clear()
+        self.vista.entry_fechaPublicacion.clear()
         # Limpiar errores
         self.limpiar_errores()
     
@@ -458,7 +506,6 @@ class controlador_configuraciones(QWidget):
     def mostrar_error(self, widget, mensaje):
         # ==Resalta un campo con error en rojo y muestra tooltip== 
         if widget:
-            # NO cambiamos el estilo completo, solo añadimos un borde rojo
             # Mantenemos el estilo original y añadimos un borde rojo
             estilo_actual = widget.styleSheet()
             
@@ -506,10 +553,6 @@ class controlador_configuraciones(QWidget):
             # Enfocar el widget
             widget.setFocus()
     
-    def limpiar_formulario(self):
-        # == Limpia todos los campos del formulario== 
-        self.limpiar_campos()
-    
     def limpiar_errores(self):
         # == Limpia todos los marcadores de error== 
         # NO restauramos los estilos CSS completos
@@ -545,11 +588,16 @@ class controlador_configuraciones(QWidget):
                                  self.vista.entry_nombre_coord, self.vista.entry_cedula_coord,
                                  self.vista.entry_nombre_gob, self.vista.entry_cedula_gob]:
                         
-                        widget.setStyleSheet(self.vista.get_style())
+                        widget.setStyleSheet(f"""
+                            {self.vista.estilo["styles"]["label"]}
+                            {self.vista.estilo["styles"]["input"]}
+                            {self.vista.estilo["styles"]["boton"]}
+                            """)
         
         # Restaurar tooltips originales
         self.configurar_placeholders_y_tooltips()
     
+
     def cerrar(self):
         # == Cierra conexiones== 
         self.modelo.cerrar_conexion()

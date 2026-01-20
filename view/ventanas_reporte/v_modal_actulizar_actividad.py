@@ -272,17 +272,19 @@ class Modal_actulizar_actividades(QDialog):
         return btn_guardar 
     
     def Guardar_datos_actividad(self):
-        id_actividad = self.id_actividad
-        titulo = self.titulo_actividad.text()
-        imagen1 = self.frame_imagen1.get_imagen_path()
-        imagen2 = self.frame_imagen2.get_imagen_path()
-        descripcion = self.input_reporte.toPlainText()
-        fecha = self.fecha.date()
-        fecha = fecha.toString("dd-MM-yyyy")
-        #tipo_actividad = "Anexo"
+        confirmacion = QMessageBox.question(self, "Actulizar actividad", "Seguro que deseas actulizar la actividad", QMessageBox.Yes, QMessageBox.No)
+        if confirmacion == QMessageBox.Yes:
+            id_actividad = self.id_actividad
+            titulo = self.titulo_actividad.text()
+            imagen1 = self.frame_imagen1.get_imagen_path()
+            imagen2 = self.frame_imagen2.get_imagen_path()
+            descripcion = self.input_reporte.toPlainText()
+            fecha = self.fecha.date()
+            fecha = fecha.toString("dd-MM-yyyy")
+            #tipo_actividad = "Anexo"
 
-        self.controller.Actulizar_actividad(id_actividad, titulo, descripcion, imagen1, imagen2, fecha, self.imagen1, self.imagen2)
-    
+            self.controller.Actulizar_actividad(id_actividad, titulo, descripcion, imagen1, imagen2, fecha, self.imagen1, self.imagen2)
+        
     def mensaje_advertencia(self, titulo, mensaje):
         QMessageBox.warning(self, titulo, mensaje)
 

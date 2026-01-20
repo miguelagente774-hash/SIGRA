@@ -181,17 +181,16 @@ class Ventana_principal(QFrame):
 
         Contenedor_panel = QFrame()
         Contenedor_panel.setMinimumHeight(250)
-        Contenedor_panel.setMaximumHeight(300)
         Contenedor_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         Contenedor_panel.setStyleSheet(f"background: {BG_COLOR_PANEL}; margin: 20px 40px; border-radius: 20px; font-family: {FONT_FAMILY};")
         Contenedor_panel.setGraphicsEffect(get_shadow_effect(SHADOW_RADIUS_L))
         
         Contenedor_panel.setLayout(layout_content)
-        layout_content.setContentsMargins(30, 0, 30, 0)
+        layout_content.setContentsMargins(15, 0, 15, 0)
         layout_content.setSpacing(0) 
 
         titulo = QLabel("Bienvenido al Sistema de Gestión")
-        titulo.setStyleSheet("background: none; font-size: 40px; color: black; font-weight: bold; margin: 0; padding: 8px;")
+        titulo.setStyleSheet("background: none; font-size: 40px; color: #005a6e; font-weight: bold; margin: 0; padding: 8px;")
         titulo.setAlignment(Qt.AlignCenter)
         layout_content.addWidget(titulo)
 
@@ -199,7 +198,7 @@ class Ventana_principal(QFrame):
 
     def setup_charts_panel(self):
         layout_estadistica = QVBoxLayout()
-        layout_estadistica.setSpacing(3) 
+        layout_estadistica.setSpacing(10) 
         
         frame_Estadistica = QFrame()
         frame_Estadistica.setStyleSheet(f"""
@@ -210,12 +209,13 @@ class Ventana_principal(QFrame):
             margin-bottom: 0px;
             border-radius: 50px;""")
         frame_Estadistica.setLayout(layout_estadistica)
+        frame_Estadistica.setMinimumHeight(400)
         frame_Estadistica.setGraphicsEffect(get_shadow_effect(SHADOW_RADIUS_S))
 
         titulo = QLabel("Control de Reportes")
-        titulo.setStyleSheet("font-size: 22px; color: black; font-weight: bold; margin: 0;; padding: 5px 0;")
-        titulo.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
-        layout_estadistica.addWidget(titulo)
+        titulo.setStyleSheet("font-size: 22px; color: #005a6e; font-weight: bold; margin: 0;; padding: 5px 0;")
+        titulo.setMaximumWidth(400)
+        layout_estadistica.addWidget(titulo, alignment=Qt.AlignHCenter)
 
         layout_charts = QGridLayout()
         layout_charts.setContentsMargins(15, 15, 15, 15)

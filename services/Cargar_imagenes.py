@@ -25,7 +25,9 @@ class ImageFrame(QFrame):
         self.file_path = ruta_imagen
         
         # **CAMBIO 1: Definir tamaño fijo para el contenedor**
-        self.setFixedSize(300, 180)  # Tamaño fijo para mantener consistencia
+        #self.setFixedSize(300, 180)
+        self.setMinimumSize(300, 100)
+        self.setMaximumSize(400, 300)  # Tamaño fijo para mantener consistencia
         
         self.setup_ui()
         
@@ -103,7 +105,9 @@ class ImageFrame(QFrame):
             }
         """)
         # **CAMBIO 6: Tamaño fijo para el botón igual que el label**
-        button.setFixedSize(170, 120)
+        #button.setFixedSize(170, 120)
+        button.setMinimumSize(200, 80)
+        button.setMaximumSize(400, 300)
         
         # Layout interno para el botón
         button_layout = QVBoxLayout()

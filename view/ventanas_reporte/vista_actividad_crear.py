@@ -60,7 +60,7 @@ class Ventana_reporte_crear(QFrame):
         panel_reporte = self.crear_panel_con_sombra()
         panel_layout = QVBoxLayout(panel_reporte)
         panel_layout.setContentsMargins(0, 0, 0, 0)
-        panel_layout.setSpacing(0)
+        panel_layout.setSpacing(10)
 
         # Agregar componentes al panel
         panel_layout.addWidget(self.crear_titulo_seccion())
@@ -158,7 +158,7 @@ class Ventana_reporte_crear(QFrame):
             font-size: 24px;
             color: #374151;
             font-weight: bold;
-            margin: 30px;
+            margin: 10px;
             padding: 0;
             border: none;
         """)
@@ -182,7 +182,7 @@ class Ventana_reporte_crear(QFrame):
         #layout_fila.addStretch()  # Empuja las imágenes hacia la izquierda
 
         
-        contenedor.setMinimumHeight(300)
+        contenedor.setMinimumHeight(200)
         contenedor.setMaximumHeight(600)
         
         layout_contenedor.addWidget(fila_imagenes)
@@ -213,14 +213,15 @@ class Ventana_reporte_crear(QFrame):
             font-size: 24px;
             color: #374151;
             font-weight: bold;
-            margin: 20px;
+            margin: 20px 0px 20px 0px;
             padding: 0;
             border: none;""")
+        titulo.setMaximumWidth(270)
         layout.addWidget(titulo)
 
         self.fecha = QDateEdit(self)
         self.fecha.setStyleSheet("""QDateEdit {
-        margin: 0 0 0 20px;
+        margin: 0px;
         border: 2px solid #005a6e;       /* Borde sólido azul */
         border-radius: 5px;              /* Esquinas redondeadas */
         padding: 10px;                    /* Espacio interno */
@@ -243,7 +244,7 @@ class Ventana_reporte_crear(QFrame):
         self.fecha.setFixedWidth(250)
         self.fecha.setDate(QDate.currentDate())
 
-        layout.addWidget(self.fecha)
+        layout.addWidget(self.fecha, alignment=Qt.AlignLeft)
 
         return layout
 

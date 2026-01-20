@@ -8,7 +8,7 @@ from .funciones.Proyecion import Proyeccion
 from .funciones.inf_coordinador import Inf_coordinador
 from datetime import datetime
 
-def Reporte(Nombre_reporte, directora, fecha, lista_meses, lista_ponderaciones, actividades, datos_coordinador):
+def Reporte(Nombre_reporte, directora, fecha, lista_meses, lista_ponderaciones, actividades, datos_coordinador, direccion):
     logo = "services/pptx/funciones/logo.jpg"
     pptx = Presentation("services/pptx/Plantilla.pptx")
 
@@ -43,9 +43,9 @@ def Reporte(Nombre_reporte, directora, fecha, lista_meses, lista_ponderaciones, 
         # Procesar cada actividad del grupo actual
         for actividades_solas in grupo_actividades:
             datos_actividades.append([
-                "MATURIN", 
-                "SAN SIMON", 
-                "GOBERNACION (PALACIO)", 
+                direccion['municipio'], 
+                direccion['parroquia'], 
+                direccion['instituto'], 
                 actividades_solas["fecha"], 
                 actividades_solas["tipo_actividad"]
             ])

@@ -60,6 +60,17 @@ class Modelo_consulta():
         Conexion.Cerrar()
 
         return Actividades
+    
+    def Obtener_direccion(self):
+        Conexion = ConexionDB()
+        sql = f"""SELECT municipio, parroquia, instituto FROM Direccion
+                WHERE id_comunidad = 1"""
+        Conexion.cursor.execute(sql)
+        Direccion = Conexion.cursor.fetchall()
+        Conexion.Cerrar()
+
+        return Direccion
+
 
     def Eliminar_reporte(self, id_reporte):
         Conexion = ConexionDB()

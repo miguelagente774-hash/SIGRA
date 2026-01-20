@@ -71,9 +71,14 @@ class controlador_consulta():
         except Exception as e:
             self.consulta.mensaje_error("Error", f"datos_coordinador: {e}")
 
+        try:
+            direccion = self.Obtener_direccion()
+        except Exception as e:
+            self.consulta.mensaje_error("Error", f"datos_direccion: {e}")
+
         #funcion para hacer reporte
         try:
-            Reporte(nombre_reporte, nombre_dir, fecha, listas_meses, listas_ponderaciones, datos_actividades, datos_coordinador)
+            Reporte(nombre_reporte, nombre_dir, fecha, listas_meses, listas_ponderaciones, datos_actividades, datos_coordinador, direccion)
         except Exception as e:
             self.consulta.mensaje_error("Error", f"{e}")
 
@@ -153,6 +158,17 @@ class controlador_consulta():
         }
 
         return fecha, listas_meses, listas_ponderaciones
+    
+    def Obtener_direccion(self):
+        Direccion_list = self.modelo.Obtener_direccion()
+        Direccion = Direccion_list[0]
+        dic_direccion = {
+            'municipio': f'{Direccion[0]}',
+            'parroquia': f'{Direccion[1]}',
+            'instituto': f'{Direccion[2]}'
+        }
+
+        return dic_direccion
 
     def Eliminar_reporte(self, id_reporte):
         if id_reporte != None:

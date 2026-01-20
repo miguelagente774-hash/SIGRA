@@ -13,7 +13,7 @@ class App(QMainWindow):
         super().__init__()
         #propiedades de la ventana
         self.setWindowTitle("Sistema Integral de Gestión de Reportes de Actividades")
-        self.setWindowIcon(QIcon("img/icon.ico"))
+        self.setWindowIcon(QIcon("img/icono.ico"))
         
         self.setCentralWidget(Controlador_principal(self))
         

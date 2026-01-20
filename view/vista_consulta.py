@@ -242,8 +242,8 @@ class Ventana_consulta(QFrame):
             boton.setStyleSheet(BTN_STYLE)
             return boton
 
-        boton_excel = crear_boton("Excel-Reporte")
-        boton_pptx = crear_boton("PTTX-Reporte")
+        boton_excel = crear_boton("Reporte-PDF")
+        boton_pptx = crear_boton("Reporte-PTTX")
         boton_pptx.clicked.connect(self.Abrir_modal)
         
         boton_eliminar = crear_boton("Eliminar")

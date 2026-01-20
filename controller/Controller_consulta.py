@@ -34,7 +34,6 @@ class controlador_consulta():
                 if directorio:
                 # Uniendo ruta con el nombre del archivo
                     ruta_final = Path(directorio) / Nombre_reporte
-                    ruta_final.write_text("Datos generados por el sistema.", encoding="utf-8")
                 
                 #exportanto reporte
                 self.Crear_Reporte(self.datos_meses, ruta_final)

@@ -132,7 +132,7 @@ class Menu(QFrame):
         logo = QLabel()
         ruta_imagen = QPixmap("img/logo.jpg")
         if not ruta_imagen.isNull():
-            imagen_redimensionada = ruta_imagen.scaled(150, 150, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            imagen_redimensionada = ruta_imagen.scaled(150, 250, Qt.KeepAspectRatio, Qt.SmoothTransformation)
             logo.setPixmap(imagen_redimensionada)
         else:
             logo.setText("LOGO")

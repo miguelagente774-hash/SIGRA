@@ -122,7 +122,7 @@ class ConexionDB:
                     id_configuracion INTEGER PRIMARY KEY AUTOINCREMENT,
                     id_tema INTEGER,
                     id_fuente INTEGER,
-                    id_discusion INTEGER,
+                    id_Direccion INTEGER,
                     id_coordinacion INTEGER,
                     id_gobernacion INTEGER,
                     FOREIGN KEY (id_tema) REFERENCES Tema (id_tema),

@@ -90,14 +90,20 @@ class CustomPieChartWidget(QFrame):
         painter.setRenderHint(QPainter.Antialiasing)
 
         rect = self.contentsRect()
+        
+        # --- CAMBIO PARA RESPONSIVIDAD ---
+        # Calculamos un factor basado en el ancho para que los textos no sean fijos
+        scale_factor = rect.width() / 250
+        DYN_FONT_SIZE = max(6, int(7 * scale_factor))
+        DYN_ICON_SIZE = max(5, int(7 * scale_factor))
+        DYN_LEGEND_SPACING = max(10, int(15 * scale_factor))
+        
         TITLE_HEIGHT = 20
-        TEXT_ICON_SIZE = 7
         TEXT_MARGIN_LEFT = 3
-        LEGEND_SPACING = 15
         
         chart_area = QRectF(rect.left() + 5, rect.top() + TITLE_HEIGHT, rect.width() - 10, rect.height() - TITLE_HEIGHT - 5)
         
-        # Dimensiones del Gráfico
+        # Dimensiones del Gráfico (Usa un ratio del ancho disponible)
         PIE_WIDTH_RATIO = 0.35
         pie_area_width = chart_area.width() * PIE_WIDTH_RATIO
         diameter = min(pie_area_width, chart_area.height()) - 5
@@ -106,16 +112,14 @@ class CustomPieChartWidget(QFrame):
         pie_rect = QRectF(center_x - diameter / 2, center_y - diameter / 2, diameter, diameter)
 
         total = sum(self.data)
-        start_angle = 90 * 16 # Start from top (90 deg)
+        start_angle = 90 * 16 
         
-        # Posición inicial de la Leyenda
+        # Posición de la Leyenda relativa al círculo
         legend_x = chart_area.left() + pie_area_width + 5
         total_items = len(self.data) if self.data else 1
-        chart_area_center_y = chart_area.top() + chart_area.height() / 2
-        # Calcula el punto de inicio para centrar la leyenda verticalmente
-        legend_y = chart_area_center_y - (((total_items - 1) * LEGEND_SPACING) / 2) - 3.5
+        legend_y = center_y - (((total_items - 1) * DYN_LEGEND_SPACING) / 2) - (DYN_ICON_SIZE / 2)
         
-        painter.setFont(QFont(FONT_FAMILY, 7))
+        painter.setFont(QFont(FONT_FAMILY, DYN_FONT_SIZE))
 
         if total > 0 and self.data:
             for i, value in enumerate(self.data):
@@ -128,23 +132,33 @@ class CustomPieChartWidget(QFrame):
                 painter.setPen(QPen(Qt.white, 1))
                 painter.drawPie(pie_rect, start_angle, span_angle)
 
-                # b) Dibujar la Leyenda
-                current_item_y_pos = legend_y + (i * LEGEND_SPACING)
-                painter.setPen(QPen(Qt.black))
+                # b) Dibujar la Leyenda Ajustable
+                current_item_y_pos = legend_y + (i * DYN_LEGEND_SPACING)
+                painter.setPen(Qt.NoPen)
                 painter.setBrush(QBrush(color))
-                painter.drawRect(int(legend_x), int(current_item_y_pos), TEXT_ICON_SIZE, TEXT_ICON_SIZE)
+                painter.drawRect(int(legend_x), int(current_item_y_pos), DYN_ICON_SIZE, DYN_ICON_SIZE)
                 
+                painter.setPen(QPen(Qt.black))
                 label_text = f"{self.labels[i]} ({percentage*100:.1f}%)"
                 
                 text_rect = QRectF(
-                    int(legend_x) + TEXT_ICON_SIZE + TEXT_MARGIN_LEFT,
+                    int(legend_x) + DYN_ICON_SIZE + TEXT_MARGIN_LEFT,
                     int(current_item_y_pos),
-                    chart_area.right() - (int(legend_x) + TEXT_ICON_SIZE + TEXT_MARGIN_LEFT) - 5,
-                    LEGEND_SPACING
+                    chart_area.right() - (int(legend_x) + DYN_ICON_SIZE + TEXT_MARGIN_LEFT) - 5,
+                    DYN_LEGEND_SPACING
                 )
                 painter.drawText(text_rect, Qt.AlignLeft | Qt.AlignVCenter, label_text)
 
                 start_angle += span_angle
+
+            # Centro blanco para efecto dona
+            hole_factor = 0.65 
+            hole_size = diameter * hole_factor
+            hole_rect = QRectF(center_x - hole_size / 2, center_y - hole_size / 2, hole_size, hole_size)
+            painter.setBrush(QBrush(QColor("white")))
+            painter.setPen(QPen(Qt.white, 1))
+            painter.drawEllipse(hole_rect)
+
         else:
             painter.setPen(QPen(Qt.darkGray))
             painter.drawText(chart_area.toRect(), Qt.AlignCenter, "Sin Datos")
@@ -159,15 +173,12 @@ class Ventana_principal(QFrame):
         self.setStyleSheet(f"background: {BG_COLOR_FONDO};")
         self.setup_panel()
         self.setup_charts_panel()
-        # Asegurar que el último layout tenga el stretch
         self.layout_main.addStretch(1) 
 
-    # ----- Panel de Tarjetas de resumen (Dashboard) ---------
     def setup_panel(self):
         layout_content = QVBoxLayout()
         layout_h_cards = QHBoxLayout()
 
-        # Contenedor Principal (Marco Estilizado)
         Contenedor_panel = QFrame()
         Contenedor_panel.setMinimumHeight(250)
         Contenedor_panel.setMaximumHeight(300)
@@ -177,54 +188,35 @@ class Ventana_principal(QFrame):
         
         Contenedor_panel.setLayout(layout_content)
         layout_content.setContentsMargins(30, 0, 30, 0)
-        layout_content.setSpacing(0) # Eliminar espacio vertical entre el título y las tarjetas
+        layout_content.setSpacing(0) 
 
-        # Titulo Principal
         titulo = QLabel("Bienvenido al Sistema de Gestión")
-        titulo.setStyleSheet("background: none; font-size: 30px; color: black; font-weight: bold; margin: 0; padding: 5px;")
+        titulo.setStyleSheet("background: none; font-size: 40px; color: black; font-weight: bold; margin: 0; padding: 8px;")
         titulo.setAlignment(Qt.AlignCenter)
         layout_content.addWidget(titulo)
 
-        # Titulo de Resumen
-        #titulo2 = QLabel("Resumen de Reportes Creados")
-        #titulo2.setStyleSheet("background: none; font-size: 16px; color: black; font-weight: bold; padding: 5px; margin: 0 10px;") # Se ajusta el margen inferior para el espaciado
-        #titulo2.setAlignment(Qt.AlignCenter)
-        #layout_content.addWidget(titulo2)
-
-        # Crear y agregar tarjetas
-        #layout_h_cards.addWidget(create_card("Creados Hoy", "42", "#21BCFF"))
-        #layout_h_cards.addWidget(create_card("Creados Último Mes", "785", "#FFC107"))
-        #layout_h_cards.addWidget(create_card("Total Histórico", "3450", "#4CAF50"))
-        #layout_h_cards.setSpacing(20)
-        
-        #layout_content.addLayout(layout_h_cards)
-        #layout_content.addStretch(1)
-
         self.layout_main.addWidget(Contenedor_panel, 0, alignment=Qt.AlignTop)
 
-    # --------- IMPLEMENTACIÓN DE LOS GRÁFICOS (NATIVO QPainter) -------------
     def setup_charts_panel(self):
         layout_estadistica = QVBoxLayout()
-        layout_estadistica.setSpacing(3) # Espacio entre el título de sección y la cuadrícula de gráficos
+        layout_estadistica.setSpacing(3) 
         
         frame_Estadistica = QFrame()
         frame_Estadistica.setStyleSheet(f"""
             font-family: {FONT_FAMILY};
             background: {BG_COLOR_PANEL};
-            margin: 20px;
+            margin: 30px;
             margin-top: 0px; 
             margin-bottom: 0px;
-            border-radius: 20px;""")
+            border-radius: 50px;""")
         frame_Estadistica.setLayout(layout_estadistica)
         frame_Estadistica.setGraphicsEffect(get_shadow_effect(SHADOW_RADIUS_S))
 
-        # Titulo general de la sección
         titulo = QLabel("Control de Reportes")
         titulo.setStyleSheet("font-size: 22px; color: black; font-weight: bold; margin: 0;; padding: 5px 0;")
         titulo.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
         layout_estadistica.addWidget(titulo)
 
-        # Contenedor y Layout de rejilla (GridLayout) para los 4 gráficos
         layout_charts = QGridLayout()
         layout_charts.setContentsMargins(15, 15, 15, 15)
         layout_charts.setSpacing(15)
@@ -232,7 +224,6 @@ class Ventana_principal(QFrame):
         charts_container = QFrame()
         charts_container.setLayout(layout_charts)
         
-        # Configuración y Creación de Gráficos
         common_labels = ['Actividades Realizadas', 'Actividades sin Hacer']
         
         data = [
@@ -242,7 +233,6 @@ class Ventana_principal(QFrame):
             {'title': "Anual (Objetivo: 120)", 'data': [100, 20], 'labels': common_labels},
         ]
 
-        # Agregar los gráficos a la cuadrícula (2x2)
         for i, chart_data in enumerate(data):
             row, col = divmod(i, 2)
             chart = CustomPieChartWidget(chart_data['title'], chart_data)

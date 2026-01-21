@@ -46,6 +46,7 @@ class Modal_actulizar_actividades(QDialog):
         self.setWindowModality(Qt.ApplicationModal)
 
         self.setGeometry(100, 100, 700, 300)
+        self.setMaximumWidth(800)
         self.layout_main = QVBoxLayout()
         self.setLayout(self.layout_main)
         self.setStyleSheet("""QFrame{
@@ -96,6 +97,7 @@ class Modal_actulizar_actividades(QDialog):
             border-bottom-left-radius: 15px;
             border-bottom-right-radius: 15px;
             padding: 0;
+            margin: 0;
         """)
 
         sombra = QGraphicsDropShadowEffect()
@@ -167,7 +169,7 @@ class Modal_actulizar_actividades(QDialog):
             font-size: 24px;
             color: #374151;
             font-weight: bold;
-            margin: 20px;
+            margin: 5px;
             padding: 0;
             border: none;
         """)
@@ -190,7 +192,7 @@ class Modal_actulizar_actividades(QDialog):
         layout_fila.addWidget(self.frame_imagen2)
         #layout_fila.addStretch()  # Empuja las imágenes hacia la izquierda
 
-        contenedor.setMinimumHeight(350)
+        contenedor.setMinimumHeight(230)
         contenedor.setMaximumHeight(600)
         
         layout_contenedor.addWidget(fila_imagenes)
@@ -224,6 +226,7 @@ class Modal_actulizar_actividades(QDialog):
             margin: 10px;
             padding: 0;
             border: none;""")
+        titulo.setMaximumWidth(270)
         layout.addWidget(titulo)
 
         fecha_actividad = self.fecha
@@ -256,7 +259,7 @@ class Modal_actulizar_actividades(QDialog):
         self.fecha.setCalendarPopup(True)
         self.fecha.setFixedWidth(150)
 
-        layout.addWidget(self.fecha)
+        layout.addWidget(self.fecha, alignment=Qt.AlignLeft)
 
         return layout
 

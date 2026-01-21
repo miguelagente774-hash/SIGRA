@@ -17,7 +17,7 @@ class App(QMainWindow):
         
         self.setCentralWidget(Controlador_principal(self))
         
-        self.move(250, 100)
+        self.move(220, 20)
         
 if __name__ == "__main__":
     app = QApplication(sys.argv)

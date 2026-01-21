@@ -245,6 +245,7 @@ class Ventana_consulta(QFrame):
             return boton
 
         boton_excel = crear_boton("Reporte-PDF")
+        boton_excel.clicked.connect(self.Abrir_modal_pdf)
         boton_pptx = crear_boton("Reporte-PTTX")
         boton_pptx.clicked.connect(self.Abrir_modal)
         
@@ -262,6 +263,14 @@ class Ventana_consulta(QFrame):
         try:
             nombre_reporte = datos_reporte[1]
             self.controlador.abrir_modal(nombre_reporte)
+        except:
+            self.mensaje_advertencia("Advertencia", "Por favor seleccione un Reporte")
+
+    def Abrir_modal_pdf(self):
+        datos_reporte = self.Obtener_reporte_seleccionado()
+        try:
+            nombre_reporte = datos_reporte[1]
+            self.controlador.abrir_modal_pdf(nombre_reporte)
         except:
             self.mensaje_advertencia("Advertencia", "Por favor seleccione un Reporte")
 

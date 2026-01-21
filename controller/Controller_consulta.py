@@ -3,6 +3,10 @@ from models.Modelo_consulta import Modelo_consulta
 from comunicador import Comunicador_global
 from components.modal_reporte import Modal_exportar_Reporte
 from PyQt5.QtWidgets import QDialog, QFileDialog
+import tempfile
+import shutil
+import os
+from services.pptx.convert import pptx_to_pdf
 from datetime import datetime
 from services.pptx.reporte import Reporte
 from pathlib import Path
@@ -80,6 +84,103 @@ class controlador_consulta():
             Reporte(nombre_reporte, nombre_dir, fecha, listas_meses, listas_ponderaciones, datos_actividades, datos_coordinador, direccion)
         except Exception as e:
             self.consulta.mensaje_error("Error", f"{e}")
+
+    def abrir_modal_pdf(self, Nombre_reporte):
+        """Abre el modal de selección de meses y luego pregunta dónde guardar el PDF.
+        Genera un PPTX temporal, lo convierte a PDF en la ruta seleccionada y elimina temporales.
+        """
+        try:
+            modal = Modal_exportar_Reporte(Nombre_reporte, self)
+            if modal.exec_() == QDialog.Accepted:
+                datos_meses = modal.obtener_lista_simple()
+
+                # Obtener ruta de destino del PDF
+                ruta_pdf, _ = QFileDialog.getSaveFileName(None, "Guardar PDF como", f"{Nombre_reporte}.pdf", "PDF Files (*.pdf)")
+                if not ruta_pdf:
+                    return
+
+                # Crear carpeta temporal para generar PPTX
+                tmp_dir = tempfile.mkdtemp()
+                try:
+                    base_tmp = Path(tmp_dir) / Nombre_reporte
+
+                    # Crear el PPTX en tmp usando misma lógica que Crear_Reporte
+                    try:
+                        datos_reporte = self.consulta.Obtener_reporte_seleccionado()
+                        id_reporte = datos_reporte[0]
+                    except Exception as e:
+                        self.consulta.mensaje_error("Error", f"datos_reporte: {e}")
+
+                    try:
+                        nombre_dir = self.Obtener_jefe()
+                    except Exception as e:
+                        self.consulta.mensaje_error("Error", f"nombre_dir: {e}")
+
+                    try:
+                        fecha, listas_meses, listas_ponderaciones = self.Obtener_fechas_porcentajes(datos_meses)
+                    except Exception as e:
+                        self.consulta.mensaje_error("Error", f"fechas: {e}")
+
+                    try:
+                        datos_actividades = self.Obtener_actividades(id_reporte)
+                    except Exception as e:
+                        self.consulta.mensaje_error("Error", f"actividades: {e}")
+
+                    try:
+                        datos_coordinador = self.Obtener_coodinador()
+                    except Exception as e:
+                        self.consulta.mensaje_error("Error", f"datos_coordinador: {e}")
+
+                    try:
+                        direccion = self.Obtener_direccion()
+                    except Exception as e:
+                        self.consulta.mensaje_error("Error", f"datos_direccion: {e}")
+
+                    # Generar PPTX temporal
+                    try:
+                        # Reporte guarda como: <base> <año>.pptx
+                        Reporte(str(base_tmp), nombre_dir, fecha, listas_meses, listas_ponderaciones, datos_actividades, datos_coordinador, direccion)
+                        pptx_path = Path(f"{base_tmp} {fecha['año']}.pptx")
+                        if not pptx_path.exists():
+                            raise RuntimeError(f"No se encontró PPTX generado: {pptx_path}")
+                    except Exception as e:
+                        self.consulta.mensaje_error("Error", f"Error al generar PPTX: {e}")
+                        return
+
+                    # Convertir a PDF
+                    try:
+                        pptx_to_pdf(str(pptx_path), ruta_pdf)
+                    except FileNotFoundError as e:
+                        self.consulta.mensaje_advertencia("Advertencia", f"Archivo PPTX temporal no encontrado: {e}")
+                        return
+                    except Exception as e:
+                        msg = str(e)
+                        # Mensajes amigables según la causa
+                        if 'soffice no encontrado' in msg or 'soffice no encontrado en PATH' in msg or 'soffice' in msg:
+                            self.consulta.mensaje_advertencia(
+                                "Advertencia",
+                                "No se encontró LibreOffice (soffice).\n\nPara usar la conversión a PDF instala LibreOffice o asegúrate de que Microsoft PowerPoint esté instalado junto con pywin32/comtypes."
+                            )
+                        elif 'pywin32/PowerPoint' in msg or 'comtypes/PowerPoint' in msg or 'PowerPoint' in msg:
+                            self.consulta.mensaje_advertencia(
+                                "Advertencia",
+                                "No se pudo usar PowerPoint vía COM.\n\nAsegúrate de tener Microsoft PowerPoint instalado y las librerías Python necesarias:\n`pip install pywin32 comtypes`\ny luego ejecuta `python -m pywin32_postinstall -install`"
+                            )
+                        else:
+                            self.consulta.mensaje_error("Error", f"Error al convertir a PDF: {msg}")
+                        return
+
+                    # Informar y limpiar
+                    self.consulta.mensaje_informativo("Informacion", "PDF generado correctamente")
+
+                finally:
+                    # eliminar carpeta temporal
+                    try:
+                        shutil.rmtree(tmp_dir)
+                    except Exception:
+                        pass
+        except Exception as e:
+            self.consulta.mensaje_error("Error", f"Error al cargar ventana: {e}")
 
     
     def Obtener_jefe(self):

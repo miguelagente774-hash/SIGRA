@@ -1,42 +1,28 @@
 from PyQt5.QtWidgets import (QFrame, QLabel, QVBoxLayout, QHBoxLayout, 
                              QGraphicsDropShadowEffect, QTableWidget, 
                              QTableWidgetItem, QPushButton, QHeaderView,
-                             QCheckBox, QMessageBox, QLineEdit)
+                             QCheckBox, QMessageBox, QLineEdit, QTextEdit, QComboBox, QDateEdit)
 from PyQt5.QtGui import QColor, QFont
 from PyQt5.QtCore import Qt
 from comunicador import Comunicador_global
 from datetime import datetime
+from components.app_style import estilo_app
 
 FONT_FAMILY = "Arial"
 COLOR_PRIMARIO = "#005a6e" 
 COLOR_AZUL_HOVER = "#00485a"
 
-BTN_STYLE = """
-        QPushButton{
-        background: #005a6e;
-        color: White;
-        font-weight: bold;
-        font-size: 18px;
-        padding: 15px;
-        border-radius: 15px;
-        text-align: left;
-        border: none;
-        }  
-        QPushButton:hover{
-        background: #007a94;
-        }    
-        QPushButton:pressed{
-        background: #00485a;
-        }"""
-
-
 class Ventana_convertir_reporte(QFrame):
     def __init__(self, controller):
         super().__init__()
+        self.estilo = estilo_app.obtener_estilo_completo()
         self.controller = controller
         self.layout_main = QVBoxLayout()
         self.setLayout(self.layout_main)
-        
+
+        estilo_app.registrar_vista(self)
+        estilo_app.estilos_actualizados.connect(self.actualizar_estilos)        
+
         self.Panel_reporte()
         self.cargar_datos_tabla()
         #actulizar tabla cada vez que se agraga una nueva
@@ -66,16 +52,7 @@ class Ventana_convertir_reporte(QFrame):
         Panel_reporte.setGraphicsEffect(sombra)
 
         titulo = QLabel("Convertir Reporte")
-        titulo.setStyleSheet(f"""
-                             font-family: {FONT_FAMILY};
-                             background: #005a6e;
-                             font-size: 28px; 
-                             color: white;
-                             font-weight: bold;
-                             margin: 0;
-                             padding: 20px;
-                             border-radius: 0;
-                             """)
+        titulo.setStyleSheet(self.estilo["styles"]["header"])
         titulo.setAlignment(Qt.AlignLeft)
         titulo.setMaximumHeight(70)
         
@@ -87,20 +64,7 @@ class Ventana_convertir_reporte(QFrame):
         # Campo de búsqueda
         self.campo_busqueda = QLineEdit()
         self.campo_busqueda.setPlaceholderText("Buscar actividades por título o ID...")
-        self.campo_busqueda.setStyleSheet(f"""
-            QLineEdit {{
-                font-family: {FONT_FAMILY};
-                font-size: 14px;
-                padding: 10px;
-                border: 2px solid #e5e7eb;
-                border-radius: 10px;
-                background: white;
-                margin: 10px;
-            }}
-            QLineEdit:focus {{
-                border: 2px solid #4FC3F7;
-            }}
-        """)
+        self.campo_busqueda.setStyleSheet(self.estilo["styles"]["input"])
         self.campo_busqueda.textChanged.connect(self.filtrar_actividades)
         
         controles_layout.addWidget(self.campo_busqueda)
@@ -128,58 +92,10 @@ class Ventana_convertir_reporte(QFrame):
         self.tabla_actividades.verticalHeader().setVisible(False)
         self.tabla_actividades.setAlternatingRowColors(True)
         
-        # Estilo de la tabla - CORREGIDO
-        self.tabla_actividades.setStyleSheet(f"""
-            QTableWidget {{
-                font-family: {FONT_FAMILY};
-                font-size: 14px;
-                gridline-color: #e0e0e0;
-                background: white;
-                border: 2px solid #e5e7eb;
-                border-radius: 15px;
-                margin: 10px;
-            }}
-            QTableWidget::item {{
-                padding: 5px;
-                border-bottom: 1px solid #e0e0e0;
-            }}
-            QHeaderView::section {{
-                background-color: #005a6e;
-                color: white;
-                font-weight: bold;
-                padding: 0px;
-                border: none;
-                font-size: 14px;
-                border-right: 1px solid white;
-            }}
-            QHeaderView::section:last {{
-                border-right: none;
-            }}
-            QTableWidget QCheckBox {{
-                spacing: 5px;
-            }}
-            QTableWidget QCheckBox::indicator {{
-                width: 20px;
-                height: 20px;
-                border: 2px solid #4FC3F7;
-                border-radius: 3px;
-                background: white;
-            }}
-            QTableWidget QCheckBox::indicator:checked {{
-                background: #4FC3F7;
-                border: 2px solid #03A9F4;
-            }}
-            QTableWidget QCheckBox::indicator:hover {{
-                border: 2px solid #03A9F4;
-            }}
-
-            QTableWidget::item:selected {{
-                background-color: #46ECD5;
-                color: white;
-            }}
-        """)
+        # Estilo de la tabla
+        self.tabla_actividades.setStyleSheet(self.estilo["styles"]["tabla"])
         
-        # Configurar cabeceras - CORREGIDO
+        # Configurar cabeceras
         header = self.tabla_actividades.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeToContents)  # Checkbox
         header.setSectionResizeMode(1, QHeaderView.ResizeToContents)  # ID
@@ -275,25 +191,7 @@ class Ventana_convertir_reporte(QFrame):
             
             # Checkbox de selección (columna 0)
             checkbox = QCheckBox()
-            checkbox.setStyleSheet("""
-                QCheckBox {
-                    spacing: 8px;
-                }
-                QCheckBox::indicator {
-                    width: 20px;
-                    height: 20px;
-                }
-                QCheckBox::indicator:unchecked {
-                    border: 2px solid #005a6e;
-                    background: white;
-                    border-radius: 3px;
-                }
-                QCheckBox::indicator:checked {
-                    background: #005a6e;
-                    border: 2px solid #00485a;
-                    border-radius: 3px;
-                }
-            """)
+            checkbox.setStyleSheet(self.estilo["styles"]["checkbox"])
             self.tabla_actividades.setCellWidget(numero_fila, 0, checkbox)
             
             # ID (columna 1)
@@ -334,25 +232,17 @@ class Ventana_convertir_reporte(QFrame):
 
         self.campo_nombre_reporte = QLineEdit()
         self.campo_nombre_reporte.setPlaceholderText("Nombre para el reporte")
-        self.campo_nombre_reporte.setStyleSheet("""
-                                                QLineEdit{
-                                                background: white;
-                                                border: 1px solid black;
-                                                padding: 10px;
-                                                border-radius: 5px;
-                                                font-size: 14px;
-                                                font-weight: bold;
-                                                }""")
+        self.campo_nombre_reporte.setStyleSheet(self.estilo["styles"]["input"])
         botones_layout.addWidget(self.campo_nombre_reporte)
         
         # Botón para seleccionar todos
         self.btn_seleccionar_todos = QPushButton("Seleccionar Todos")
-        self.btn_seleccionar_todos.setStyleSheet(BTN_STYLE)
+        self.btn_seleccionar_todos.setStyleSheet(self.estilo["styles"]["boton"])
         self.btn_seleccionar_todos.clicked.connect(self.toggle_seleccion_todos)
 
         # Botón para continuar
         btn_continuar = QPushButton("Continuar")
-        btn_continuar.setStyleSheet(BTN_STYLE)
+        btn_continuar.setStyleSheet(self.estilo["styles"]["boton"])
         btn_continuar.clicked.connect(self.continuar_con_seleccion)
         
         botones_layout.addWidget(self.btn_seleccionar_todos)
@@ -458,3 +348,30 @@ class Ventana_convertir_reporte(QFrame):
 
     def mensaje_error(self, titulo, mensaje):
         QMessageBox.critical(self, titulo, mensaje)
+
+    # Método en cada vista:
+    def actualizar_estilos(self):
+        """Actualiza los estilos de esta vista"""
+        self.estilo = estilo_app.obtener_estilo_completo()
+        
+        # Aplica el fondo
+        self.setStyleSheet(self.estilo["styles"]["fondo"])
+        
+        # Actualizar paneles específicos
+        for widget in self.findChildren(QFrame):
+            if hasattr(widget, 'panel') or 'panel' in widget.objectName().lower():
+                widget.setStyleSheet(self.estilo["styles"]["panel"])
+        
+        # Actualizar botones
+        for widget in self.findChildren(QPushButton):
+            widget.setStyleSheet(self.estilo["styles"]["boton"])
+        
+        # Actualizar inputs
+        for widget in self.findChildren((QLineEdit, QTextEdit, QComboBox, QDateEdit)):
+            widget.setStyleSheet(self.estilo["styles"]["input"])
+        
+        # Actualizar tablas
+        for widget in self.findChildren(QTableWidget):
+            widget.setStyleSheet(self.estilo["styles"]["tabla"])
+        
+        print(f"🔄 {self.__class__.__name__} actualizada")

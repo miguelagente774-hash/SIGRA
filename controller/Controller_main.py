@@ -11,6 +11,7 @@ from controller.ventanas_reporte.Controller_actividad_crear import controlador_r
 from controller.ventanas_reporte.Controller_actividades_finalizadas import controlador_reporte_finalizados
 from components.menu import Menu
 from PyQt5.QtCore import pyqtSignal, QObject
+from components.app_style import estilo_app
 
 
 class Comunicador(QObject):
@@ -49,7 +50,42 @@ class Controlador_principal(QWidget):
         
         # Inicialmente mostrar solo el Login al iniciar.
         self.layout_principal.addWidget(self.login.get_widget())
+
+        # Actualizar las ventanas
+        self.configuracion.Actualizar_Vista.connect(self.on_config_guardada)
+
+        # Registrar vistas para ctualización automática
+        estilo_app.registrar_vista(self.estadistica.get_widget())
+        estilo_app.registrar_vista(self.reporte_crear.get_widget())
+        estilo_app.registrar_vista(self.reporte_finalizados.get_widget())
+        estilo_app.registrar_vista(self.reporte_convertir.get_widget())
+        estilo_app.registrar_vista(self.consulta.get_widget())
+        estilo_app.registrar_vista(self.configuracion.get_widget())
+
+        # Incializar estilos
+        self.actualizar_vistas()
+
+    def actualizar_vistas(self):
+        # ==Actualiza todas las vistas de la aplicación==
+        vistas = [
+            self.estadistica.get_widget(),          # Indice 1
+            self.reporte_crear.get_widget(),        # Indice 2 
+            self.reporte_finalizados.get_widget(),  # Indice 3
+            self.reporte_convertir.get_widget(),    # Indice 4
+            self.consulta.get_widget(),             # Indice 5
+            self.configuracion.get_widget()         # Indice 6
+        ]
         
+        # Registrar cada vista si no lo está
+        for vista in vistas:
+            if vista and vista not in estilo_app.vistas_registradas:
+                estilo_app.registrar_vista(vista)
+        
+        # Notificar cambios
+        estilo_app.notificar_cambio_estilos()
+
+    def on_config_guardada(self):
+        pass
 
     def mostrar_aplicacion_principal(self):
         # Muestra la Aplicación Principal con Menú tras un login exitoso

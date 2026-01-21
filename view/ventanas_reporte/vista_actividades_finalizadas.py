@@ -1,44 +1,21 @@
 from PyQt5.QtWidgets import (QFrame, QLabel, QVBoxLayout, 
                             QHBoxLayout, QGraphicsDropShadowEffect, QPushButton,
                             QTableWidget, QTableWidgetItem, QHeaderView, 
-                            QAbstractItemView, QScrollArea, QWidget, QSizePolicy, QMessageBox)
+                            QLineEdit, QTextEdit, QComboBox, QDateEdit, QMessageBox)
 from PyQt5.QtCore import (Qt)
-
-
-FONT_FAMILY = "Arial"
-COLOR_PRIMARIO = "#005a6e" 
-COLOR_AZUL_HOVER = "#00485a"
-
-BTN_STYLE = """
-        QPushButton{
-        background: #005a6e;
-        color: White;
-        font-weight: bold;
-        font-size: 18px;
-        min-width: 200px;
-        min-height: 20px;
-        padding: 15px;
-        border-radius: 15px;
-        text-align: left;
-        border: none;
-        margin: 0 15px 20px;
-        }  
-        QPushButton:hover{
-        background: #007a94;
-        }    
-        QPushButton:pressed{
-        background: #00485a;
-        }"""
-
+from components.app_style import estilo_app
 
 class Ventana_reporte_finalizados(QFrame):
     def __init__(self, controller):
         super().__init__()
+        self.estilo = estilo_app.obtener_estilo_completo()
         self.controller = controller
         self.Main_layout = QVBoxLayout()
         self.Main_layout.setContentsMargins(40, 40, 40, 40)
         self.setLayout(self.Main_layout)
-        
+
+        estilo_app.registrar_vista(self)
+        estilo_app.estilos_actualizados.connect(self.actualizar_estilos)        
 
         #funciones
         self.Panel_r_finalizado()
@@ -60,6 +37,7 @@ class Ventana_reporte_finalizados(QFrame):
                                          border-bottom-left-radius: 15px;
                                          border-bottom-right-radius: 15px;
                                          }""")
+
         #sombra del panel
         sombra = QGraphicsDropShadowEffect()
         sombra.setBlurRadius(20)
@@ -68,24 +46,9 @@ class Ventana_reporte_finalizados(QFrame):
         Panel_R_finalizado.setGraphicsEffect(sombra)
 
         titulo = QLabel("Actividades Finalizadas")
-        titulo.setStyleSheet("""
-                             QLabel{
-                             font-family: arial;
-                             font-size: 28px; 
-                             color: white;
-                             font-weight: bold;
-                             padding: 20px 15px;
-                             margin: 0;
-                             background: #005a6e;
-                             border-bottom-left-radius: 0;
-                             border-bottom-right-radius: 0;
-                             }""")
+        titulo.setStyleSheet(self.estilo["styles"]["header"])
         titulo.setAlignment(Qt.AlignLeft)
         self.Panel_layout.addWidget(titulo)
-
-        #tabla
-        
-
         #----------no tocar-------------------------
         self.Main_layout.addWidget(Panel_R_finalizado)
 
@@ -106,30 +69,7 @@ class Ventana_reporte_finalizados(QFrame):
 
         self.tabla_actividades.setRowCount(len(datos))
 
-        self.tabla_actividades.setStyleSheet("""
-                                        QTableWidget {
-                                        background-color: #f0f0f0; /* Color de fondo de la tabla */
-                                        color: #333; /* Color de texto predeterminado */
-                                        font-size: 14px;
-                                        border: 1px solid #ccc;
-                                        margin: 0;
-                                        font-family: arial;
-                                        }
-                                        QHeaderView::section {
-                                        background-color: #005a6e;
-                                        color: White;
-                                        font-size: 16px;
-                                        font-weight: bold;
-                                        border: 1px solid gray;
-                                        text-align: center;
-                                        padding: 8px;
-                                        margin: 0;
-                                        }
-                                        QTableWidget::item:selected {
-                                             background-color: #a0c0ff;
-                                             color: white;
-            }
-                                        """)
+        self.tabla_actividades.setStyleSheet(self.estilo["styles"]["tabla"])
         encabezados = ["ID", "Titulo", "Descripcion", "Fecha"]
         self.tabla_actividades.setHorizontalHeaderLabels(encabezados)
 
@@ -166,13 +106,13 @@ class Ventana_reporte_finalizados(QFrame):
         self.Panel_layout.addLayout(layout_botones)
 
         boton_modificar = QPushButton("Modificar")
-        boton_modificar.setStyleSheet(BTN_STYLE)
+        boton_modificar.setStyleSheet(self.estilo["styles"]["boton"])
         boton_modificar.clicked.connect(self.Abrir_modal)
         layout_botones.addWidget(boton_modificar)
 
 
         boton_eliminar = QPushButton("Eliminar")
-        boton_eliminar.setStyleSheet(BTN_STYLE)
+        boton_eliminar.setStyleSheet(self.estilo["styles"]["boton"])
         boton_eliminar.clicked.connect(self.Elminar_actividad)
         layout_botones.addWidget(boton_eliminar)
 
@@ -228,3 +168,30 @@ class Ventana_reporte_finalizados(QFrame):
 
     def Mensaje_Warning(self, titulo, mensaje):
         QMessageBox.warning(self, titulo, mensaje)
+
+    # Método en cada vista:
+    def actualizar_estilos(self):
+        """Actualiza los estilos de esta vista"""
+        self.estilo = estilo_app.obtener_estilo_completo()
+        
+        # Aplica el fondo
+        self.setStyleSheet(self.estilo["styles"]["fondo"])
+        
+        # Actualizar paneles específicos
+        for widget in self.findChildren(QFrame):
+            if hasattr(widget, 'panel') or 'panel' in widget.objectName().lower():
+                widget.setStyleSheet(self.estilo["styles"]["panel"])
+        
+        # Actualizar botones
+        for widget in self.findChildren(QPushButton):
+            widget.setStyleSheet(self.estilo["styles"]["boton"])
+        
+        # Actualizar inputs
+        for widget in self.findChildren((QLineEdit, QTextEdit, QComboBox, QDateEdit)):
+            widget.setStyleSheet(self.estilo["styles"]["input"])
+        
+        # Actualizar tablas
+        for widget in self.findChildren(QTableWidget):
+            widget.setStyleSheet(self.estilo["styles"]["tabla"])
+        
+        print(f"🔄 {self.__class__.__name__} actualizada")

@@ -5,32 +5,12 @@ from PyQt5.QtWidgets import (
     QGraphicsDropShadowEffect, QLineEdit, QComboBox, QSizePolicy, QWidget, QMessageBox, QDialog
 )
 from PyQt5.QtCore import Qt
-
+from components.app_style import estilo_app
 
 # Definición de la familia de fuente y colores
 FONT_FAMILY = "Arial"
 COLOR_PRIMARIO = "#005a6e" 
 COLOR_AZUL_HOVER = "#00485a"
-
-BTN_STYLE = """
-        QPushButton{
-        background: #005a6e;
-        color: White;
-        font-weight: bold;
-        font-size: 18px;
-        min-width: 200px;
-        min-height: 20px;
-        padding: 15px;
-        border-radius: 15px;
-        text-align: left;
-        border: none;
-        }  
-        QPushButton:hover{
-        background: #007a94;
-        }    
-        QPushButton:pressed{
-        background: #00485a;
-        }"""
 
 # --- CLASE: Ventana_Consulta (Contenido Principal) ---
 
@@ -38,6 +18,13 @@ class Ventana_consulta(QFrame):
     def __init__(self, controlador):
         super().__init__()
         self.controlador = controlador
+        self.estilo = estilo_app.obtener_estilo_completo()
+        
+        # Registrar esta vista para actualización automática
+        estilo_app.registrar_vista(self)
+        
+        # Conectar señal de actualización
+        estilo_app.estilos_actualizados.connect(self.actualizar_estilos)
         
         # Inicialización de widgets
         self.tabla = QTableWidget()
@@ -64,15 +51,10 @@ class Ventana_consulta(QFrame):
         self.combo_ordenacion.addItem("Ascendente")
         self.combo_ordenacion.addItem("Descendente")
         self.combo_ordenacion.setFixedHeight(40)
+        self.combo_ordenacion.setMaximumHeight(60)
         self.combo_ordenacion.setMinimumWidth(120)
         self.combo_ordenacion.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
-        self.combo_ordenacion.setStyleSheet("""
-            QComboBox {
-                background-color: #f0f0f0; border: 1px solid #ccc;
-                border-radius: 5px; padding: 1px 10px 1px 3px;
-            }
-            QComboBox::drop-down { border: 0px; }
-        """)
+        self.combo_ordenacion.setStyleSheet(self.estilo["styles"]["input"])
         
     def _configurar_tabla(self):
         """Configura los encabezados y el estilo de la tabla."""
@@ -85,12 +67,7 @@ class Ventana_consulta(QFrame):
         self.tabla.verticalHeader().setDefaultSectionSize(70) # Modificar altura de celdas
         
         cabecera = self.tabla.horizontalHeader()
-        cabecera.setStyleSheet("""
-            QHeaderView::section {
-                background-color: #f0f0f0; padding: 8px;
-                border: 2px solid #ddd; font-weight: bold;
-            }
-        """)
+        cabecera.setStyleSheet(self.estilo["styles"]["tabla"])
         cabecera.setSectionResizeMode(QHeaderView.Stretch)
         cabecera.setStretchLastSection(False)
 
@@ -128,12 +105,7 @@ class Ventana_consulta(QFrame):
         
         # Título Consulta
         titulo = QLabel("Consulta")
-        titulo.setStyleSheet(f"""
-            background: {COLOR_PRIMARIO}; font-family: {FONT_FAMILY};
-            font-size: 28px; color: white; font-weight: bold;
-            padding: 15px 20px; border-top-left-radius: 5px;
-            border-top-right-radius: 5px;
-        """)
+        titulo.setStyleSheet(self.estilo["styles"]["header"])
         titulo.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         titulo.setMaximumHeight(60)
         layout_panel.addWidget(titulo, alignment = Qt.AlignTop)
@@ -152,12 +124,7 @@ class Ventana_consulta(QFrame):
         self.campo_busqueda.setPlaceholderText("Buscar por ID o Título...")
         self.campo_busqueda.setMaximumHeight(60)
         self.campo_busqueda.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.campo_busqueda.setStyleSheet(f"""
-            QLineEdit {{ padding: 10px; border: 1px solid #ccc;
-                         border-radius: 3px; margin: 10px;}}
-            QLineEdit:hover, QLineEdit:focus {{ border: 1px solid {COLOR_AZUL_HOVER};
-                                            }}
-        """)
+        self.campo_busqueda.setStyleSheet(self.estilo["styles"]["input"])
         
         etiqueta_ordenar = QLabel("Buscar de manera")
         etiqueta_ordenar.setFixedHeight(30)
@@ -241,7 +208,7 @@ class Ventana_consulta(QFrame):
         def crear_boton(texto):
             boton = QPushButton(texto)
             # Estilo de botón
-            boton.setStyleSheet(BTN_STYLE)
+            boton.setStyleSheet(self.estilo["styles"]["boton"])
             return boton
 
         boton_excel = crear_boton("Reporte-PDF")
@@ -274,3 +241,32 @@ class Ventana_consulta(QFrame):
 
     def mensaje_error(self, titulo, mensaje):
         QMessageBox.critical(self, titulo, mensaje)
+
+    def actualizar_estilos(self):
+        """Actualiza los estilos de esta vista"""
+        # Obtener nuevo estilo
+        self.estilo = estilo_app.obtener_estilo_completo()
+        
+        # Aplica los estilos a tus componentes
+        self.setStyleSheet(self.estilo["styles"]["fondo"])
+        
+        # Actualiza widgets específicos
+        if hasattr(self, 'tabla'):
+            self.tabla.setStyleSheet(self.estilo["styles"]["tabla"])
+        if hasattr(self, 'campo_busqueda'):
+            self.campo_busqueda.setStyleSheet(self.estilo["styles"]["input"])
+        if hasattr(self, 'combo_ordenacion'):
+            self.combo_ordenacion.setStyleSheet(self.estilo["styles"]["input"])
+            
+        # Actualizar botones
+        for widget in self.findChildren(QPushButton):
+            widget.setStyleSheet(self.estilo["styles"]["boton"])
+        
+        # Actualizar labels con estilo de título
+        for widget in self.findChildren(QLabel):
+            if widget.text() in "Buscar de manera":
+                widget.setStyleSheet(self.estilo["styles"]["title"])
+            elif widget.text() in ["Consulta"]:
+                widget.setStyleSheet(self.estilo["styles"]["header"])
+        
+        print(f"🔄 {self.__class__.__name__} actualizada")

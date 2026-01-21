@@ -4,6 +4,7 @@ import re
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QMessageBox
 from PyQt5.QtCore import QObject, pyqtSignal, QRegExp
 from PyQt5.QtGui import QRegExpValidator, QPalette, QColor
+from components.app_style import estilo_app
 
 # Configurar path
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -15,7 +16,7 @@ from models.Modelo_configuracion import Model_Configuraciones
 
 class controlador_configuraciones(QWidget):
     # == Controlador que maneja TODA la lógica de configuraciones== 
-    
+    Actualizar_Vista = pyqtSignal()
     def __init__(self):
         super().__init__()
         
@@ -142,23 +143,37 @@ class controlador_configuraciones(QWidget):
         try:
             # 1. Obtener datos de la vista
             datos_crudos = self.obtener_valores()
-            print("Se ha adquirido los datos") 
             
             # 2. Validar datos
             if not self.validar_datos(datos_crudos):
                 return
-            print("Se ha validado los datos")
 
             # 3. Preparar datos para guardar
             datos_validados = self.preparar_datos_para_guardar(datos_crudos)
-            print("Se han preparado los datos para guardar")
             
             # 4. Guardar en base de datos
             exito = self.guardar_en_bd(datos_validados)
-            print("Se ha guardado los datos")
 
-            # 5. Mostrar resultado
+            # 5. Actualizar configuración de estilo_app SI SE GUARDÓ BIEN
             if exito:
+                # Obtener datos de interfaz para actualizar estilo_app
+                tema = datos_validados["interfaz"]["tema"].lower()
+                fuente_familia = datos_validados["interfaz"]["fuente"]
+                fuente_tamano = datos_validados["interfaz"]["tamaño"]
+                fuente_negrita = datos_validados["interfaz"]["negrita"]
+                
+                # Actualizar estilo_app (esto también notificará a las vistas)
+                estilo_app.actualizar_y_notificar(
+                    tema=tema,
+                    fuente_familia=fuente_familia,
+                    fuente_tamano=fuente_tamano,
+                    fuente_negrita=fuente_negrita
+                )
+                
+                # 6. Emitir señal para otras partes de la aplicación
+                self.Actualizar_Vista.emit()
+                
+                # 7. Mostrar resultado
                 self.mostrar_mensaje("Éxito", "Los cambios se guardaron correctamente", "success")
                 # Limpiar errores después de guardar exitosamente
                 self.limpiar_errores()
@@ -169,7 +184,6 @@ class controlador_configuraciones(QWidget):
             print(f"❌ Error en on_guardar_clicked: {e}")
             self.mostrar_mensaje("Error", f"Ocurrió un error: {str(e)}", "error")
 
-            
     
     def validar_datos(self, datos):
         # == Valida todos los datos antes de guardar== 
@@ -282,10 +296,9 @@ class controlador_configuraciones(QWidget):
             ("decreto", self.vista.entry_decreto, "Decreto"),
             ("fecha_publicacion", self.vista.entry_fechaPublicacion, "Fecha de Publicacion")
         ]
-        print("Empezar a validar")
+
         for campo_key, widget, campo_nombre in entradas:
             valor = datos_gaceta.get(campo_key, "").strip()
-            print("Datos validando")
 
             if not valor or len(valor) < 5:
                 self.mostrar_error(widget, f"{campo_nombre} es requerido (mínimo 5 caracteres)")
@@ -299,7 +312,7 @@ class controlador_configuraciones(QWidget):
         # == Prepara y limpia los datos para guardar en BD== 
         return {
             "interfaz": {
-                "tema": datos_crudos["interfaz"]["tema"],
+                "tema": datos_crudos["interfaz"]["tema"].strip().lower(),
                 "fuente": datos_crudos["interfaz"]["fuente"].strip(),
                 "tamaño": datos_crudos["interfaz"]["tamaño"],
                 "negrita": datos_crudos["interfaz"]["negrita"]
@@ -365,9 +378,10 @@ class controlador_configuraciones(QWidget):
     
     def obtener_valores(self):
         # == Retorna todos los valores actuales a los widgets== 
+        tema_vista = "claro" if self.vista.radio_tema_claro.isChecked() else "oscuro"
         return {
             "interfaz": {
-                "tema": "Claro" if self.vista.radio_tema_claro.isChecked() else "Oscuro",
+                "tema": tema_vista,
                 "fuente": self.vista.combo_fuente.currentText(),
                 "tamaño": self.vista.spin_tamano.value(),
                 "negrita": self.vista.check_negrita.isChecked()
@@ -396,10 +410,14 @@ class controlador_configuraciones(QWidget):
         if datos.get("interfaz"):
             interfaz = datos["interfaz"]
             # Tema
-            if interfaz.get("tema") == "Claro":
+            if interfaz.get("tema") == "claro":
                 self.vista.radio_tema_claro.setChecked(True)
-            else:
+            elif interfaz.get("tema") == "oscuro":
                 self.vista.radio_tema_oscuro.setChecked(True)
+            else:
+                # Por Defecto, Claro
+                self.vista.radio_tema_claro.setChecked(True)
+
             # Fuente
             index = self.vista.combo_fuente.findText(interfaz.get("fuente", "Arial"))
             if index >= 0:
@@ -596,7 +614,6 @@ class controlador_configuraciones(QWidget):
         
         # Restaurar tooltips originales
         self.configurar_placeholders_y_tooltips()
-    
 
     def cerrar(self):
         # == Cierra conexiones== 

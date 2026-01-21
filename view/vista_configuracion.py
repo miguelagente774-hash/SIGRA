@@ -14,6 +14,12 @@ class Ventana_configuracion(QFrame):
     def __init__(self):
         super().__init__()
         self.estilo = estilo_app.obtener_estilo_completo()
+        
+        #Registrar esta vista
+        estilo_app.registrar_vista(self)
+
+        # Conectar señal de actualización
+        estilo_app.estilos_actualizados.connect(self.actualizar_estilos)
         self.setup_ui()
     
     def setup_ui(self):
@@ -54,15 +60,7 @@ class Ventana_configuracion(QFrame):
         """Crea panel de interfaz con el diseño original"""
         # Frame principal con sombra y bordes redondeados
         self.panel_interfaz = QFrame()
-        self.panel_interfaz.setStyleSheet("""
-            QFrame{
-                background: rgba(255, 255, 255, 0.95);
-                padding: 0;
-                border-radius: 12px;
-                border: 1px solid #E0E0E0;
-                min-width: 300px;
-            }
-        """)
+        self.panel_interfaz.setStyleSheet(self.estilo["styles"]["panel"])
         
         # Sombra elegante
         sombra = QGraphicsDropShadowEffect()
@@ -168,7 +166,6 @@ class Ventana_configuracion(QFrame):
     # ========== PANEL DIRECCIÓN CON ESTILO ORIGINAL ==========
     
     def crear_panel_direccion(self):
-        """Crea panel de dirección con el diseño original"""
         # Frame principal
         self.panel_direccion = QFrame()
         self.panel_direccion.setStyleSheet(self.estilo["styles"]["panel"])
@@ -196,6 +193,7 @@ class Ventana_configuracion(QFrame):
         contenido_frame.setStyleSheet("QFrame{ background: transparent; margin: 0; padding: 0; }")
         layout_contenido = QVBoxLayout()
         layout_contenido.setContentsMargins(15, 20, 15, 20)
+        layout_contenido.setSpacing(25)
         contenido_frame.setLayout(layout_contenido)
         layout_panel.addWidget(contenido_frame)
         
@@ -203,40 +201,73 @@ class Ventana_configuracion(QFrame):
         self.grupo_direccion = QGroupBox("Configuración de Dirección")
         self.grupo_direccion.setStyleSheet(self.estilo["styles"]["grupo"])
         
-        # Layout grid para campos (diseño original en 2 columnas)
-        layout_grid = QGridLayout()
-        layout_grid.setVerticalSpacing(12)
-        layout_grid.setHorizontalSpacing(15)
-        self.grupo_direccion.setLayout(layout_grid)
+        # Layout horizontal para dos columnas
+        layout_horizontal = QHBoxLayout()
+        layout_horizontal.setSpacing(20)
+        self.grupo_direccion.setLayout(layout_horizontal)
         
-        # Crear campos
+        # ===== COLUMNA IZQUIERDA (Estado y Parroquia) =====
+        self.columna_izquierda = QFrame()
+        self.columna_izquierda.setStyleSheet("QFrame{ background: transparent; }")
+        layout_izquierda = QVBoxLayout(self.columna_izquierda)
+        layout_izquierda.setSpacing(15)
+        
+        # Estado
+        self.label_estado = QLabel("Estado:")
+        self.label_estado.setStyleSheet(self.estilo["styles"]["title"])  # Aplicar estilo al label
         self.entry_estado = QLineEdit()
         self.entry_estado.setStyleSheet(self.estilo["styles"]["input"])
         self.entry_estado.setPlaceholderText("Ingrese el estado")
         
-        self.entry_municipio = QLineEdit()
-        self.entry_municipio.setStyleSheet(self.estilo["styles"]["input"])
-        self.entry_municipio.setPlaceholderText("Ingrese el municipio")
-        
+        # Parroquia
+        self.label_parroquia = QLabel("Parroquia:")
+        self.label_parroquia.setStyleSheet(self.estilo["styles"]["title"])  # Aplicar estilo al label
         self.entry_parroquia = QLineEdit()
         self.entry_parroquia.setStyleSheet(self.estilo["styles"]["input"])
         self.entry_parroquia.setPlaceholderText("Ingrese la parroquia")
         
+        layout_izquierda.addWidget(self.label_estado)
+        layout_izquierda.addWidget(self.entry_estado)
+        layout_izquierda.addWidget(self.label_parroquia)
+        layout_izquierda.addWidget(self.entry_parroquia)
+        
+        # ===== COLUMNA DERECHA (Municipio e Institución) =====
+        self.columna_derecha = QFrame()
+        self.columna_derecha.setStyleSheet("QFrame{ background: transparent; }")
+        layout_derecha = QVBoxLayout(self.columna_derecha)
+        layout_derecha.setSpacing(15)
+        
+        # Municipio
+        self.label_municipio = QLabel("Municipio:")
+        self.label_municipio.setStyleSheet(self.estilo["styles"]["title"])  # Aplicar estilo al label
+        self.entry_municipio = QLineEdit()
+        self.entry_municipio.setStyleSheet(self.estilo["styles"]["input"])
+        self.entry_municipio.setPlaceholderText("Ingrese el municipio")
+        
+        # Institución
+        self.label_institucion = QLabel("Comunidad/Institución:")
+        self.label_institucion.setStyleSheet(self.estilo["styles"]["title"])  # Aplicar estilo al label
         self.entry_institucion = QLineEdit()
         self.entry_institucion.setStyleSheet(self.estilo["styles"]["input"])
         self.entry_institucion.setPlaceholderText("Ingrese comunidad o institución")
         
-        # Agregar al grid (diseño original: 2 columnas)
-        layout_grid.addWidget(QLabel("Estado:"), 0, 0)
-        layout_grid.addWidget(self.entry_estado, 0, 1)
-        layout_grid.addWidget(QLabel("Municipio:"), 1, 0)
-        layout_grid.addWidget(self.entry_municipio, 1, 1)
-        layout_grid.addWidget(QLabel("Parroquia:"), 2, 0)
-        layout_grid.addWidget(self.entry_parroquia, 2, 1)
-        layout_grid.addWidget(QLabel("Comunidad/Institución:"), 3, 0)
-        layout_grid.addWidget(self.entry_institucion, 3, 1)
+        layout_derecha.addWidget(self.label_municipio)
+        layout_derecha.addWidget(self.entry_municipio)
+        layout_derecha.addWidget(self.label_institucion)
+        layout_derecha.addWidget(self.entry_institucion)
         
+        # Agregar ambas columnas al layout horizontal
+        layout_horizontal.addWidget(self.columna_izquierda)
+        layout_horizontal.addWidget(self.columna_derecha)
+        
+        # Hacer que las columnas se expandan equitativamente
+        layout_horizontal.setStretch(0, 1)
+        layout_horizontal.setStretch(1, 1)
+        
+        # Agregar el grupo al layout de contenido
         layout_contenido.addWidget(self.grupo_direccion)
+        
+        # Agregar panel al layout principal
         self.layout_main.addWidget(self.panel_direccion)
     
     # ========== PANEL JEFATURAS CON ESTILO ORIGINAL ==========
@@ -410,8 +441,7 @@ class Ventana_configuracion(QFrame):
         # Añadir el Panel Gaceta al Layout
         self.layout_main.addWidget(self.panel_gaceta)
         
-    # ========== BOTÓN GUARDAR CON ESTILO ORIGINAL ==========
-    
+    # ==Método de Botón de Guardar==
     def crear_boton_guardar(self):
         """Crea botón de guardar con el diseño original"""
         layout_boton = QHBoxLayout()
@@ -430,3 +460,15 @@ class Ventana_configuracion(QFrame):
         
         self.layout_main.addLayout(layout_boton)
     
+    def actualizar_estilos(self):
+        """Método de actualización para esta vista"""
+        estilo = estilo_app.obtener_estilo_completo()
+        
+        # Aplica los estilos a tus componentes
+        self.setStyleSheet(estilo["styles"]["fondo"])
+        
+        # Actualiza widgets específicos
+        for widget in self.findChildren(QPushButton):
+            widget.setStyleSheet(estilo["styles"]["boton"])
+            
+        print(f"🔄 {self.__class__.__name__} actualizada")

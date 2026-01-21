@@ -5,15 +5,12 @@ from PyQt5.QtCore import QObject, pyqtSignal
 class AppStyle(QObject):
     # PyQtSignal para Estilos_Actualizados
     estilos_actualizados = pyqtSignal()
-
+    vistas_registradas = []
     # Variables de clase para configuración global
-    FONT_FAMILY = "Arial" 
     FONT_SIZE = 12
     FONT_BOLD = False
     THEME = "claro" 
-    COLOR_PRIMARIO = "#005a6e"
-    COLOR_AZUL_HOVER = "#00485a"
-    COLOR_SECUNDARIO = "#F44336"
+    FONT_FAMILY = "Arial" 
     
     # Colores por tema
     THEME_COLORS = {
@@ -22,29 +19,35 @@ class AppStyle(QObject):
             "bg_secondary": "#FAFAFA",
             "bg_fondo": "#E3EFF3",
             "bg_panel": "rgba(255, 255, 255, 0.9)",
+            "primary": "#005a6e",
+            "secondary": "#F44336",
             "text_primary": "#000000",
             "text_secondary": "#37474F",
             "text_label": "#333333",
-            "border": "#E0E0E0",
+            "border": "#005a6e",
             "border_light": "#E3F2FD",
-            "border_input": "#BDBDBD",
+            "border_input": "#005a6e",
             "shadow": "gray",
             "table_header": "#005a6e",
-            "table_bg": "white",
+            "table_bg": "#FFFFFF",
             "card_bg": "white",
-            "input_bg": "white",
+            "input_bg": "#FFFFFF",
             "scroll_bg": "#f0f0f0",
-            "scroll_handle": "#c0c0c0"
+            "scroll_handle": "#c0c0c0",
+            "boton": "#005a6e",
+            "boton_hover": "#00485a"
         },
         "oscuro": {
             "bg_primary": "rgba(40, 44, 52, 0.95)",
             "bg_secondary": "#2C313A",
             "bg_fondo": "#21252B",
             "bg_panel": "rgba(40, 44, 52, 0.9)",
+            "primary": "#005a6e",
+            "secondary": "#F44336",
             "text_primary": "#FFFFFF",
             "text_secondary": "#ABB2BF",
             "text_label": "#D7D7D7",
-            "border": "#3A3F4B",
+            "border": "#005a6e",
             "border_light": "#4B5362",
             "border_input": "#5D6575",
             "shadow": "rgba(0, 0, 0, 0.5)",
@@ -53,9 +56,13 @@ class AppStyle(QObject):
             "card_bg": "#2C313A",
             "input_bg": "#2C313A",
             "scroll_bg": "#2C313A",
-            "scroll_handle": "#4B5362"
+            "scroll_handle": "#4B5362",
+            "boton": "#005a6e",
+            "boton_hover": "#00485a"
         }
     }
+
+   
     
     def cargar_configuracion(self):
         """Carga la configuración desde la base de datos"""
@@ -90,7 +97,7 @@ class AppStyle(QObject):
         
         return f"""
         QPushButton{{
-            background: {self.COLOR_PRIMARIO};
+            background: {colores['boton']};
             color: White;
             font-weight: bold;
             font-size: {self.FONT_SIZE + 7}px;
@@ -104,10 +111,10 @@ class AppStyle(QObject):
             min-height: 20px;
         }}  
         QPushButton:hover{{
-            background: {self.COLOR_AZUL_HOVER};
+            background: {colores['boton_hover']};
         }}    
         QPushButton:pressed{{
-            background: {self.COLOR_AZUL_HOVER.replace('a', '8')};
+            background: {colores['boton_hover'].replace('a', '8')};
         }}  
         """
     
@@ -120,7 +127,7 @@ class AppStyle(QObject):
         return f"""
         QLabel{{
             font-family: {self.FONT_FAMILY};
-            background: {self.COLOR_PRIMARIO};
+            background: {colores["table_header"]};
             font-size: {self.FONT_SIZE + 15}px; 
             color: white;
             font-weight: {font_weight};
@@ -148,11 +155,12 @@ class AppStyle(QObject):
             border: 2px solid {colores['border_input']};
             border-radius: 8px;
             min-width: {self.FONT_SIZE + 5}px;
+            min-height: {self.FONT_SIZE + 2}px;
             background: {colores['input_bg']};
             color: {colores['text_primary']};
         }}
         QLineEdit:focus, QTextEdit:focus, QComboBox:focus, QSpinBox:focus{{
-            border: 2px solid {self.COLOR_PRIMARIO};
+            border: 2px solid {colores['bg_primary']};
         }}
         QLineEdit::placeholder, QTextEdit::placeholder{{
             color: {colores['text_secondary']};
@@ -195,7 +203,7 @@ class AppStyle(QObject):
     
     
     def obtener_estilo_panel(self):
-        """Retorna el estilo CSS para paneles"""
+        # Retorna el estilo del Panel
         colores = self.obtener_colores_tema()
         
         return f"""
@@ -224,7 +232,7 @@ class AppStyle(QObject):
             border-radius: 8px;
         }}
         QHeaderView::section {{
-            background-color: {self.COLOR_PRIMARIO};
+            background-color: {colores["table_header"]};
             color: white;
             font-size: {self.FONT_SIZE + 2}px;
             font-weight: bold;
@@ -235,7 +243,7 @@ class AppStyle(QObject):
             padding: 6px;
         }}
         QTableWidget::item:selected {{
-            background-color: {self.COLOR_AZUL_HOVER};
+            background-color: {colores['boton_hover']};
             color: white;
         }}
         """
@@ -262,7 +270,7 @@ class AppStyle(QObject):
             min-height: 20px;
         }}
         QScrollBar::handle:vertical:hover {{
-            background: {self.COLOR_PRIMARIO};
+            background: {colores['primary']};
         }}
         QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{
             border: none;
@@ -292,7 +300,7 @@ class AppStyle(QObject):
             subcontrol-origin: margin;
             left: 8px;
             padding: 0 6px 0 6px;
-            color: {self.COLOR_PRIMARIO};
+            color: {colores["text_primary"]};
         }}
         """
 
@@ -316,8 +324,8 @@ class AppStyle(QObject):
             border: 2px solid {colores['border_input']};
         }}
         QRadioButton::indicator:checked{{
-            background-color: {self.COLOR_PRIMARIO};
-            border: 2px solid {self.COLOR_PRIMARIO};
+            background-color: {colores['bg_primary']};
+            border: 2px solid {colores['boton']};
         }}
         """
         
@@ -337,8 +345,8 @@ class AppStyle(QObject):
             background: {colores['input_bg']};
         }}
         QCheckBox::indicator:checked{{
-            background-color: {self.COLOR_PRIMARIO};
-            border: 2px solid {self.COLOR_PRIMARIO};
+            background-color: {colores['bg_primary']};
+            border: 2px solid {colores['boton']};
         }}
         """
         
@@ -347,7 +355,7 @@ class AppStyle(QObject):
     def obtener_fondo_aplicacion(self):
         """Retorna el estilo CSS para el fondo de la aplicación"""
         colores = self.obtener_colores_tema()
-        return f"background: {colores['bg_fondo']};"
+        return f"background: {colores['bg_primary']};"
     
     def obtener_estilo_card(self):
         """Retorna el estilo CSS para tarjetas"""
@@ -357,37 +365,76 @@ class AppStyle(QObject):
         QFrame{{
             background: {colores['card_bg']};
             border-radius: 10px;
-            border-left: 5px solid {self.COLOR_PRIMARIO};
+            border-left: 5px solid {colores['bg_primary']};
             padding: 15px;
             margin: 5px;
         }}
         """
     
     def obtener_estilo_date(self):
+        colores = self.obtener_colores_tema()
+
         return f"""QDateEdit {{
         margin: 0 0 0 20px;
-        border: 2px solid #005a6e;       /* Borde sólido azul */
-        border-radius: 5px;              /* Esquinas redondeadas */
-        padding: 10px;                    /* Espacio interno */
-        background-color: #FFFFFF;       /* Fondo blanco */
-        color: #333333;                  /* Color del texto */
-        font-size: {self.FONT_SIZE}px;                 /* Tamaño de fuente */
-        margin-right: 30px;
-        selection-background-color: #0056b3; /* Color de fondo del texto seleccionado */
+        border: 2px solid {colores['primary']};
+        border-radius: 2px;
+        padding: 10px;
+        background-color: {colores['bg_primary']};
+        color: {colores["text_primary"]};
+        font-size: {self.FONT_SIZE}px;
         }}
-
         QDateEdit:hover {{
-        border-color: #0056b3;           /* Borde más oscuro al pasar el cursor */
+        border-color: {colores['primary']};
         }}
 
         QDateEdit:disabled {{
-        background-color: #e0e0e0;       /* Fondo gris cuando está deshabilitado */
-        color: #999999;
-        }}   
+        background-color: {colores['bg_primary']};
+        }}
+        
+        QCalendarWidget {{
+        background-color: {colores['bg_primary']};
+        border: 2px solid {colores['primary']}
+        border-radius: 2px;
+        }}
+        
+        QCalendarWidget QToolButton {{
+        color: #005a6e;
+        background-color: #f0f0f0;
+        font-size: {self.FONT_SIZE}px;
+        icon-size: 20px, 20px;
+        }}
+        
+        QCalendarWidget QMenu {{
+        background-color: white;
+        color: {colores["text_primary"]};
+        }}
+        
+        QCalendarWidget QSpinBox {{
+        background-color: {colores['bg_primary']};
+        color: {colores["text_primary"]};
+        selection-background-color: {colores['primary']};
+        selection-color: white;
+        }}
+        
+        QCalendarWidget QWidget {{ alternate-background-color: #e6f7ff; }}
+        
+        QCalendarWidget QTableView {{
+        selection-background-color: {colores['primary']};
+        selection-color: {colores['bg_primary']};
+        gridline-color: #ddd;
+        }}
+        
+        QCalendarWidget QHeaderView::section {{
+        background-color: #f8f9fa;
+        color: {colores["text_primary"]};
+        font-weight: bold;
+        padding: 6px;
+        border: 1px solid #ddd;
+        }}
         """
     
     def obtener_estilo_completo(self):
-        """Retorna un diccionario con todos los estilos"""
+        # Retorna un diccionario con el estilo del programa
         self.cargar_configuracion()
         
         radio_style, checkbox_style = self.obtener_estilo_radio_checkbox()
@@ -397,9 +444,6 @@ class AppStyle(QObject):
             "font_size": self.FONT_SIZE,
             "font_bold": self.FONT_BOLD,
             "theme": self.THEME,
-            "color_primario": self.COLOR_PRIMARIO,
-            "color_secundario": self.COLOR_SECUNDARIO,
-            "color_hover": self.COLOR_AZUL_HOVER,
             "colors": self.obtener_colores_tema(),
             "styles": {
                 "boton": self.obtener_estilo_boton(),
@@ -468,6 +512,49 @@ class AppStyle(QObject):
         except Exception as e:
             print(f"❌ Error al actualizar configuración: {e}")
             return False
+
+    def registrar_vista(self, vista):
+        # == Registrar una vista para recibir actualizaciones de estilo==
+        if vista not in AppStyle.vistas_registradas:
+            AppStyle.vistas_registradas.append(vista)
+            print(f"Vista registrada: {vista.__class__.__name__}")
+
+    def desregistrar_vista(self, vista):
+        # ==Eliminar una vista de la lista de actualización==
+        if vista in AppStyle.vistas_registradas:
+            AppStyle.vistas_registradas.remove(vista)
+    
+    def notificar_cambio_estilos(self):
+        # Notificar a todas las vistas registradas para que se actualicen
+        print(f" Notificando cambio de estilo a")
+
+        # Actualizar la configuracion interna primero
+        self.cargar_configuracion()
+
+        # Emitir señal
+        self.estilos_actualizados.emit()
+
+        # Notificar a cada vista registrada
+        for vista in AppStyle.vistas_registradas:
+            try:
+                if hasattr(vista, 'actualizar_estilos'):
+                    vista.actualizar_estilos()
+                
+                elif hasattr(vista, 'actualizar_estilo_vista'):
+                    vista.actualizar_estilo_vista
+                else:
+                    # Si no tiene algún método especifico, aplicar método general
+                    self.aplicar_estilo_vista(vista)
+                print(f"Actualizada: {vista.__class__.__name__}")
+            except Exception as e:
+                print(f" Error actualizando {vista.__class__.__name__}: {e}")
+
+    def actualizar_y_notificar(self, tema=None, fuente_familia=None, fuente_tamano=None, fuente_negrita=None):
+        # =Actualizar la configuración y notifica a todas las vistas=
+        success = self.actualizar_configuracion(tema, fuente_familia, fuente_tamano, fuente_negrita)
+        if success:
+            self.notificar_cambio_estilos()
+        return success
 
 # Instancia global para uso en toda la aplicación
 estilo_app = AppStyle()

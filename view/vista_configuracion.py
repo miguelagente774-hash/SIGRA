@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import (QFrame, QLabel, QVBoxLayout, QHBoxLayout,
                              QGridLayout, QLineEdit, QButtonGroup, QPushButton, QDateEdit, 
                              QScrollArea, QWidget)
 from PyQt5.QtCore import Qt, pyqtSignal, QDate
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QColor
 from components.app_style import estilo_app
 
 class Ventana_configuracion(QFrame):
@@ -462,4 +462,83 @@ class Ventana_configuracion(QFrame):
         self.layout_main.addLayout(layout_boton)
     
     def actualizar_estilos(self):
-        print("En Desarrollo")
+        """Actualiza los estilos de esta vista"""
+        print(f"🔄 {self.__class__.__name__} actualizando estilos...")
+        self.estilo = estilo_app.obtener_estilo_completo()
+        colores = self.estilo["colors"]
+        font_size = self.estilo["font_size"]
+        
+        # Aplicar fondo a la vista principal
+        self.setStyleSheet(self.estilo["styles"]["fondo"])
+        
+        # Actualizar scroll area
+        self.scroll_area.setStyleSheet(self.estilo["styles"]["scroll"])
+        
+        # Lista de paneles para actualizar
+        paneles = [
+            self.panel_interfaz,
+            self.panel_direccion,
+            self.panel_jefaturas,
+            self.panel_gaceta
+        ]
+        
+        # Actualizar cada panel
+        for panel in paneles:
+            if panel:
+                # Actualizar estilo del panel
+                panel.setStyleSheet(f"""
+                    QFrame {{
+                        {self.estilo["styles"]["panel"]}
+                        background-color: {colores["bg_panel"]};
+                    }}
+                """)
+                
+                # Actualizar sombra
+                if panel.graphicsEffect():
+                    effect = panel.graphicsEffect()
+                    if isinstance(effect, QGraphicsDropShadowEffect):
+                        effect.setColor(QColor(colores.get("shadow", Qt.gray)))
+        
+        # Actualizar todos los QGroupBox con estilo específico
+        for widget in self.findChildren(QGroupBox):
+            widget.setStyleSheet(self.estilo["styles"]["grupo"])
+        
+        # Actualizar todos los QLabel
+        for widget in self.findChildren(QLabel):
+            # Verificar si es un título de sección
+            text = widget.text()
+            if text in [
+                "Configuración de Interfaz",
+                "Configuración de Datos de Dirección", 
+                "Datos de Jefaturas",
+                "Gaceta Coordinador"
+            ]:
+                widget.setStyleSheet(self.estilo["styles"]["title"])
+            elif text in ["Tipo de Letra", "Tamaño de la fuente", "Estado:", "Parroquia:", 
+                        "Municipio:", "Comunidad/Institución:", "Nombre completo:", 
+                        "Cédula de identidad:", "Decreto:", "Fecha de Publicacion:"]:
+                widget.setStyleSheet(self.estilo["styles"]["label"])
+        
+        # Actualizar todos los inputs con estilos más visibles
+        for widget in self.findChildren(QLineEdit):
+            widget.setStyleSheet(self.estilo["styles"]["input"])
+        
+        for widget in self.findChildren(QComboBox):
+            widget.setStyleSheet(self.estilo["styles"]["input"])
+        
+        for widget in self.findChildren(QSpinBox):
+            widget.setStyleSheet(self.estilo["styles"]["input"])
+        
+        # Actualizar todos los QRadioButton
+        for widget in self.findChildren(QRadioButton):
+            widget.setStyleSheet(self.estilo["styles"]["radio"])
+        
+        # Actualizar todos los QCheckBox
+        for widget in self.findChildren(QCheckBox):
+            widget.setStyleSheet(self.estilo["styles"]["checkbox"])
+        
+        # Actualizar botón guardar con estilo más destacado
+        if hasattr(self, 'boton_guardar'):
+            self.boton_guardar.setStyleSheet(self.estilo["styles"]["boton"])
+        
+        print(f"✅ {self.__class__.__name__} estilos actualizados")

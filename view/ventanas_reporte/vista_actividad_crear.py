@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import (QFrame, QLabel, QVBoxLayout, QHBoxLayout,
                              QGraphicsDropShadowEffect, QTextEdit, QWidget, 
                              QPushButton, QLineEdit, QMessageBox, QDateEdit, QTableWidget, QComboBox)
 from PyQt5.QtCore import Qt, pyqtSignal, QDate
-from PyQt5.QtGui import QPixmap, QIcon, QFont
+from PyQt5.QtGui import QPixmap, QIcon, QColor
 from services.Cargar_imagenes import ImageFrame
 from components.app_style import estilo_app
 
@@ -180,4 +180,64 @@ class Ventana_reporte_crear(QFrame):
 
     # Método en cada vista:
     def actualizar_estilos(self):
-        print("En Desarrollo")
+        """Actualiza los estilos de esta vista"""
+        print(f"🔄 {self.__class__.__name__} actualizando estilos...")
+        self.estilo = estilo_app.obtener_estilo_completo()
+        colores = self.estilo["colors"]
+        
+        # Aplicar fondo a la vista principal
+        self.setStyleSheet(self.estilo["styles"]["fondo"])
+        
+        # Actualizar panel principal
+        for widget in self.findChildren(QFrame):
+            # Buscar el panel principal por su sombra
+            if widget.graphicsEffect():
+                widget.setStyleSheet(self.estilo["styles"]["panel"])
+                
+                # Actualizar sombra
+                effect = widget.graphicsEffect()
+                if isinstance(effect, QGraphicsDropShadowEffect):
+                    effect.setColor(QColor(colores.get("shadow", Qt.gray)))
+        
+        # Actualizar título
+        for widget in self.findChildren(QLabel):
+            if widget.text() == "Crear Actividad":
+                widget.setStyleSheet(self.estilo["styles"]["header"])
+            elif widget.text() == "Imágenes de la actividad":
+                widget.setStyleSheet(self.estilo["styles"]["title"])
+            elif widget.text() == "Fecha de la actividad:":
+                widget.setStyleSheet(self.estilo["styles"]["title"])
+        
+        # Actualizar inputs
+        for widget in self.findChildren((QLineEdit, QTextEdit)):
+            widget.setStyleSheet(self.estilo["styles"]["input"])
+        
+        # Actualizar QDateEdit
+        for widget in self.findChildren(QDateEdit):
+            widget.setStyleSheet(self.estilo["styles"]["date"])
+        
+        # Actualizar botones
+        for widget in self.findChildren(QPushButton):
+            widget.setStyleSheet(self.estilo["styles"]["boton"])
+        
+        # Actualizar contenedor de imágenes
+        for widget in self.findChildren(QFrame):
+            # Buscar contenedor de imágenes por su layout y contenido
+            child_labels = [child.text() for child in widget.findChildren(QLabel) if child.text()]
+            if "Imágenes de la actividad" in child_labels:
+                widget.setStyleSheet(f"""
+                    QFrame {{
+                        background: {colores["bg_secondary"]};
+                        border: 1px solid {colores["border"]};
+                        border-radius: 8px;
+                        margin: 10px;
+                    }}
+                """)
+        
+        # Actualizar frames de imágenes
+        if hasattr(self, 'frame_imagen1'):
+            self.frame_imagen1.actualizar_estilos()
+        if hasattr(self, 'frame_imagen2'):
+            self.frame_imagen2.actualizar_estilos()
+        
+        print(f"✅ {self.__class__.__name__} estilos actualizados")

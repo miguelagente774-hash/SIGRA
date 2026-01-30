@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import (QFrame, QLabel, QVBoxLayout,
                             QTableWidget, QTableWidgetItem, QHeaderView, 
                             QLineEdit, QTextEdit, QComboBox, QDateEdit, QMessageBox)
 from PyQt5.QtCore import (Qt)
+from PyQt5.QtGui import QColor
 from components.app_style import estilo_app
 
 class Ventana_reporte_finalizados(QFrame):
@@ -173,4 +174,64 @@ class Ventana_reporte_finalizados(QFrame):
 
     # Método en cada vista:
     def actualizar_estilos(self):
-        print("En Desarrollo")
+        """Actualiza los estilos de esta vista"""
+        print(f"🔄 {self.__class__.__name__} actualizando estilos...")
+        self.estilo = estilo_app.obtener_estilo_completo()
+        colores = self.estilo["colors"]
+        
+        # Aplicar fondo a la vista principal
+        self.setStyleSheet(self.estilo["styles"]["fondo"])
+        
+        # Actualizar panel principal
+        for widget in self.findChildren(QFrame):
+            # Buscar el panel principal por su título
+            child_labels = [child.text() for child in widget.findChildren(QLabel) if child.text()]
+            if "Actividades Finalizadas" in child_labels:
+                widget.setStyleSheet(f"""
+                    QFrame {{
+                        background: {colores["bg_panel"]};
+                        border-radius: 15px;
+                    }}
+                """)
+                
+                # Actualizar sombra
+                if widget.graphicsEffect():
+                    effect = widget.graphicsEffect()
+                    if isinstance(effect, QGraphicsDropShadowEffect):
+                        effect.setColor(QColor(colores.get("shadow", Qt.gray)))
+        
+        # Actualizar título
+        for widget in self.findChildren(QLabel):
+            if widget.text() == "Actividades Finalizadas":
+                widget.setStyleSheet(self.estilo["styles"]["header"])
+        
+        # Actualizar tabla
+        if hasattr(self, 'tabla_actividades'):
+            # Actualizar estilo de la tabla completa
+            self.tabla_actividades.setStyleSheet(self.estilo["styles"]["tabla"])
+            
+            # Actualizar header horizontal
+            header = self.tabla_actividades.horizontalHeader()
+            header.setStyleSheet(f"""
+                QHeaderView::section {{
+                    background-color: {colores["table_header"]};
+                    color: white;
+                    font-weight: bold;
+                    padding: 8px;
+                    border: 1px solid {colores["border"]};
+                    font-size: {self.estilo["font_size"] + 2}px;
+                }}
+            """)
+            
+            # Actualizar texto en las celdas
+            for row in range(self.tabla_actividades.rowCount()):
+                for col in range(self.tabla_actividades.columnCount()):
+                    item = self.tabla_actividades.item(row, col)
+                    if item:
+                        item.setForeground(QColor(colores["text_primary"]))
+        
+        # Actualizar botones
+        for widget in self.findChildren(QPushButton):
+            widget.setStyleSheet(self.estilo["styles"]["boton"])
+        
+        print(f"✅ {self.__class__.__name__} estilos actualizados")

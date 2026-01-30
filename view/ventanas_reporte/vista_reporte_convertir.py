@@ -170,7 +170,7 @@ class Ventana_convertir_reporte(QFrame):
                     
                     # **SOLUCIÓN: Usar color del tema para el separador**
                     elemento_separador = QTableWidgetItem(f"  {nombre_mes}")
-                    elemento_separador.setBackground(QColor(colores.get("table_header", "#005a6e")))  # Color del tema
+                    elemento_separador.setBackground(QColor(colores.get("table_header_secondary", "#11c7f0")))  # Color del tema
                     elemento_separador.setForeground(QColor("white"))  # Texto blanco para mejor contraste
                     
                     # Hacer el texto en negrita

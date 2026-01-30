@@ -14,7 +14,8 @@ COLOR_PRIMARIO = estilo_app.obtener_colores_tema()["primary"]
 COLOR_PRIMARIO_HOVER = estilo_app.obtener_colores_tema()["boton_hover"]
 BACKGROUND = estilo_app.obtener_colores_tema()["bg_primary"]
 BACKGROUND_HOVER = estilo_app.obtener_colores_tema()["bg_fondo"]
-BORDER = estilo_app.obtener_colores_tema()["border_light"]
+BORDER = estilo_app.obtener_colores_tema()["border"]
+BORDER_LIGHT = estilo_app.obtener_colores_tema()["border_light"]
 
 
 class ImageFrame(QFrame):
@@ -50,7 +51,7 @@ class ImageFrame(QFrame):
         self.setStyleSheet(f"""
             ImageFrame {{
                 background: {BACKGROUND};
-                border: 2px dashed {BORDER};
+                border: 2px dashed {BORDER_LIGHT};
                 border-radius: 12px;
                 /* **CAMBIO 2: Quitar min/max width/height ya que usamos fixedSize */
             }}
@@ -241,7 +242,7 @@ class ImageFrame(QFrame):
             self.setStyleSheet(f"""
                 ImageFrame {{
                 background: {BACKGROUND};
-                border: 2px dashed {BORDER};
+                border: 2px dashed {BORDER_LIGHT};
                 border-radius: 12px;
                 }}
                 ImageFrame:hover {{
@@ -305,3 +306,26 @@ class ImageFrame(QFrame):
     def has_imagen(self):
         # Verifica si el frame tiene una imagen cargada
         return self.file_path is not None and self.image_label.pixmap() is not None
+    
+    def actualizar_estilos(self):
+        """Actualiza los estilos del frame de imagen"""
+        self.estilo = estilo_app.obtener_estilo_completo()
+        colores = self.estilo["colors"]
+        
+        # Actualizar estilo del frame
+        self.setStyleSheet(f"""
+            ImageFrame {{
+                background: {BACKGROUND};
+                border: 2px dashed {BORDER_LIGHT};
+                border-radius: 12px;
+                /* **CAMBIO 2: Quitar min/max width/height ya que usamos fixedSize */
+            }}
+            ImageFrame:hover {{
+                border-color: {COLOR_PRIMARIO};
+                background: {BACKGROUND};
+            }}
+        """)
+        
+        # Actualizar botón si existe
+        if hasattr(self, 'btn_cargar_imagen'):
+            self.btn_cargar_imagen.setStyleSheet(self.estilo["styles"]["boton"])

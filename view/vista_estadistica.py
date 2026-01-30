@@ -278,4 +278,36 @@ class Ventana_principal(QFrame):
         self.layout_main.addWidget(frame_Estadistica)
 
     def actualizar_estilos(self):
-        print("En Desarrollo")
+        """Actualiza los estilos de esta vista"""
+        print(f"🔄 {self.__class__.__name__} actualizando estilos...")
+        self.estilo = estilo_app.obtener_estilo_completo()
+        colores = self.estilo["colors"]
+        
+        # Aplicar fondo a la vista principal
+        self.setStyleSheet(self.estilo["styles"]["fondo"])
+        
+        # Actualizar todos los paneles con sombra
+        for widget in self.findChildren(QFrame):
+            if widget.graphicsEffect():
+                # Actualizar estilo del panel
+                widget.setStyleSheet(self.estilo["styles"]["panel"])
+                
+                # Actualizar sombra
+                effect = widget.graphicsEffect()
+                if isinstance(effect, QGraphicsDropShadowEffect):
+                    effect.setColor(QColor(colores.get("shadow", Qt.gray)))
+        
+        # Actualizar títulos
+        for widget in self.findChildren(QLabel):
+            text = widget.text()
+            if text in ["Bienvenido al Sistema de Gestión", "Control de Reportes"]:
+                widget.setStyleSheet(self.estilo["styles"]["header"])
+            else:
+                widget.setStyleSheet(self.estilo["styles"]["label"])
+        
+        # Actualizar gráficos circulares
+        for widget in self.findChildren(CustomPieChartWidget):
+            # Forzar repintado del gráfico
+            widget.repaint()
+        
+        print(f"✅ {self.__class__.__name__} estilos actualizados")

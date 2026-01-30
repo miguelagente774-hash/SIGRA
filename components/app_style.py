@@ -29,6 +29,7 @@ class AppStyle(QObject):
             "border_input": "#005a6e",
             "shadow": "gray",
             "table_header": "#005a6e",
+            "table_header_secondary": "#256d7e",
             "table_bg": "#FFFFFF",
             "card_bg": "white",
             "input_bg": "#FFFFFF",
@@ -52,6 +53,7 @@ class AppStyle(QObject):
             "border_input": "#5D6575",
             "shadow": "rgba(0, 0, 0, 0.5)",
             "table_header": "#2C313A",
+            "table_header_secondary": "#11c7f0",
             "table_bg": "#282C34",
             "card_bg": "#2C313A",
             "input_bg": "#2C313A",
@@ -150,8 +152,8 @@ class AppStyle(QObject):
         QLineEdit, QTextEdit, QComboBox, QSpinBox{{
             font-family: {self.FONT_FAMILY};
             font-size: {self.FONT_SIZE + 5}px;
-            padding: 10px;
-            margin: 10px;
+            padding: 8px 10px;
+            margin: 5px;
             border: 2px solid {colores['border_light']};
             border-radius: 8px;
             min-width: {self.FONT_SIZE + 5}px;

@@ -29,7 +29,7 @@ class controlador_reporte_crear():
                 try:
                     imagenes_guardar.Crear_carpeta()
                 except:
-                    self.reporte_crear.mensaje_advertencia("Info", "Error al Crear Carpeta")
+                    self.vista.mensaje_advertencia("Info", "Error al Crear Carpeta")
 
                 # obteniendo imagen con un nuevo nombre
                 try:
@@ -37,18 +37,18 @@ class controlador_reporte_crear():
                     actividad.imagen1 = rutas[0]
                     actividad.imagen2 = rutas[1]
                 except:
-                    self.reporte_crear.mensaje_advertencia("Info", "No se pudo guardar las imagenes")
+                    self.vista.mensaje_advertencia("Info", "No se pudo guardar las imagenes")
                 
                 datos.Guardar_datos(actividad)
-                self.reporte_crear.mensaje_informativo("Info", "Registro Exitoso")
-                self.reporte_crear.limpiar_formulario()
+                self.vista.mensaje_informativo("Info", "Registro Exitoso")
+                self.limpiar_formulario()
                 Comunicador_global.actividad_agregada.emit()
                 
             else:
-                self.reporte_crear.mensaje_advertencia("Info", error)
+                self.vista.mensaje_advertencia("Info", error)
 
         except Exception as e:
-            self.reporte_crear.mensaje_advertencia("informacion", f"fallo al guardar datos ({e})" )
+            self.vista.mensaje_advertencia("informacion", f"fallo al guardar datos ({e})" )
 
 
             

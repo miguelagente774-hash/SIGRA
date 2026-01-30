@@ -42,7 +42,6 @@ def create_card(title, amount, border_color):
     return frame
 
 # --- Clase para el Widget del Gráfico Circular Nativo (QPainter) ---
-# --- Clase para el Widget del Gráfico Circular Nativo (QPainter) ---
 class CustomPieChartWidget(QFrame):
     """Un QFrame que dibuja un gráfico circular simple usando QPainter."""
 
@@ -60,7 +59,7 @@ class CustomPieChartWidget(QFrame):
         self.title = title
         self.colors = [
             QColor(estilo_app.obtener_colores_tema()['primary']), 
-            QColor(estilo_app.obtener_colores_tema()['text_secondary'])
+            QColor(estilo_app.obtener_colores_tema()['secondary'])
         ]
         
         # Layout principal

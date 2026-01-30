@@ -10,6 +10,7 @@ class Ventana_reporte_finalizados(QFrame):
         super().__init__()
         self.estilo = estilo_app.obtener_estilo_completo()
         self.controller = controller
+        self.setStyleSheet(self.estilo["styles"]["fondo"])
         self.Main_layout = QVBoxLayout()
         self.Main_layout.setContentsMargins(40, 40, 40, 40)
         self.setLayout(self.Main_layout)
@@ -29,14 +30,14 @@ class Ventana_reporte_finalizados(QFrame):
         
         Panel_R_finalizado = QFrame()
         Panel_R_finalizado.setLayout(self.Panel_layout)
-        Panel_R_finalizado.setStyleSheet("""
-                                         QFrame{
-                                         background: rgba(255, 255, 255, 0.9);
+        Panel_R_finalizado.setStyleSheet(f"""
+                                         QFrame{{
+                                         background: {estilo_app.obtener_colores_tema()['table_bg']};
                                          border-top-left-radius: 15px;
                                          border-top-right-radius: 15px;
                                          border-bottom-left-radius: 15px;
                                          border-bottom-right-radius: 15px;
-                                         }""")
+                                         }}""")
 
         #sombra del panel
         sombra = QGraphicsDropShadowEffect()
@@ -62,7 +63,8 @@ class Ventana_reporte_finalizados(QFrame):
         header_verticar = self.tabla_actividades.verticalHeader()
         header_verticar.setSectionResizeMode(QHeaderView.Fixed)
         header_verticar.setDefaultAlignment(Qt.AlignCenter)
-        header_verticar.setFixedWidth(70)
+        header_verticar.setFixedWidth(60)
+        header_verticar.setVisible(False)
 
         #configuracion de las filas y columnas de la tabla
         self.tabla_actividades.setColumnCount(4)
@@ -171,27 +173,4 @@ class Ventana_reporte_finalizados(QFrame):
 
     # Método en cada vista:
     def actualizar_estilos(self):
-        """Actualiza los estilos de esta vista"""
-        self.estilo = estilo_app.obtener_estilo_completo()
-        
-        # Aplica el fondo
-        self.setStyleSheet(self.estilo["styles"]["fondo"])
-        
-        # Actualizar paneles específicos
-        for widget in self.findChildren(QFrame):
-            if hasattr(widget, 'panel') or 'panel' in widget.objectName().lower():
-                widget.setStyleSheet(self.estilo["styles"]["panel"])
-        
-        # Actualizar botones
-        for widget in self.findChildren(QPushButton):
-            widget.setStyleSheet(self.estilo["styles"]["boton"])
-        
-        # Actualizar inputs
-        for widget in self.findChildren((QLineEdit, QTextEdit, QComboBox, QDateEdit)):
-            widget.setStyleSheet(self.estilo["styles"]["input"])
-        
-        # Actualizar tablas
-        for widget in self.findChildren(QTableWidget):
-            widget.setStyleSheet(self.estilo["styles"]["tabla"])
-        
-        print(f"🔄 {self.__class__.__name__} actualizada")
+        print("En Desarrollo")

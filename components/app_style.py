@@ -106,7 +106,7 @@ class AppStyle(QObject):
             border-radius: 15px;
             border: none;
             text-align: left;
-            margin: 25px 15px;
+            margin: 10px 5px 20px 5px;
             min-width: 30px;
             min-height: 20px;
         }}  
@@ -151,8 +151,8 @@ class AppStyle(QObject):
             font-family: {self.FONT_FAMILY};
             font-size: {self.FONT_SIZE + 5}px;
             padding: 10px;
-            margin: 5px;
-            border: 2px solid {colores['border_input']};
+            margin: 10px;
+            border: 2px solid {colores['border_light']};
             border-radius: 8px;
             min-width: {self.FONT_SIZE + 5}px;
             min-height: {self.FONT_SIZE + 2}px;
@@ -160,7 +160,7 @@ class AppStyle(QObject):
             color: {colores['text_primary']};
         }}
         QLineEdit:focus, QTextEdit:focus, QComboBox:focus, QSpinBox:focus{{
-            border: 2px solid {colores['bg_primary']};
+            border: 2px solid {colores['border_input']};
         }}
         QLineEdit::placeholder, QTextEdit::placeholder{{
             color: {colores['text_secondary']};
@@ -178,6 +178,7 @@ class AppStyle(QObject):
             font-size: {self.FONT_SIZE + 3}px;
             color: {colores['text_label']};
             font-weight: bold;
+            border: 0px;
             margin: 5px;
             padding: 5px;
             background: none;
@@ -288,7 +289,7 @@ class AppStyle(QObject):
             font-family: {self.FONT_FAMILY};
             font-size: {self.FONT_SIZE + 2}px;
             font-weight: {font_weight};
-            color: {colores['text_secondary']};
+            color: {colores['text_primary']};
             margin: 0;
             padding: 15px 12px;
             border: 2px solid {colores['border_light']};
@@ -297,6 +298,7 @@ class AppStyle(QObject):
             min-width: 200px;
         }}
         QGroupBox::title{{
+            font-size: {self.FONT_SIZE + 5}px;
             subcontrol-origin: margin;
             left: 8px;
             padding: 0 6px 0 6px;
@@ -312,7 +314,8 @@ class AppStyle(QObject):
         QRadioButton{{
             font-family: {self.FONT_FAMILY};
             font-size: {self.FONT_SIZE + 5}px;
-            color: {colores['text_secondary']};
+            color: {colores['text_primary']};
+            background-color: {colores['bg_secondary']};
             padding: 6px 5px;
             spacing: 8px;
             min-height: 20px;
@@ -324,7 +327,7 @@ class AppStyle(QObject):
             border: 2px solid {colores['border_input']};
         }}
         QRadioButton::indicator:checked{{
-            background-color: {colores['bg_primary']};
+            background-color: {colores['primary']};
             border: 2px solid {colores['boton']};
         }}
         """
@@ -333,7 +336,7 @@ class AppStyle(QObject):
         QCheckBox{{
             font-family: {self.FONT_FAMILY};
             font-size: {self.FONT_SIZE + 1}px;
-            color: {colores['text_secondary']};
+            color: {colores['text_primary']};
             padding: 8px 0px;
             spacing: 8px;
         }}
@@ -379,6 +382,7 @@ class AppStyle(QObject):
         border: 2px solid {colores['primary']};
         border-radius: 2px;
         padding: 10px;
+        margin: 5px 2px 15px 20px;
         background-color: {colores['bg_primary']};
         color: {colores["text_primary"]};
         font-size: {self.FONT_SIZE}px;
@@ -433,6 +437,13 @@ class AppStyle(QObject):
         }}
         """
     
+    def obtener_estilo_frame(self):
+        colores = self.obtener_colores_tema()
+        return f"""background: {colores['bg_primary']}; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px;"""
+    
+    def obtener_estilo_widget(self):
+        colores = self.obtener_colores_tema()
+        return f"""padding: 0; margin: 0; background: {colores['bg_primary']};"""
     def obtener_estilo_completo(self):
         # Retorna un diccionario con el estilo del programa
         self.cargar_configuracion()
@@ -459,7 +470,9 @@ class AppStyle(QObject):
                 "checkbox": checkbox_style,
                 "fondo": self.obtener_fondo_aplicacion(),
                 "card": self.obtener_estilo_card(),
-                "date": self.obtener_estilo_date()
+                "date": self.obtener_estilo_date(),
+                "frame": self.obtener_estilo_frame(),
+                "widget": self.obtener_estilo_widget()
             }
         }
 

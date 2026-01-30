@@ -14,6 +14,7 @@ class Ventana_configuracion(QFrame):
     def __init__(self):
         super().__init__()
         self.estilo = estilo_app.obtener_estilo_completo()
+        self.setStyleSheet(self.estilo["styles"]["fondo"])
         
         #Registrar esta vista
         estilo_app.registrar_vista(self)
@@ -98,7 +99,7 @@ class Ventana_configuracion(QFrame):
         # ===== GRUPO TEMA CON ESTILO ORIGINAL =====
         self.grupo_tema = QGroupBox("Tema de la aplicación")
         self.grupo_tema.setMinimumWidth(200)
-        self.grupo_tema.setStyleSheet(self.estilo["styles"]["checkbox"])
+        self.grupo_tema.setStyleSheet(self.estilo["styles"]["grupo"])
         
         layout_tema = QVBoxLayout()
         layout_tema.setSpacing(12)
@@ -122,7 +123,7 @@ class Ventana_configuracion(QFrame):
         # ===== GRUPO FUENTE CON ESTILO ORIGINAL =====
         self.grupo_fuente = QGroupBox("Configuración de Fuente")
         self.grupo_fuente.setMinimumWidth(200)
-        self.grupo_fuente.setStyleSheet(self.estilo["styles"]["checkbox"])
+        self.grupo_fuente.setStyleSheet(self.estilo["styles"]["grupo"])
         
         layout_fuente = QVBoxLayout()
         layout_fuente.setSpacing(15)
@@ -461,14 +462,4 @@ class Ventana_configuracion(QFrame):
         self.layout_main.addLayout(layout_boton)
     
     def actualizar_estilos(self):
-        """Método de actualización para esta vista"""
-        estilo = estilo_app.obtener_estilo_completo()
-        
-        # Aplica los estilos a tus componentes
-        self.setStyleSheet(estilo["styles"]["fondo"])
-        
-        # Actualiza widgets específicos
-        for widget in self.findChildren(QPushButton):
-            widget.setStyleSheet(estilo["styles"]["boton"])
-            
-        print(f"🔄 {self.__class__.__name__} actualizada")
+        print("En Desarrollo")

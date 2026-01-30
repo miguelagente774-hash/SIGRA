@@ -278,22 +278,4 @@ class Ventana_principal(QFrame):
         self.layout_main.addWidget(frame_Estadistica)
 
     def actualizar_estilos(self):
-        """Actualiza los estilos de esta vista"""
-        # Obtener nuevo estilo
-        estilo = estilo_app.obtener_estilo_completo()
-        
-        # Aplica los estilos a tus componentes
-        self.setStyleSheet(estilo["styles"]["fondo"])
-        
-        # Actualizar paneles
-        if hasattr(self, 'panel_interfaz'):
-            self.panel_interfaz.setStyleSheet(estilo["styles"]["panel"])
-            
-        # Actualizar labels con estilo de título
-        for widget in self.findChildren(QLabel):
-            if widget.text() in ["Bienvenido al Sistema de Gestión", "Control de Reportes"]:
-                widget.setStyleSheet(estilo["styles"]["header"])
-            else:
-                widget.setStyleSheet(estilo["styles"]["title"])
-        
-        print(f"🔄 {self.__class__.__name__} actualizada")
+        print("En Desarrollo")

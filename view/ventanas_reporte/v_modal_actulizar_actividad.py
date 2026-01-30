@@ -23,6 +23,7 @@ class Modal_actulizar_actividades(QDialog):
         self.descripcion = descripcion
         self.fecha = fecha
         self.estilo = estilo_app.obtener_estilo_completo()
+        self.setStyleSheet(self.estilo["styles"]["fondo"])
         self.setWindowTitle("Actividad_actulizacion")
         self.setWindowModality(Qt.ApplicationModal)
 
@@ -208,27 +209,4 @@ class Modal_actulizar_actividades(QDialog):
 
     # Método en cada vista:
     def actualizar_estilos(self):
-        """Actualiza los estilos de esta vista"""
-        self.estilo = estilo_app.obtener_estilo_completo()
-        
-        # Aplica el fondo
-        self.setStyleSheet(self.estilo["styles"]["fondo"])
-        
-        # Actualizar paneles específicos
-        for widget in self.findChildren(QFrame):
-            if hasattr(widget, 'panel') or 'panel' in widget.objectName().lower():
-                widget.setStyleSheet(self.estilo["styles"]["panel"])
-        
-        # Actualizar botones
-        for widget in self.findChildren(QPushButton):
-            widget.setStyleSheet(self.estilo["styles"]["boton"])
-        
-        # Actualizar inputs
-        for widget in self.findChildren((QLineEdit, QTextEdit, QComboBox, QDateEdit)):
-            widget.setStyleSheet(self.estilo["styles"]["input"])
-        
-        # Actualizar tablas
-        for widget in self.findChildren(QTableWidget):
-            widget.setStyleSheet(self.estilo["styles"]["tabla"])
-        
-        print(f"🔄 {self.__class__.__name__} actualizada")
+        print("En Desarrollo")

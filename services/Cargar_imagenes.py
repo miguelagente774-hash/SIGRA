@@ -5,10 +5,17 @@ from PyQt5.QtWidgets import (QFrame, QLabel, QVBoxLayout, QHBoxLayout,
 from PyQt5.QtCore import Qt, QSize, QDate, pyqtSignal
 from PyQt5.QtGui import QPixmap, QIcon, QFont
 import os
+from components.app_style import estilo_app
 
-FONT_FAMILY = "Arial"
-COLOR_PRIMARIO = "#005a6e" 
-COLOR_AZUL_HOVER = "#00485a"
+FONT_FAMILY = estilo_app.obtener_estilo_completo()["font_family"]
+FONT_SIZE = estilo_app.obtener_estilo_completo()["font_size"]
+FONT_COLOR = "#FFFFFF"
+COLOR_PRIMARIO = estilo_app.obtener_colores_tema()["primary"]
+COLOR_PRIMARIO_HOVER = estilo_app.obtener_colores_tema()["boton_hover"]
+BACKGROUND = estilo_app.obtener_colores_tema()["bg_primary"]
+BACKGROUND_HOVER = estilo_app.obtener_colores_tema()["bg_fondo"]
+BORDER = estilo_app.obtener_colores_tema()["border"]
+BORDER_LIGHT = estilo_app.obtener_colores_tema()["border_light"]
 
 
 class ImageFrame(QFrame):
@@ -43,14 +50,14 @@ class ImageFrame(QFrame):
         """Configura la interfaz del frame de imagen"""
         self.setStyleSheet(f"""
             ImageFrame {{
-                background: #ffffff;
-                border: 2px dashed #d1d5db;
+                background: {BACKGROUND};
+                border: 2px dashed {BORDER_LIGHT};
                 border-radius: 12px;
                 /* **CAMBIO 2: Quitar min/max width/height ya que usamos fixedSize */
             }}
             ImageFrame:hover {{
-                border-color: #4FC3F7;
-                background: #f8fdff;
+                border-color: {COLOR_PRIMARIO};
+                background: {BACKGROUND};
             }}
         """)
         
@@ -98,16 +105,15 @@ class ImageFrame(QFrame):
                 background: transparent;
                 border: none;
                 border-radius: 8px;
-                padding: 0px;
+                padding: 15px;
             }
             QPushButton:hover {
                 background: #f1f1f1;
             }
         """)
         # **CAMBIO 6: Tamaño fijo para el botón igual que el label**
-        #button.setFixedSize(170, 120)
-        button.setMinimumSize(200, 80)
-        button.setMaximumSize(400, 300)
+        button.setMinimumSize(280, 150)
+        button.setMaximumSize(400, 250)
         
         # Layout interno para el botón
         button_layout = QVBoxLayout()
@@ -121,9 +127,10 @@ class ImageFrame(QFrame):
             QLabel {{
                 font-family: {FONT_FAMILY};
                 font-size: 32px;
-                color: #9ca3af;
+                color: {FONT_COLOR};
                 background: transparent;
                 border: none;
+                margin-top: 5px;
             }}
         """)
         icon_label.setAlignment(Qt.AlignCenter)
@@ -134,11 +141,12 @@ class ImageFrame(QFrame):
             QLabel {{
                 font-family: {FONT_FAMILY};
                 font-size: 14px;
-                color: #6b7280;
+                color: {FONT_COLOR};
                 font-weight: normal;
                 background: transparent;
                 border: none;
-                margin-top: 5px;
+                margin-bottom: 10px;
+                padding: 5px 15px;
             }}
         """)
         text_label.setAlignment(Qt.AlignCenter)
@@ -152,22 +160,22 @@ class ImageFrame(QFrame):
     def create_remove_button(self):
         """Crea el botón para eliminar imágenes"""
         button = QPushButton("✕")
-        button.setStyleSheet("""
-            QPushButton {
+        button.setStyleSheet(f"""
+            QPushButton {{
                 background: #ef4444;
-                color: white;
+                color: {FONT_COLOR};
                 border: none;
                 border-radius: 50%;
-                font-size: 12px;
+                font-size: {FONT_SIZE};
                 font-weight: bold;
-                min-width: 24px;
-                max-width: 24px;
-                min-height: 24px;
-                max-height: 24px;
-            }
-            QPushButton:hover {
+                min-width: 28px;
+                max-width: 28px;
+                min-height: 28px;
+                max-height: 28px;
+            }}
+            QPushButton:hover {{
                 background: #dc2626;
-            }
+            }}
         """)
         button.setCursor(Qt.PointingHandCursor)
         return button
@@ -219,11 +227,11 @@ class ImageFrame(QFrame):
             self.image_label.show()
             self.load_button.hide()
             self.remove_button.setVisible(True)
-            # **CAMBIO 9: Cambiar borde de punteado a sólido cuando hay imagen**
+            # Cambiar borde de punteado a sólido cuando hay imagen
             self.setStyleSheet(f"""
                 ImageFrame {{
-                    background: #ffffff;
-                    border: 2px solid #d1d5db;
+                    background: {BACKGROUND};
+                    border: 2px solid {BORDER};
                     border-radius: 12px;
                 }}
             """)
@@ -231,16 +239,15 @@ class ImageFrame(QFrame):
             self.image_label.hide()
             self.load_button.show()
             self.remove_button.setVisible(False)
-            # **CAMBIO 10: Volver a borde punteado cuando no hay imagen**
             self.setStyleSheet(f"""
                 ImageFrame {{
-                    background: #ffffff;
-                    border: 2px dashed #d1d5db;
-                    border-radius: 12px;
+                background: {BACKGROUND};
+                border: 2px dashed {BORDER_LIGHT};
+                border-radius: 12px;
                 }}
                 ImageFrame:hover {{
-                    border-color: #4FC3F7;
-                    background: #f8fdff;
+                    border-color: {COLOR_PRIMARIO};
+                    background: {BACKGROUND};
                 }}
             """)
     
@@ -276,7 +283,6 @@ class ImageFrame(QFrame):
     def eliminar_imagen(self):
         """Elimina la imagen actual"""
         self.image_label.clear()
-        # **SOLUCIÓN 4: Limpiar ambas variables para consistencia**
         self.image_path = None
         self.file_path = None
         
@@ -289,15 +295,37 @@ class ImageFrame(QFrame):
             self.imageLoaded.emit(self.numero_imagen, file_path)
             
     def get_imagen_path(self):
-        """Devuelve la ruta de la imagen actual"""
-        # **SOLUCIÓN 5: Siempre devolver self.file_path que es la fuente de verdad**
+        # Devuelve la Ruta de la Imágen Actual
         return self.file_path
         
     def clear(self):
-        """Limpia el frame (elimina imagen si existe)"""
+        # Limpiar el Frame si hay alguna imagen
         if self.image_path:
             self.eliminar_imagen()
             
     def has_imagen(self):
-        """Verifica si el frame tiene una imagen cargada"""
+        # Verifica si el frame tiene una imagen cargada
         return self.file_path is not None and self.image_label.pixmap() is not None
+    
+    def actualizar_estilos(self):
+        """Actualiza los estilos del frame de imagen"""
+        self.estilo = estilo_app.obtener_estilo_completo()
+        colores = self.estilo["colors"]
+        
+        # Actualizar estilo del frame
+        self.setStyleSheet(f"""
+            ImageFrame {{
+                background: {BACKGROUND};
+                border: 2px dashed {BORDER_LIGHT};
+                border-radius: 12px;
+                /* **CAMBIO 2: Quitar min/max width/height ya que usamos fixedSize */
+            }}
+            ImageFrame:hover {{
+                border-color: {COLOR_PRIMARIO};
+                background: {BACKGROUND};
+            }}
+        """)
+        
+        # Actualizar botón si existe
+        if hasattr(self, 'btn_cargar_imagen'):
+            self.btn_cargar_imagen.setStyleSheet(self.estilo["styles"]["boton"])

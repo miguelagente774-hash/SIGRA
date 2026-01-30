@@ -1,50 +1,32 @@
 from PyQt5.QtWidgets import (QFrame, QLabel, QVBoxLayout, QHBoxLayout, 
                              QGraphicsDropShadowEffect, QTextEdit, QWidget, 
-                             QPushButton, QLineEdit, QSizePolicy, QFileDialog,
-                             QMessageBox, QDateEdit)
-from PyQt5.QtCore import Qt, QSize, QDate
-from PyQt5.QtGui import QPixmap, QIcon, QFont
+                             QPushButton, QLineEdit, QMessageBox, QDateEdit, QTableWidget, QComboBox)
+from PyQt5.QtCore import Qt, pyqtSignal, QDate
+from PyQt5.QtGui import QPixmap, QIcon, QColor
 from services.Cargar_imagenes import ImageFrame
-
-FONT_FAMILY = "Arial"
-COLOR_PRIMARIO = "#005a6e" 
-COLOR_AZUL_HOVER = "#00485a"
-
-BTN_STYLE = """
-        QPushButton{
-        background: #005a6e;
-        color: White;
-        font-weight: bold;
-        font-size: 18px;
-        min-width: 200px;
-        min-height: 20px;
-        padding: 15px;
-        border-radius: 15px;
-        text-align: left;
-        border: none;
-        margin: 15px 15px;
-        }  
-        QPushButton:hover{
-        background: #007a94;
-        }    
-        QPushButton:pressed{
-        background: #00485a;
-        }"""
+from components.app_style import estilo_app
 
 class Ventana_reporte_crear(QFrame):
+    guardar = pyqtSignal()
+    limpiar = pyqtSignal()
     def __init__(self, controller):
         super().__init__()
+        self.estilo = estilo_app.obtener_estilo_completo() 
+
         self.controller = controller
         self.layout_main = QVBoxLayout()
         self.setLayout(self.layout_main)
         self.layout_main.setContentsMargins(40, 40, 40, 40)
-        self.setStyleSheet("""QFrame{
+        self.setStyleSheet(self.estilo["styles"]["fondo"] + """QFrame{
                         border-top-left-radius: 15px;
                         border-top-right-radius: 15px;
                         border-bottom-left-radius: 15px;
                         border-bottom-right-radius: 15px;
                         }""")
         
+        estilo_app.registrar_vista(self)
+        estilo_app.estilos_actualizados.connect(self.actualizar_estilos)
+
         # Variables para almacenar las rutas de las imágenes
         self.imagen1_path = None
         self.imagen2_path = None
@@ -56,11 +38,11 @@ class Ventana_reporte_crear(QFrame):
         self.crear_panel_principal()
 
     def crear_panel_principal(self):
-        """Crea el panel principal con sombra y estilo"""
+        # Crea el Panel Principal con Sombras
         panel_reporte = self.crear_panel_con_sombra()
         panel_layout = QVBoxLayout(panel_reporte)
         panel_layout.setContentsMargins(0, 0, 0, 0)
-        panel_layout.setSpacing(10)
+        panel_layout.setSpacing(15)  # Aumentado de 10
 
         # Agregar componentes al panel
         panel_layout.addWidget(self.crear_titulo_seccion())
@@ -80,14 +62,7 @@ class Ventana_reporte_crear(QFrame):
     def crear_panel_con_sombra(self):
         """Crea el panel principal con efecto de sombra"""
         panel = QFrame()
-        panel.setStyleSheet("""
-            background: #f5f5f5; 
-            border-top-left-radius: 15px;
-            border-top-right-radius: 15px;
-            border-bottom-left-radius: 15px;
-            border-bottom-right-radius: 15px;
-            padding: 0;
-        """)
+        panel.setStyleSheet(self.estilo["styles"]["panel"])
 
         sombra = QGraphicsDropShadowEffect()
         sombra.setBlurRadius(25)
@@ -100,23 +75,7 @@ class Ventana_reporte_crear(QFrame):
     def crear_titulo_seccion(self):
         """Crea el título de la sección"""
         titulo = QLabel("Crear Actividad")
-        titulo.setStyleSheet(f"""
-            font-family: {FONT_FAMILY};
-            background: #005a6e;
-            font-size: 28px; 
-            color: white;
-            font-weight: bold;
-            margin: 0;
-            padding: 20px 15px;
-            border-radius: 0;
-            text-align: left;
-            border-top-left-radius: 15px;
-            border-top-right-radius: 15px;
-            border-bottom-left-radius: 0;
-            border-bottom-right-radius: 0;
-                        
-        """)
-        titulo.setAlignment(Qt.AlignLeft)
+        titulo.setStyleSheet(self.estilo["styles"]["header"])
         titulo.setMaximumHeight(70)
         return titulo
 
@@ -124,54 +83,31 @@ class Ventana_reporte_crear(QFrame):
         """Crea el campo de entrada para el título de la actividad"""
         self.titulo_actividad = QLineEdit()
         self.titulo_actividad.setPlaceholderText("Ingrese el título de la actividad")
-        self.titulo_actividad.setStyleSheet(f"""
-            font-family: {FONT_FAMILY};
-            font-size: 16px;
-            padding: 12px;
-            margin: 10px;
-            border: 2px solid #e5e7eb;
-            border-radius: 10px;
-            background: white;
-        """)
+        self.titulo_actividad.setStyleSheet(self.estilo["styles"]["input"])
         return self.titulo_actividad
 
     def crear_contenedor_imagenes(self):
-        """Crea el contenedor para las imágenes"""
+        # ==Crear Contenedor para las Imágenes==
         contenedor = QFrame()
-        contenedor.setStyleSheet("""
-            QFrame {
-                background: white;
-                border: 2px solid #e5e7eb;
-                padding: 10px;
-                margin: 0 15px;
-            }
-        """)
+        contenedor.setStyleSheet(self.estilo["styles"]["frame"] + "margin: 10px;")  # Añadido margin
         
         layout_contenedor = QVBoxLayout(contenedor)
-        #layout_contenedor.setContentsMargins(0, 0, 0, 0)
-        #layout_contenedor.setSpacing(0)
+        layout_contenedor.setContentsMargins(20, 15, 20, 15)  # Añadido márgenes internos
+        layout_contenedor.setSpacing(15)
         
         # Título de la sección de imágenes
         titulo_imagenes = QLabel("Imágenes de la actividad")
-        titulo_imagenes.setStyleSheet(f"""
-            font-family: {FONT_FAMILY};
-            font-size: 24px;
-            color: #374151;
-            font-weight: bold;
-            margin: 10px;
-            padding: 0;
-            border: none;
-        """)
+        titulo_imagenes.setStyleSheet(self.estilo["styles"]["title"])
         titulo_imagenes.setAlignment(Qt.AlignCenter)
         layout_contenedor.addWidget(titulo_imagenes)
         
         # Fila para las imágenes
         fila_imagenes = QWidget()
-        fila_imagenes.setStyleSheet("padding: 0; margin: 0; background: white;")
+        fila_imagenes.setStyleSheet(self.estilo["styles"]["widget"])
         layout_fila = QHBoxLayout(fila_imagenes)
         layout_fila.setContentsMargins(0, 0, 0, 0)
-        layout_fila.setSpacing(20)
-        #layout_fila.setAlignment(Qt.AlignCenter)
+        layout_fila.setSpacing(40)  # Aumentado de 20
+        layout_fila.setAlignment(Qt.AlignCenter)  # Centrado
         
         # Crear frames de imágenes
         self.frame_imagen1 = ImageFrame(1, ruta_imagen=None, parent=self)
@@ -179,11 +115,9 @@ class Ventana_reporte_crear(QFrame):
         
         layout_fila.addWidget(self.frame_imagen1)
         layout_fila.addWidget(self.frame_imagen2)
-        #layout_fila.addStretch()  # Empuja las imágenes hacia la izquierda
-
         
-        contenedor.setMinimumHeight(200)
-        contenedor.setMaximumHeight(600)
+        contenedor.setMinimumHeight(220)  # Aumentado de 200
+        contenedor.setMaximumHeight(650)  # Aumentado de 600
         
         layout_contenedor.addWidget(fila_imagenes)
         
@@ -193,105 +127,47 @@ class Ventana_reporte_crear(QFrame):
         """Crea el campo de texto para la descripción"""
         self.input_reporte = QTextEdit()
         self.input_reporte.setPlaceholderText("Ingrese la descripción de la Actividad...")
-        self.input_reporte.setStyleSheet(f"""
-            font-family: {FONT_FAMILY};
-            font-size: 16px;
-            padding: 12px;
-            margin: 15px;
-            border: 2px solid #e5e7eb;
-            border-radius: 10px;
-            background: white;
-        """)
+        self.input_reporte.setStyleSheet(self.estilo["styles"]["input"])
         self.input_reporte.setMaximumHeight(200)
         return self.input_reporte
     
     def Campo_fecha(self):
         layout = QHBoxLayout()
-        titulo = QLabel("fecha de la actividad")
-        titulo.setStyleSheet("""            
-            font-family: {FONT_FAMILY};
-            font-size: 24px;
-            color: #374151;
-            font-weight: bold;
-            margin: 20px 0px 20px 0px;
-            padding: 0;
-            border: none;""")
+        layout.setContentsMargins(10, 5, 10, 20)  # Añadido margen inferior de 20px
+        
+        titulo = QLabel("Fecha de la actividad:")
+        titulo.setStyleSheet(self.estilo["styles"]["title"])
         titulo.setMaximumWidth(270)
         layout.addWidget(titulo)
 
         self.fecha = QDateEdit(self)
-        self.fecha.setStyleSheet("""QDateEdit {
-        margin: 0px;
-        border: 2px solid #005a6e;       /* Borde sólido azul */
-        border-radius: 5px;              /* Esquinas redondeadas */
-        padding: 10px;                    /* Espacio interno */
-        background-color: #FFFFFF;       /* Fondo blanco */
-        color: #333333;                  /* Color del texto */
-        font-size: 14px;                 /* Tamaño de fuente */
-        selection-background-color: #0056b3; /* Color de fondo del texto seleccionado */
-        }
-
-        QDateEdit:hover {
-        border-color: #0056b3;           /* Borde más oscuro al pasar el cursor */
-        }
-
-        QDateEdit:disabled {
-        background-color: #e0e0e0;       /* Fondo gris cuando está deshabilitado */
-        color: #999999;
-        }   
-                            """)
+        # **CAMBIO: Añadir márgenes al QDateEdit**
+        self.fecha.setStyleSheet(self.estilo["styles"]["date"])
         self.fecha.setCalendarPopup(True)
         self.fecha.setFixedWidth(250)
         self.fecha.setDate(QDate.currentDate())
 
         layout.addWidget(self.fecha, alignment=Qt.AlignLeft)
+        layout.addStretch()  # Añadir stretch para empujar hacia la izquierda
 
         return layout
 
     def crear_boton_guardar(self):
         """Crea el botón para guardar la actividad"""
         btn_guardar = QPushButton("Guardar Actividad")
-        btn_guardar.setStyleSheet(BTN_STYLE)
-
+        btn_guardar.setStyleSheet(self.estilo["styles"]["boton"])
+        btn_guardar.clicked.connect(self.guardar.emit)
 
         btn_guardar.setCursor(Qt.PointingHandCursor)
-        btn_guardar.clicked.connect(self.Guardar_datos_actividad)
 
         return btn_guardar
     
     def btn_limpiar_campos(self):
         btn_limpiar = QPushButton("Limpiar Campos")
-        btn_limpiar.setStyleSheet(BTN_STYLE)
-
-        btn_limpiar.clicked.connect(self.limpiar_formulario)
-
+        btn_limpiar.setStyleSheet(self.estilo["styles"]["boton"]) 
+        btn_limpiar.clicked.connect(self.limpiar.emit)
         return btn_limpiar
 
-
-    def Guardar_datos_actividad(self):
-        """Retorna todos los datos de la actividad"""
-        titulo = self.titulo_actividad.text()
-        imagen1 = self.frame_imagen1.get_imagen_path()
-        imagen2 = self.frame_imagen2.get_imagen_path()
-        descripcion = self.input_reporte.toPlainText()
-        fecha = self.fecha.date()
-        fecha = fecha.toString("dd-MM-yyyy")
-        tipo_actividad = "Anexo"
-
-        self.controller.Guardar_actividad(titulo, imagen1, imagen2, descripcion, fecha, tipo_actividad)
-
-    def limpiar_formulario(self):
-        """Limpia todos los campos del formulario"""
-        self.titulo_actividad.clear()
-        self.input_reporte.clear()
-        
-        # Restablecer imágenes
-        self.imagen1_path = None
-        self.imagen2_path = None
-        
-        # Limpiar frames de imágenes
-        self.frame_imagen1.eliminar_imagen()
-        self.frame_imagen2.eliminar_imagen()
     
     def mensaje_advertencia(self, titulo, mensaje):
         QMessageBox.warning(self, titulo, mensaje)
@@ -300,4 +176,68 @@ class Ventana_reporte_crear(QFrame):
         QMessageBox.information(self, titulo, mensaje)
 
     def mensaje_error(self, titulo, mensaje):
-        QMessageBox.critical(self, titulo, mensaje)
+        self.QMessageBox.critical(self, titulo, mensaje)
+
+    # Método en cada vista:
+    def actualizar_estilos(self):
+        """Actualiza los estilos de esta vista"""
+        print(f"🔄 {self.__class__.__name__} actualizando estilos...")
+        self.estilo = estilo_app.obtener_estilo_completo()
+        colores = self.estilo["colors"]
+        
+        # Aplicar fondo a la vista principal
+        self.setStyleSheet(self.estilo["styles"]["fondo"])
+        
+        # Actualizar panel principal
+        for widget in self.findChildren(QFrame):
+            # Buscar el panel principal por su sombra
+            if widget.graphicsEffect():
+                widget.setStyleSheet(self.estilo["styles"]["panel"])
+                
+                # Actualizar sombra
+                effect = widget.graphicsEffect()
+                if isinstance(effect, QGraphicsDropShadowEffect):
+                    effect.setColor(QColor(colores.get("shadow", Qt.gray)))
+        
+        # Actualizar título
+        for widget in self.findChildren(QLabel):
+            if widget.text() == "Crear Actividad":
+                widget.setStyleSheet(self.estilo["styles"]["header"])
+            elif widget.text() == "Imágenes de la actividad":
+                widget.setStyleSheet(self.estilo["styles"]["title"])
+            elif widget.text() == "Fecha de la actividad:":
+                widget.setStyleSheet(self.estilo["styles"]["title"])
+        
+        # Actualizar inputs
+        for widget in self.findChildren((QLineEdit, QTextEdit)):
+            widget.setStyleSheet(self.estilo["styles"]["input"])
+        
+        # Actualizar QDateEdit
+        for widget in self.findChildren(QDateEdit):
+            widget.setStyleSheet(self.estilo["styles"]["date"])
+        
+        # Actualizar botones
+        for widget in self.findChildren(QPushButton):
+            widget.setStyleSheet(self.estilo["styles"]["boton"])
+        
+        # Actualizar contenedor de imágenes
+        for widget in self.findChildren(QFrame):
+            # Buscar contenedor de imágenes por su layout y contenido
+            child_labels = [child.text() for child in widget.findChildren(QLabel) if child.text()]
+            if "Imágenes de la actividad" in child_labels:
+                widget.setStyleSheet(f"""
+                    QFrame {{
+                        background: {colores["bg_secondary"]};
+                        border: 1px solid {colores["border"]};
+                        border-radius: 8px;
+                        margin: 10px;
+                    }}
+                """)
+        
+        # Actualizar frames de imágenes
+        if hasattr(self, 'frame_imagen1'):
+            self.frame_imagen1.actualizar_estilos()
+        if hasattr(self, 'frame_imagen2'):
+            self.frame_imagen2.actualizar_estilos()
+        
+        print(f"✅ {self.__class__.__name__} estilos actualizados")

@@ -1,44 +1,23 @@
 from PyQt5.QtWidgets import (QFrame, QLabel, QVBoxLayout, 
                             QHBoxLayout, QGraphicsDropShadowEffect, QPushButton,
                             QTableWidget, QTableWidgetItem, QHeaderView, 
-                            QAbstractItemView, QScrollArea, QWidget, QSizePolicy, QMessageBox)
+                            QLineEdit, QTextEdit, QComboBox, QDateEdit, QMessageBox)
 from PyQt5.QtCore import (Qt)
-
-
-FONT_FAMILY = "Arial"
-COLOR_PRIMARIO = "#005a6e" 
-COLOR_AZUL_HOVER = "#00485a"
-
-BTN_STYLE = """
-        QPushButton{
-        background: #005a6e;
-        color: White;
-        font-weight: bold;
-        font-size: 18px;
-        min-width: 200px;
-        min-height: 20px;
-        padding: 15px;
-        border-radius: 15px;
-        text-align: left;
-        border: none;
-        margin: 0 15px 20px;
-        }  
-        QPushButton:hover{
-        background: #007a94;
-        }    
-        QPushButton:pressed{
-        background: #00485a;
-        }"""
-
+from PyQt5.QtGui import QColor
+from components.app_style import estilo_app
 
 class Ventana_reporte_finalizados(QFrame):
     def __init__(self, controller):
         super().__init__()
+        self.estilo = estilo_app.obtener_estilo_completo()
         self.controller = controller
+        self.setStyleSheet(self.estilo["styles"]["fondo"])
         self.Main_layout = QVBoxLayout()
         self.Main_layout.setContentsMargins(40, 40, 40, 40)
         self.setLayout(self.Main_layout)
-        
+
+        estilo_app.registrar_vista(self)
+        estilo_app.estilos_actualizados.connect(self.actualizar_estilos)        
 
         #funciones
         self.Panel_r_finalizado()
@@ -52,14 +31,15 @@ class Ventana_reporte_finalizados(QFrame):
         
         Panel_R_finalizado = QFrame()
         Panel_R_finalizado.setLayout(self.Panel_layout)
-        Panel_R_finalizado.setStyleSheet("""
-                                         QFrame{
-                                         background: rgba(255, 255, 255, 0.9);
+        Panel_R_finalizado.setStyleSheet(f"""
+                                         QFrame{{
+                                         background: {estilo_app.obtener_colores_tema()['table_bg']};
                                          border-top-left-radius: 15px;
                                          border-top-right-radius: 15px;
                                          border-bottom-left-radius: 15px;
                                          border-bottom-right-radius: 15px;
-                                         }""")
+                                         }}""")
+
         #sombra del panel
         sombra = QGraphicsDropShadowEffect()
         sombra.setBlurRadius(20)
@@ -68,24 +48,9 @@ class Ventana_reporte_finalizados(QFrame):
         Panel_R_finalizado.setGraphicsEffect(sombra)
 
         titulo = QLabel("Actividades Finalizadas")
-        titulo.setStyleSheet("""
-                             QLabel{
-                             font-family: arial;
-                             font-size: 28px; 
-                             color: white;
-                             font-weight: bold;
-                             padding: 20px 15px;
-                             margin: 0;
-                             background: #005a6e;
-                             border-bottom-left-radius: 0;
-                             border-bottom-right-radius: 0;
-                             }""")
+        titulo.setStyleSheet(self.estilo["styles"]["header"])
         titulo.setAlignment(Qt.AlignLeft)
         self.Panel_layout.addWidget(titulo)
-
-        #tabla
-        
-
         #----------no tocar-------------------------
         self.Main_layout.addWidget(Panel_R_finalizado)
 
@@ -99,37 +64,15 @@ class Ventana_reporte_finalizados(QFrame):
         header_verticar = self.tabla_actividades.verticalHeader()
         header_verticar.setSectionResizeMode(QHeaderView.Fixed)
         header_verticar.setDefaultAlignment(Qt.AlignCenter)
-        header_verticar.setFixedWidth(70)
+        header_verticar.setFixedWidth(60)
+        header_verticar.setVisible(False)
 
         #configuracion de las filas y columnas de la tabla
         self.tabla_actividades.setColumnCount(4)
 
         self.tabla_actividades.setRowCount(len(datos))
 
-        self.tabla_actividades.setStyleSheet("""
-                                        QTableWidget {
-                                        background-color: #f0f0f0; /* Color de fondo de la tabla */
-                                        color: #333; /* Color de texto predeterminado */
-                                        font-size: 14px;
-                                        border: 1px solid #ccc;
-                                        margin: 0;
-                                        font-family: arial;
-                                        }
-                                        QHeaderView::section {
-                                        background-color: #005a6e;
-                                        color: White;
-                                        font-size: 16px;
-                                        font-weight: bold;
-                                        border: 1px solid gray;
-                                        text-align: center;
-                                        padding: 8px;
-                                        margin: 0;
-                                        }
-                                        QTableWidget::item:selected {
-                                             background-color: #a0c0ff;
-                                             color: white;
-            }
-                                        """)
+        self.tabla_actividades.setStyleSheet(self.estilo["styles"]["tabla"])
         encabezados = ["ID", "Titulo", "Descripcion", "Fecha"]
         self.tabla_actividades.setHorizontalHeaderLabels(encabezados)
 
@@ -166,13 +109,13 @@ class Ventana_reporte_finalizados(QFrame):
         self.Panel_layout.addLayout(layout_botones)
 
         boton_modificar = QPushButton("Modificar")
-        boton_modificar.setStyleSheet(BTN_STYLE)
+        boton_modificar.setStyleSheet(self.estilo["styles"]["boton"])
         boton_modificar.clicked.connect(self.Abrir_modal)
         layout_botones.addWidget(boton_modificar)
 
 
         boton_eliminar = QPushButton("Eliminar")
-        boton_eliminar.setStyleSheet(BTN_STYLE)
+        boton_eliminar.setStyleSheet(self.estilo["styles"]["boton"])
         boton_eliminar.clicked.connect(self.Elminar_actividad)
         layout_botones.addWidget(boton_eliminar)
 
@@ -228,3 +171,67 @@ class Ventana_reporte_finalizados(QFrame):
 
     def Mensaje_Warning(self, titulo, mensaje):
         QMessageBox.warning(self, titulo, mensaje)
+
+    # Método en cada vista:
+    def actualizar_estilos(self):
+        """Actualiza los estilos de esta vista"""
+        print(f"🔄 {self.__class__.__name__} actualizando estilos...")
+        self.estilo = estilo_app.obtener_estilo_completo()
+        colores = self.estilo["colors"]
+        
+        # Aplicar fondo a la vista principal
+        self.setStyleSheet(self.estilo["styles"]["fondo"])
+        
+        # Actualizar panel principal
+        for widget in self.findChildren(QFrame):
+            # Buscar el panel principal por su título
+            child_labels = [child.text() for child in widget.findChildren(QLabel) if child.text()]
+            if "Actividades Finalizadas" in child_labels:
+                widget.setStyleSheet(f"""
+                    QFrame {{
+                        background: {colores["bg_panel"]};
+                        border-radius: 15px;
+                    }}
+                """)
+                
+                # Actualizar sombra
+                if widget.graphicsEffect():
+                    effect = widget.graphicsEffect()
+                    if isinstance(effect, QGraphicsDropShadowEffect):
+                        effect.setColor(QColor(colores.get("shadow", Qt.gray)))
+        
+        # Actualizar título
+        for widget in self.findChildren(QLabel):
+            if widget.text() == "Actividades Finalizadas":
+                widget.setStyleSheet(self.estilo["styles"]["header"])
+        
+        # Actualizar tabla
+        if hasattr(self, 'tabla_actividades'):
+            # Actualizar estilo de la tabla completa
+            self.tabla_actividades.setStyleSheet(self.estilo["styles"]["tabla"])
+            
+            # Actualizar header horizontal
+            header = self.tabla_actividades.horizontalHeader()
+            header.setStyleSheet(f"""
+                QHeaderView::section {{
+                    background-color: {colores["table_header"]};
+                    color: white;
+                    font-weight: bold;
+                    padding: 8px;
+                    border: 1px solid {colores["border"]};
+                    font-size: {self.estilo["font_size"] + 2}px;
+                }}
+            """)
+            
+            # Actualizar texto en las celdas
+            for row in range(self.tabla_actividades.rowCount()):
+                for col in range(self.tabla_actividades.columnCount()):
+                    item = self.tabla_actividades.item(row, col)
+                    if item:
+                        item.setForeground(QColor(colores["text_primary"]))
+        
+        # Actualizar botones
+        for widget in self.findChildren(QPushButton):
+            widget.setStyleSheet(self.estilo["styles"]["boton"])
+        
+        print(f"✅ {self.__class__.__name__} estilos actualizados")

@@ -1,20 +1,12 @@
-import sys
 from PyQt5.QtWidgets import (
     QHBoxLayout, QVBoxLayout, QFrame, QLabel, QGraphicsDropShadowEffect,
-    QSizePolicy, QWidget, QGridLayout, QApplication
+    QSizePolicy, QGridLayout
 )
 from PyQt5.QtCore import Qt, QRectF
 from PyQt5.QtGui import QPainter, QBrush, QColor, QPen, QFont
+from components.app_style import estilo_app
 
-# Variables globales para consistencia
-FONT_FAMILY = "Arial"
-COLOR_PRIMARIO = "#005a6e" 
-COLOR_AZUL_HOVER = "#00485a"
-COLOR_SECUNDARIO = "#F44336"
-BG_COLOR_PANEL = "rgba(255, 255, 255, 0.9)"
-BG_COLOR_FONDO = "#E3EFF3"
-SHADOW_RADIUS_L = 25
-SHADOW_RADIUS_S = 15
+estilo = estilo_app.obtener_estilo_completo()
 
 # --- Funciones de Utilidad ---
 def get_shadow_effect(radius, color=Qt.gray, offset_x=1, offset_y=1):
@@ -31,58 +23,53 @@ def create_card(title, amount, border_color):
     layout.setContentsMargins(15, 5, 15, 5)
 
     frame = QFrame()
-    frame.setStyleSheet(f"""
-        background: white;
-        border-radius: 10px;
-        border-left: 5px solid {border_color};
-        padding: 0;""")
+    frame.setStyleSheet(estilo["styles"]["panel"])
     frame.setLayout(layout)
     frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-    frame.setGraphicsEffect(get_shadow_effect(SHADOW_RADIUS_S, QColor(0, 0, 0, 50)))
+    frame.setGraphicsEffect(get_shadow_effect(15, QColor(0, 0, 0, 50)))
 
     # Título
     title_label = QLabel(title)
-    title_label.setStyleSheet("margin: 0; background: none; border: none; font-size: 14px; color: #555555; font-weight: bold;")
+    title_label.setStyleSheet(estilo["styles"]["label"])
     layout.addWidget(title_label)
 
     # Cantidad
     amount_label = QLabel(amount)
-    amount_label.setStyleSheet(f"margin: 0; background: none; border: none; font-size: 28px; color: {border_color}; font-weight: bold;")
+    amount_label.setStyleSheet(estilo["styles"]["label"])
     layout.addWidget(amount_label)
 
     layout.addStretch(1)
     return frame
 
 # --- Clase para el Widget del Gráfico Circular Nativo (QPainter) ---
+# --- Clase para el Widget del Gráfico Circular Nativo (QPainter) ---
 class CustomPieChartWidget(QFrame):
     """Un QFrame que dibuja un gráfico circular simple usando QPainter."""
 
     def __init__(self, title, chart_data=None, parent=None):
         super().__init__(parent)
-        self.setMinimumHeight(140)
-        self.setStyleSheet("background: white; border-radius: 15px;")
-
+        self.setMinimumHeight(160)  # Aumentado para espacio del título
+        self.setStyleSheet("background: transparent; border: none;")
+        
         # Data Configuration
         data_default = [70, 30]
-        labels_default = ["Realizadas", "Sin Hacer"]
+        labels_default = ["Actividades Realizadas", "Actividades sin Hacer"]
         
         self.data = chart_data.get('data', data_default) if chart_data else data_default
         self.labels = chart_data.get('labels', labels_default) if chart_data else labels_default
-        self.colors = [QColor(COLOR_PRIMARIO), QColor(COLOR_SECUNDARIO)]
+        self.title = title
+        self.colors = [
+            QColor(estilo_app.obtener_colores_tema()['primary']), 
+            QColor(estilo_app.obtener_colores_tema()['text_secondary'])
+        ]
         
-        # Sombra
-        self.setGraphicsEffect(get_shadow_effect(SHADOW_RADIUS_S))
-
-        # Layout y Título
+        # Layout principal
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(5, 5, 5, 5)
-
-        chart_title = QLabel(title)
-        chart_title.setStyleSheet(f"font-family: {FONT_FAMILY}; font-size: 12px; font-weight: bold; color: black; background: none; qproperty-alignment: 'AlignRight';")
-        chart_title.setWordWrap(True)
-
-        main_layout.addWidget(chart_title)
-        main_layout.addStretch(1)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
+        
+        # Sombra suave
+        self.setGraphicsEffect(get_shadow_effect(5, QColor(0, 0, 0, 20)))
 
     def paintEvent(self, event):
         super().paintEvent(event)
@@ -91,22 +78,57 @@ class CustomPieChartWidget(QFrame):
 
         rect = self.contentsRect()
         
-        # --- CAMBIO PARA RESPONSIVIDAD ---
-        # Calculamos un factor basado en el ancho para que los textos no sean fijos
-        scale_factor = rect.width() / 250
-        DYN_FONT_SIZE = max(6, int(7 * scale_factor))
-        DYN_ICON_SIZE = max(5, int(7 * scale_factor))
-        DYN_LEGEND_SPACING = max(10, int(15 * scale_factor))
+        # ===== 1. PINTAR EL TÍTULO =====
+        title_height = 30  # Altura reservada para el título
+        title_rect = QRectF(rect.left(), rect.top(), rect.width(), title_height)
         
-        TITLE_HEIGHT = 20
+        label_style = estilo["styles"]["label"]
+        
+        # Fondo para el título (opcional, puedes quitarlo si quieres)
+        painter.setBrush(QBrush(QColor(estilo_app.obtener_colores_tema()['bg_secondary'])))
+        painter.setPen(Qt.NoPen)
+        painter.drawRect(title_rect)
+        
+        # Texto del título
+        painter.setPen(QPen(QColor(estilo_app.obtener_colores_tema()['text_primary'])))
+        title_font = QFont(estilo_app.FONT_FAMILY, estilo_app.FONT_SIZE + 5, QFont.Bold)
+        painter.setFont(title_font)
+        
+        # Ajustar texto si es muy largo
+        display_title = self.title
+        if len(self.title) > 30:  # Si el título es muy largo
+            # Intentar cortar inteligentemente
+            if "Objetivo:" in self.title:
+                # Mantener la primera parte y el objetivo
+                parts = self.title.split("Objetivo:")
+                if len(parts) > 1:
+                    display_title = f"{parts[0].strip()}... Objetivo:{parts[1]}"
+            else:
+                display_title = self.title[:27] + "..."
+        
+        painter.drawText(title_rect, Qt.AlignCenter | Qt.AlignVCenter, display_title)
+        
+        # ===== 2. PINTAR EL GRÁFICO =====
+        # Área para el gráfico (dejando espacio para el título)
+        chart_area = QRectF(
+            rect.left() + 5, 
+            rect.top() + title_height + 5,  # +5 para separación
+            rect.width() - 10, 
+            rect.height() - title_height - 10
+        )
+        
+        # Factor de escala para responsividad
+        scale_factor = rect.width() / 250
+        DYN_FONT_SIZE = max(7, int(8 * scale_factor))  # Aumentado para mejor legibilidad
+        DYN_ICON_SIZE = max(5, int(5 * scale_factor))
+        DYN_LEGEND_SPACING = max(10, int(12 * scale_factor))
+        
         TEXT_MARGIN_LEFT = 3
         
-        chart_area = QRectF(rect.left() + 5, rect.top() + TITLE_HEIGHT, rect.width() - 10, rect.height() - TITLE_HEIGHT - 5)
-        
-        # Dimensiones del Gráfico (Usa un ratio del ancho disponible)
+        # Dimensiones del Gráfico
         PIE_WIDTH_RATIO = 0.35
         pie_area_width = chart_area.width() * PIE_WIDTH_RATIO
-        diameter = min(pie_area_width, chart_area.height()) - 5
+        diameter = min(pie_area_width, chart_area.height()) - 10
         center_x = chart_area.left() + pie_area_width / 2
         center_y = chart_area.top() + chart_area.height() / 2
         pie_rect = QRectF(center_x - diameter / 2, center_y - diameter / 2, diameter, diameter)
@@ -114,12 +136,13 @@ class CustomPieChartWidget(QFrame):
         total = sum(self.data)
         start_angle = 90 * 16 
         
-        # Posición de la Leyenda relativa al círculo
-        legend_x = chart_area.left() + pie_area_width + 5
+        # Posición de la Leyenda
+        legend_x = chart_area.left() + pie_area_width + 10
         total_items = len(self.data) if self.data else 1
         legend_y = center_y - (((total_items - 1) * DYN_LEGEND_SPACING) / 2) - (DYN_ICON_SIZE / 2)
         
-        painter.setFont(QFont(FONT_FAMILY, DYN_FONT_SIZE))
+        legend_font = QFont(estilo_app.FONT_FAMILY, DYN_FONT_SIZE)
+        painter.setFont(legend_font)
 
         if total > 0 and self.data:
             for i, value in enumerate(self.data):
@@ -127,19 +150,27 @@ class CustomPieChartWidget(QFrame):
                 span_angle = round(percentage * 360 * 16)
                 color = self.colors[i % len(self.colors)]
 
-                # a) Dibujar la porción del pastel
+                # Dibujar la porción del pastel
                 painter.setBrush(QBrush(color))
                 painter.setPen(QPen(Qt.white, 1))
                 painter.drawPie(pie_rect, start_angle, span_angle)
 
-                # b) Dibujar la Leyenda Ajustable
+                # Dibujar la Leyenda
                 current_item_y_pos = legend_y + (i * DYN_LEGEND_SPACING)
                 painter.setPen(Qt.NoPen)
                 painter.setBrush(QBrush(color))
                 painter.drawRect(int(legend_x), int(current_item_y_pos), DYN_ICON_SIZE, DYN_ICON_SIZE)
                 
-                painter.setPen(QPen(Qt.black))
-                label_text = f"{self.labels[i]} ({percentage*100:.1f}%)"
+                # Texto de leyenda
+                text_color = estilo_app.obtener_colores_tema()['text_primary']
+                painter.setPen(QPen(QColor(text_color)))
+                
+                # Acortar texto si es necesario
+                label_name = self.labels[i]
+                if len(label_name) > 20:
+                    label_name = label_name[:18] + "..."
+                
+                label_text = f"{label_name} ({percentage*100:.1f}%)"
                 
                 text_rect = QRectF(
                     int(legend_x) + DYN_ICON_SIZE + TEXT_MARGIN_LEFT,
@@ -160,8 +191,14 @@ class CustomPieChartWidget(QFrame):
             painter.drawEllipse(hole_rect)
 
         else:
-            painter.setPen(QPen(Qt.darkGray))
+            text_color = estilo_app.obtener_colores_tema()['text_secondary']
+            painter.setPen(QPen(QColor(text_color)))
             painter.drawText(chart_area.toRect(), Qt.AlignCenter, "Sin Datos")
+        
+        # ===== 3. BORDE SUAVE ALREDEDOR DEL WIDGET =====
+        painter.setPen(QPen(QColor(estilo_app.obtener_colores_tema()['border_light']), 1))
+        painter.setBrush(Qt.NoBrush)
+        painter.drawRoundedRect(rect.adjusted(1, 1, -1, -1), 5, 5)
 
 
 # ---------------------------------------
@@ -170,27 +207,33 @@ class Ventana_principal(QFrame):
     def __init__(self):
         super().__init__()
         self.layout_main = QVBoxLayout(self)
-        self.setStyleSheet(f"background: {BG_COLOR_FONDO};")
+        self.setStyleSheet(estilo["styles"]["fondo"])
         self.setup_panel()
         self.setup_charts_panel()
         self.layout_main.addStretch(1) 
 
+         # Registrar esta vista para actualización automática
+        estilo_app.registrar_vista(self)
+        
+        # Conectar señal de actualización
+        estilo_app.estilos_actualizados.connect(self.actualizar_estilos)
+
     def setup_panel(self):
         layout_content = QVBoxLayout()
-        layout_h_cards = QHBoxLayout()
 
         Contenedor_panel = QFrame()
         Contenedor_panel.setMinimumHeight(250)
+        Contenedor_panel.setMaximumHeight(300)
+        Contenedor_panel.setStyleSheet(estilo["styles"]["panel"])
         Contenedor_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        Contenedor_panel.setStyleSheet(f"background: {BG_COLOR_PANEL}; margin: 20px 40px; border-radius: 20px; font-family: {FONT_FAMILY};")
-        Contenedor_panel.setGraphicsEffect(get_shadow_effect(SHADOW_RADIUS_L))
+        Contenedor_panel.setGraphicsEffect(get_shadow_effect(25))
         
         Contenedor_panel.setLayout(layout_content)
         layout_content.setContentsMargins(15, 0, 15, 0)
         layout_content.setSpacing(0) 
 
         titulo = QLabel("Bienvenido al Sistema de Gestión")
-        titulo.setStyleSheet("background: none; font-size: 40px; color: #005a6e; font-weight: bold; margin: 0; padding: 8px;")
+        titulo.setStyleSheet(estilo["styles"]["header"])
         titulo.setAlignment(Qt.AlignCenter)
         layout_content.addWidget(titulo)
 
@@ -201,21 +244,14 @@ class Ventana_principal(QFrame):
         layout_estadistica.setSpacing(10) 
         
         frame_Estadistica = QFrame()
-        frame_Estadistica.setStyleSheet(f"""
-            font-family: {FONT_FAMILY};
-            background: {BG_COLOR_PANEL};
-            margin: 30px;
-            margin-top: 0px; 
-            margin-bottom: 0px;
-            border-radius: 50px;""")
+        frame_Estadistica.setStyleSheet(estilo["styles"]["panel"])
         frame_Estadistica.setLayout(layout_estadistica)
-        frame_Estadistica.setMinimumHeight(400)
-        frame_Estadistica.setGraphicsEffect(get_shadow_effect(SHADOW_RADIUS_S))
+        frame_Estadistica.setGraphicsEffect(get_shadow_effect(15))
 
         titulo = QLabel("Control de Reportes")
-        titulo.setStyleSheet("font-size: 22px; color: #005a6e; font-weight: bold; margin: 0;; padding: 5px 0;")
-        titulo.setMaximumWidth(400)
-        layout_estadistica.addWidget(titulo, alignment=Qt.AlignHCenter)
+        titulo.setStyleSheet(estilo["styles"]["header"])
+        titulo.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
+        layout_estadistica.addWidget(titulo)
 
         layout_charts = QGridLayout()
         layout_charts.setContentsMargins(15, 15, 15, 15)
@@ -240,3 +276,38 @@ class Ventana_principal(QFrame):
             
         layout_estadistica.addWidget(charts_container)
         self.layout_main.addWidget(frame_Estadistica)
+
+    def actualizar_estilos(self):
+        """Actualiza los estilos de esta vista"""
+        print(f"🔄 {self.__class__.__name__} actualizando estilos...")
+        self.estilo = estilo_app.obtener_estilo_completo()
+        colores = self.estilo["colors"]
+        
+        # Aplicar fondo a la vista principal
+        self.setStyleSheet(self.estilo["styles"]["fondo"])
+        
+        # Actualizar todos los paneles con sombra
+        for widget in self.findChildren(QFrame):
+            if widget.graphicsEffect():
+                # Actualizar estilo del panel
+                widget.setStyleSheet(self.estilo["styles"]["panel"])
+                
+                # Actualizar sombra
+                effect = widget.graphicsEffect()
+                if isinstance(effect, QGraphicsDropShadowEffect):
+                    effect.setColor(QColor(colores.get("shadow", Qt.gray)))
+        
+        # Actualizar títulos
+        for widget in self.findChildren(QLabel):
+            text = widget.text()
+            if text in ["Bienvenido al Sistema de Gestión", "Control de Reportes"]:
+                widget.setStyleSheet(self.estilo["styles"]["header"])
+            else:
+                widget.setStyleSheet(self.estilo["styles"]["label"])
+        
+        # Actualizar gráficos circulares
+        for widget in self.findChildren(CustomPieChartWidget):
+            # Forzar repintado del gráfico
+            widget.repaint()
+        
+        print(f"✅ {self.__class__.__name__} estilos actualizados")

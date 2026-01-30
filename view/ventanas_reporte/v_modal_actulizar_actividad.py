@@ -1,35 +1,15 @@
 from PyQt5.QtWidgets import (QFrame, QLabel, QVBoxLayout, QHBoxLayout, 
                              QGraphicsDropShadowEffect, QTextEdit, QWidget, 
                              QPushButton, QLineEdit, QSizePolicy, QFileDialog,
-                             QMessageBox, QDateEdit, QDialog)
+                             QMessageBox, QDateEdit, QDialog, QComboBox, QTableWidget)
 from PyQt5.QtCore import Qt, QSize, QDate
 from PyQt5.QtGui import QPixmap, QIcon, QFont
 from services.Cargar_imagenes import ImageFrame
+from components.app_style import estilo_app
 
 FONT_FAMILY = "Arial"
 COLOR_PRIMARIO = "#005a6e" 
 COLOR_AZUL_HOVER = "#00485a"
-
-BTN_STYLE = """
-        QPushButton{
-        background: #005a6e;
-        color: White;
-        font-weight: bold;
-        font-size: 18px;
-        min-width: 200px;
-        min-height: 20px;
-        padding: 15px;
-        border-radius: 15px;
-        text-align: left;
-        border: none;
-        margin: 15px 15px;
-        }  
-        QPushButton:hover{
-        background: #007a94;
-        }    
-        QPushButton:pressed{
-        background: #00485a;
-        }"""
 
 class Modal_actulizar_actividades(QDialog):
     def __init__(self, id_actividad, titulo, descripcion, ruta1, ruta2, fecha, controlador, parent = None):
@@ -42,6 +22,8 @@ class Modal_actulizar_actividades(QDialog):
         self.imagen2 = ruta2
         self.descripcion = descripcion
         self.fecha = fecha
+        self.estilo = estilo_app.obtener_estilo_completo()
+        self.setStyleSheet(self.estilo["styles"]["fondo"])
         self.setWindowTitle("Actividad_actulizacion")
         self.setWindowModality(Qt.ApplicationModal)
 
@@ -61,6 +43,9 @@ class Modal_actulizar_actividades(QDialog):
         self.imagen2_path = None
         
         self.inicializar_ui()
+
+        estilo_app.registrar_vista(self)
+        estilo_app.estilos_actualizados.connect(self.actualizar_estilos)        
 
     def inicializar_ui(self):
         """Inicializa todos los componentes de la interfaz de usuario"""
@@ -90,15 +75,7 @@ class Modal_actulizar_actividades(QDialog):
     def crear_panel_con_sombra(self):
         """Crea el panel principal con efecto de sombra"""
         panel = QFrame()
-        panel.setStyleSheet("""
-            background: #f5f5f5; 
-            border-top-left-radius: 15px;
-            border-top-right-radius: 15px;
-            border-bottom-left-radius: 15px;
-            border-bottom-right-radius: 15px;
-            padding: 0;
-            margin: 0;
-        """)
+        panel.setStyleSheet(self.estilo["styles"]["panel"])
 
         sombra = QGraphicsDropShadowEffect()
         sombra.setBlurRadius(25)
@@ -111,22 +88,7 @@ class Modal_actulizar_actividades(QDialog):
     def crear_titulo_seccion(self):
         """Crea el título de la sección"""
         titulo = QLabel("Actualizar Actividad")
-        titulo.setStyleSheet(f"""
-            font-family: {FONT_FAMILY};
-            background: #005a6e;
-            font-size: 28px; 
-            color: white;
-            font-weight: bold;
-            margin: 0;
-            padding: 20px 15px;
-            border-radius: 0;
-            text-align: left;
-            border-top-left-radius: 15px;
-            border-top-right-radius: 15px;
-            border-bottom-left-radius: 0;
-            border-bottom-right-radius: 0;
-                        
-        """)
+        titulo.setStyleSheet(self.estilo["styles"]["header"])
         titulo.setAlignment(Qt.AlignLeft)
         titulo.setMaximumHeight(70)
         return titulo
@@ -135,15 +97,7 @@ class Modal_actulizar_actividades(QDialog):
         """Crea el campo de entrada para el título de la actividad"""
         self.titulo_actividad = QLineEdit(self.titulo)
         self.titulo_actividad.setPlaceholderText("Ingrese el título de la actividad")
-        self.titulo_actividad.setStyleSheet(f"""
-            font-family: {FONT_FAMILY};
-            font-size: 16px;
-            padding: 12px;
-            margin: 10px;
-            border: 2px solid #e5e7eb;
-            border-radius: 10px;
-            background: white;
-        """)
+        self.titulo_actividad.setStyleSheet(self.estilo["styles"]["input"])
         return self.titulo_actividad
 
     def crear_contenedor_imagenes(self):
@@ -164,15 +118,7 @@ class Modal_actulizar_actividades(QDialog):
         
         # Título de la sección de imágenes
         titulo_imagenes = QLabel("Imágenes de la actividad")
-        titulo_imagenes.setStyleSheet(f"""
-            font-family: {FONT_FAMILY};
-            font-size: 24px;
-            color: #374151;
-            font-weight: bold;
-            margin: 5px;
-            padding: 0;
-            border: none;
-        """)
+        titulo_imagenes.setStyleSheet(self.estilo["styles"]["title"])
         titulo_imagenes.setAlignment(Qt.AlignCenter)
         layout_contenedor.addWidget(titulo_imagenes)
         
@@ -203,30 +149,14 @@ class Modal_actulizar_actividades(QDialog):
         """Crea el campo de texto para la descripción"""
         self.input_reporte = QTextEdit(self.descripcion)
         self.input_reporte.setPlaceholderText("Ingrese la descripción de la Actividad...")
-        self.input_reporte.setStyleSheet(f"""
-            font-family: {FONT_FAMILY};
-            font-size: 16px;
-            padding: 5px;
-            margin: 5px;
-            border: 2px solid #e5e7eb;
-            border-radius: 10px;
-            background: white;
-        """)
+        self.input_reporte.setStyleSheet(self.estilo["styles"]["input"])
         self.input_reporte.setMaximumHeight(200)
         return self.input_reporte
     
     def Campo_fecha(self):
         layout = QHBoxLayout()
-        titulo = QLabel("fecha de la actividad")
-        titulo.setStyleSheet("""            
-            font-family: {FONT_FAMILY};
-            font-size: 24px;
-            color: #374151;
-            font-weight: bold;
-            margin: 10px;
-            padding: 0;
-            border: none;""")
-        titulo.setMaximumWidth(270)
+        titulo = QLabel("Fecha de la Actividad:")
+        titulo.setStyleSheet(self.estilo["styles"]["title"])
         layout.addWidget(titulo)
 
         fecha_actividad = self.fecha
@@ -236,26 +166,7 @@ class Modal_actulizar_actividades(QDialog):
         año = int(partes_fecha[2])
 
         self.fecha = QDateEdit(QDate(año, mes, dia), self)
-        self.fecha.setStyleSheet("""QDateEdit {
-        margin: 0 0 0 20px;
-        border: 2px solid #005a6e;       /* Borde sólido azul */
-        border-radius: 5px;              /* Esquinas redondeadas */
-        padding: 10px;                    /* Espacio interno */
-        background-color: #FFFFFF;       /* Fondo blanco */
-        color: #333333;                  /* Color del texto */
-        font-size: 14px;                 /* Tamaño de fuente */
-        selection-background-color: #0056b3; /* Color de fondo del texto seleccionado */
-        }
-
-        QDateEdit:hover {
-        border-color: #0056b3;           /* Borde más oscuro al pasar el cursor */
-        }
-
-        QDateEdit:disabled {
-        background-color: #e0e0e0;       /* Fondo gris cuando está deshabilitado */
-        color: #999999;
-        }   
-                            """)
+        self.fecha.setStyleSheet(self.estilo["styles"]["date"])
         self.fecha.setCalendarPopup(True)
         self.fecha.setFixedWidth(150)
 
@@ -266,7 +177,7 @@ class Modal_actulizar_actividades(QDialog):
     def crear_boton_guardar(self):
         """Crea el botón para guardar la actividad"""
         btn_guardar = QPushButton("Actulizar Actividad")
-        btn_guardar.setStyleSheet(BTN_STYLE)
+        btn_guardar.setStyleSheet(self.estilo["styles"]["boton"])
 
 
         btn_guardar.setCursor(Qt.PointingHandCursor)
@@ -296,3 +207,68 @@ class Modal_actulizar_actividades(QDialog):
 
     def mensaje_error(self, titulo, mensaje):
         QMessageBox.critical(self, titulo, mensaje)
+
+    # Método en cada vista:
+    def actualizar_estilos(self):
+        """Actualiza los estilos de este modal"""
+        print(f"🔄 {self.__class__.__name__} actualizando estilos...")
+        self.estilo = estilo_app.obtener_estilo_completo()
+        colores = self.estilo["colors"]
+        
+        # Aplicar fondo al modal
+        self.setStyleSheet(self.estilo["styles"]["fondo"])
+        
+        # Actualizar panel principal
+        for widget in self.findChildren(QFrame):
+            # Buscar el panel principal por su sombra
+            if widget.graphicsEffect():
+                widget.setStyleSheet(self.estilo["styles"]["panel"])
+                
+                # Actualizar sombra
+                effect = widget.graphicsEffect()
+                if isinstance(effect, QGraphicsDropShadowEffect):
+                    effect.setColor(QColor(colores.get("shadow", Qt.gray)))
+        
+        # Actualizar título
+        for widget in self.findChildren(QLabel):
+            if widget.text() == "Actualizar Actividad":
+                widget.setStyleSheet(self.estilo["styles"]["header"])
+            elif widget.text() == "Imágenes de la actividad":
+                widget.setStyleSheet(self.estilo["styles"]["title"])
+            elif widget.text() == "Fecha de la Actividad:":
+                widget.setStyleSheet(self.estilo["styles"]["title"])
+        
+        # Actualizar inputs
+        for widget in self.findChildren((QLineEdit, QTextEdit)):
+            widget.setStyleSheet(self.estilo["styles"]["input"])
+        
+        # Actualizar QDateEdit
+        for widget in self.findChildren(QDateEdit):
+            widget.setStyleSheet(self.estilo["styles"]["date"])
+        
+        # Actualizar botones
+        for widget in self.findChildren(QPushButton):
+            widget.setStyleSheet(self.estilo["styles"]["boton"])
+        
+        # Actualizar contenedor de imágenes
+        for widget in self.findChildren(QFrame):
+            # Buscar contenedor de imágenes
+            child_labels = [child.text() for child in widget.findChildren(QLabel) if child.text()]
+            if "Imágenes de la actividad" in child_labels:
+                widget.setStyleSheet(f"""
+                    QFrame {{
+                        background: {colores["bg_secondary"]};
+                        border: 1px solid {colores["border"]};
+                        border-radius: 8px;
+                        padding: 10px;
+                        margin: 0 15px;
+                    }}
+                """)
+        
+        # Actualizar frames de imágenes
+        if hasattr(self, 'frame_imagen1'):
+            self.frame_imagen1.actualizar_estilos()
+        if hasattr(self, 'frame_imagen2'):
+            self.frame_imagen2.actualizar_estilos()
+        
+        print(f"✅ {self.__class__.__name__} estilos actualizados")

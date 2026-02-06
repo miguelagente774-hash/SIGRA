@@ -1,9 +1,9 @@
 from PyQt5.QtWidgets import (QFrame, QLabel, QVBoxLayout, QHBoxLayout,
                              QGraphicsDropShadowEffect, QGroupBox, QRadioButton,
                              QSizePolicy, QSpacerItem, QSpinBox, QComboBox, QCheckBox,
-                             QGridLayout, QLineEdit, QButtonGroup, QPushButton, QDateEdit, 
+                             QLineEdit, QButtonGroup, QPushButton,
                              QScrollArea, QWidget)
-from PyQt5.QtCore import Qt, pyqtSignal, QDate
+from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QColor
 from components.app_style import estilo_app
 
@@ -24,7 +24,7 @@ class Ventana_configuracion(QFrame):
         self.setup_ui()
     
     def setup_ui(self):
-        """Configura la UI con el diseño original completo"""
+        # ==Configura la UI con el diseño original completo==
         # Scroll area con estilo original
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)

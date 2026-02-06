@@ -9,11 +9,11 @@ from components.app_style import estilo_app
 class Ventana_reporte_crear(QFrame):
     guardar = pyqtSignal()
     limpiar = pyqtSignal()
-    def __init__(self, controller):
+    def __init__(self, controlador):
         super().__init__()
         self.estilo = estilo_app.obtener_estilo_completo() 
 
-        self.controller = controller
+        self.controller = controlador
         self.layout_main = QVBoxLayout()
         self.setLayout(self.layout_main)
         self.layout_main.setContentsMargins(40, 40, 40, 40)

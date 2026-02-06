@@ -214,8 +214,6 @@ class AppStyle(QObject):
             background: {colores['bg_panel']};
             border-radius: 15px;
             border: 1px solid {colores['border']};
-            padding: 0;
-            margin: 20px;
         }}
         """
     
@@ -532,7 +530,6 @@ class AppStyle(QObject):
         # == Registrar una vista para recibir actualizaciones de estilo==
         if vista not in AppStyle.vistas_registradas:
             AppStyle.vistas_registradas.append(vista)
-            print(f"Vista registrada: {vista.__class__.__name__}")
 
     def desregistrar_vista(self, vista):
         # ==Eliminar una vista de la lista de actualización==
@@ -540,9 +537,6 @@ class AppStyle(QObject):
             AppStyle.vistas_registradas.remove(vista)
     
     def notificar_cambio_estilos(self):
-        # Notificar a todas las vistas registradas para que se actualicen
-        print(f" Notificando cambio de estilo a")
-
         # Actualizar la configuracion interna primero
         self.cargar_configuracion()
 
@@ -560,7 +554,6 @@ class AppStyle(QObject):
                 else:
                     # Si no tiene algún método especifico, aplicar método general
                     self.aplicar_estilo_vista(vista)
-                print(f"Actualizada: {vista.__class__.__name__}")
             except Exception as e:
                 print(f" Error actualizando {vista.__class__.__name__}: {e}")
 

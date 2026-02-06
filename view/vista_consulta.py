@@ -13,9 +13,11 @@ from components.app_style import estilo_app
 class Ventana_consulta(QFrame):
     def __init__(self, controlador):
         super().__init__()
+        # Inicializar Controlador y Estilo
         self.controlador = controlador
         self.estilo = estilo_app.obtener_estilo_completo()
 
+        # Establecer el Tema del Fondo
         self.setStyleSheet(self.estilo["styles"]["fondo"])
                 
         # Registrar esta vista para actualización automática
@@ -24,27 +26,116 @@ class Ventana_consulta(QFrame):
         # Conectar señal de actualización
         estilo_app.estilos_actualizados.connect(self.actualizar_estilos)
         
-        # Inicialización de widgets
-        self.tabla = QTableWidget()
-        self.campo_busqueda = QLineEdit()
-        self.combo_ordenacion = QComboBox()
-        self.layout_principal = QVBoxLayout(self)
-
-        self._configurar_interfaz()
-        self._conectar_senales()
-    
-    def _configurar_interfaz(self):
-        """Configura el estilo base, layout principal y los subcomponentes."""
-        # **SOLUCIÓN 1: No aplicar panel aquí, solo el fondo**
-        self.layout_principal.setContentsMargins(40, 20, 40, 20)
-        self.layout_principal.setSpacing(0)
+        # Inicializar Métodos
         
         self._configurar_combo_ordenacion()
         self._configurar_tabla()
-        self._crear_panel_consulta_centrado()
+        self.setup_panel()
+        self._conectar_senales()
+
+    def setup_panel(self):
+        # Layout Principal y de Contenido
+        self.layout_principal = QVBoxLayout(self)
+        self.layout_principal.setContentsMargins(40, 20, 40, 20)
+        self.layout_principal.setSpacing(0)
+
+        # Contenedor
+        contenedor_panel = QFrame()
+        contenedor_panel.setMinimumHeight(250)
+        contenedor_panel.setStyleSheet(self.estilo["styles"]["panel"])
+        contenedor_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        contenedor_panel.setMinimumSize(700, 450)
+
+        # Sombra de la Ventana
+        sombra = QGraphicsDropShadowEffect()
+        sombra.setBlurRadius(25)
+        colores = self.estilo["colors"]
+        sombra.setColor(QColor(colores.get("shadow", Qt.gray)))
+        sombra.setOffset(2, 2)
+        contenedor_panel.setGraphicsEffect(sombra)
+
+        # Layout del Panel
+        layout_panel = QVBoxLayout(contenedor_panel)
+        layout_panel.setContentsMargins(0, 0, 0, 0)
+        layout_panel.setSpacing(0)
+        
+        # Título de la Ventana
+        titulo = QLabel("Consulta")
+        titulo.setStyleSheet(self.estilo["styles"]["header"])
+        titulo.setAlignment(Qt.AlignCenter)
+        layout_panel.addWidget(titulo)
+
+        # Buscador y Ordenación
+        layout_buscador_ordenacion = QHBoxLayout()
+        layout_buscador_ordenacion.setSpacing(10)
+        
+        # Campo de Búsqueda
+        self.campo_busqueda = QLineEdit()
+        self.campo_busqueda.setPlaceholderText("Buscar por ID o Título...")
+        self.campo_busqueda.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.campo_busqueda.setStyleSheet(self.estilo["styles"]["input"])
+        
+        # Label de Ordenar
+        etiqueta_ordenar = QLabel("Buscar de manera")
+        etiqueta_ordenar.setStyleSheet(self.estilo["styles"]["title"])
+        etiqueta_ordenar.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        
+        # Añadir los Widget a la fila de Búsqueda
+        layout_buscador_ordenacion.addWidget(self.campo_busqueda)
+        layout_buscador_ordenacion.addWidget(etiqueta_ordenar)
+        layout_buscador_ordenacion.addWidget(self.combo_ordenacion)
+
+        layout_panel.addLayout(layout_buscador_ordenacion)
+
+        # Tabla
+        self.tabla.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        layout_panel.addWidget(self.tabla, 1)
+
+        # Panel de los Botones
+        panel_botones = QFrame()
+        panel_botones.setStyleSheet(f"""
+                QFrame {{
+                    background: transparent;
+                    border: none;
+                    padding: 0;
+                    margin: 0;
+                }}
+                """)
+        panel_botones.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+        # Crear Layout de los Botones
+        layout_botones = QHBoxLayout(panel_botones)
+        layout_botones.setSpacing(30)
+
+        # Crear los botones
+        boton_pdf = QPushButton("Reporte-PDF")
+        boton_pptx = QPushButton("Reporte-PPTX")
+        boton_eliminar = QPushButton("Eliminar")
+
+        # Aplicar estilo a todos los botones
+        for boton in [boton_pdf, boton_pptx, boton_eliminar]:
+            boton.setStyleSheet(self.estilo["styles"]["boton"])
+        
+        # Conectar señales
+        boton_pdf.clicked.connect(self.Abrir_modal_pdf)
+        boton_pptx.clicked.connect(self.Abrir_modal)
+        boton_eliminar.clicked.connect(self.Eliminar_reporte)
+        
+        # Centrar botones
+        layout_botones.addStretch()
+        layout_botones.addWidget(boton_pdf)
+        layout_botones.addWidget(boton_pptx)
+        layout_botones.addWidget(boton_eliminar)
+        layout_botones.addStretch()
+        
+        layout_panel.addWidget(panel_botones)
+
+        # Añadir contenedor al layout principal
+        self.layout_principal.addWidget(contenedor_panel)
 
     def _configurar_combo_ordenacion(self):
-        """Configura los ítems y el estilo inicial del QComboBox."""
+        # ==Configura los ítems y el estilo inicial del QComboBox==
+        self.combo_ordenacion = QComboBox()
         self.combo_ordenacion.addItem("Ascendente")
         self.combo_ordenacion.addItem("Descendente")
         self.combo_ordenacion.setFixedHeight(40)
@@ -54,17 +145,17 @@ class Ventana_consulta(QFrame):
         self.combo_ordenacion.setStyleSheet(self.estilo["styles"]["input"])
         
     def _configurar_tabla(self):
-        """Configura los encabezados y el estilo de la tabla."""
+        # ==Configura los encabezados y el estilo de la tabla==
+        self.tabla = QTableWidget()
         self.tabla.setColumnCount(3)
         self.tabla.setHorizontalHeaderLabels([ "ID", "Titulo", "Fecha" ])
         self.tabla.setEditTriggers(QTableWidget.NoEditTriggers)
         self.tabla.setSelectionBehavior(QTableWidget.SelectRows)
         self.tabla.setSelectionMode(QTableWidget.SingleSelection)
         self.tabla.verticalHeader().setVisible(False)
-        self.tabla.verticalHeader().setDefaultSectionSize(70)
+        self.tabla.verticalHeader().setDefaultSectionSize(40)
         
         cabecera = self.tabla.horizontalHeader()
-        # **SOLUCIÓN 2: Configurar estilo correcto del header**
         colores = self.estilo["colors"]
         cabecera.setStyleSheet(f"""
             QHeaderView::section {{
@@ -81,8 +172,8 @@ class Ventana_consulta(QFrame):
         cabecera.setSectionResizeMode(1, QHeaderView.Stretch)  # Título
         cabecera.setSectionResizeMode(2, QHeaderView.Fixed)  # Fecha
         self.tabla.setColumnWidth(2, 150)
-
-        # **SOLUCIÓN 3: Aplicar estilo completo a la tabla**
+        
+        # Aplicar Estilo a la Tabla
         self.tabla.setStyleSheet(self.estilo["styles"]["tabla"])
         
         self.actulizar_tabla()
@@ -93,88 +184,10 @@ class Ventana_consulta(QFrame):
         self._cargar_datos_en_tabla(self.datos_prueba)
 
     def _conectar_senales(self):
-        """Conecta las señales de los widgets a sus métodos."""
+        # ==Conecta las señales de los widgets a sus métodos==
         self.campo_busqueda.textChanged.connect(self._aplicar_filtro)
         self.combo_ordenacion.currentIndexChanged.connect(self._aplicar_filtro)
         
-    # ESTRUCTURA DEL PANEL
-    
-    def _crear_panel_consulta_centrado(self):
-        marco_central = QFrame()
-        layout_contenedor = QVBoxLayout(marco_central)
-        layout_contenedor.setContentsMargins(20, 20, 20, 20)
-        layout_contenedor.setSpacing(0)
-        
-        panel_consulta = QFrame()
-        panel_consulta.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        panel_consulta.setMinimumSize(700, 450)
-        
-        # **SOLUCIÓN 4: Usar estilo dinámico del panel**
-        panel_consulta.setStyleSheet(self.estilo["styles"]["panel"])
-        
-        sombra = QGraphicsDropShadowEffect()
-        sombra.setBlurRadius(25)
-        # **SOLUCIÓN 5: Usar color de sombra del tema**
-        colores = self.estilo["colors"]
-        sombra.setColor(QColor(colores.get("shadow", Qt.gray)))
-        sombra.setOffset(2, 2)
-        panel_consulta.setGraphicsEffect(sombra)
-
-        layout_panel = QVBoxLayout(panel_consulta)
-        layout_panel.setContentsMargins(0, 0, 0, 0)
-        layout_panel.setSpacing(0)
-        
-        # Título Consulta
-        titulo = QLabel("Consulta")
-        titulo.setStyleSheet(self.estilo["styles"]["header"])
-        titulo.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-        titulo.setMaximumHeight(60)
-        layout_panel.addWidget(titulo, alignment = Qt.AlignTop)
-        
-        # Área de Contenido (Buscador, Tabla, Botones)
-        area_contenido = QFrame()
-        area_contenido.setStyleSheet(f"""
-            QFrame {{
-                background: {colores["bg_panel"]};
-                border-radius: 8px;
-                padding: 0;
-                margin: 0;
-            }}
-        """)
-        layout_contenido = QVBoxLayout(area_contenido)
-        layout_contenido.setContentsMargins(20, 5, 20, 5)
-        layout_contenido.setSpacing(10)
-        
-        # Buscador y Ordenación
-        layout_buscador_ordenacion = QHBoxLayout()
-        layout_buscador_ordenacion.setContentsMargins(0, 0, 0, 0)
-        layout_buscador_ordenacion.setSpacing(10)
-        
-        self.campo_busqueda.setPlaceholderText("Buscar por ID o Título...")
-        self.campo_busqueda.setMaximumHeight(60)
-        self.campo_busqueda.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.campo_busqueda.setStyleSheet(self.estilo["styles"]["input"])
-        
-        etiqueta_ordenar = QLabel("Buscar de manera")
-        etiqueta_ordenar.setStyleSheet(self.estilo["styles"]["title"])
-        etiqueta_ordenar.setFixedHeight(30)
-        etiqueta_ordenar.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
-        
-        layout_buscador_ordenacion.addWidget(self.campo_busqueda)
-        layout_buscador_ordenacion.addWidget(etiqueta_ordenar)
-        layout_buscador_ordenacion.addWidget(self.combo_ordenacion)
-        
-        layout_contenido.addLayout(layout_buscador_ordenacion)
-        
-        # Tabla y botones
-        layout_contenido.addWidget(self.tabla)
-        marco_botones_accion = self._crear_botones_accion()
-        layout_contenido.addWidget(marco_botones_accion)
-        
-        layout_panel.addWidget(area_contenido)
-        layout_contenedor.addWidget(panel_consulta)
-        self.layout_principal.addWidget(marco_central)
-
     # LÓGICA DE FILTRADO Y ORDENACIÓN
     def _aplicar_filtro(self, *args):
         filtro = self.campo_busqueda.text().strip().lower()
@@ -228,40 +241,6 @@ class Ventana_consulta(QFrame):
             datos_reporte = None
 
         return datos_reporte
-            
-    # MÉTODOS AUXILIARES Y DE BOTONES
-    def _crear_botones_accion(self):
-        marco_botones = QFrame()
-        marco_botones.setStyleSheet(f"""
-                QFrame {{
-                    background: transparent;
-                    border: none;
-                    padding: 0;
-                    margin: 0;
-                }}
-                """)
-        layout_botones = QHBoxLayout(marco_botones)
-        layout_botones.setContentsMargins(0, 20, 0, 20)
-        layout_botones.setSpacing(60)
-
-        def crear_boton(texto):
-            boton = QPushButton(texto)
-            boton.setStyleSheet(self.estilo["styles"]["boton"])
-            return boton
-
-        boton_excel = crear_boton("Reporte-PDF")
-        boton_excel.clicked.connect(self.Abrir_modal_pdf)
-        boton_pptx = crear_boton("Reporte-PTTX")
-        boton_pptx.clicked.connect(self.Abrir_modal)
-        
-        boton_eliminar = crear_boton("Eliminar")
-        boton_eliminar.clicked.connect(self.Eliminar_reporte)
-        
-        layout_botones.addWidget(boton_excel)
-        layout_botones.addWidget(boton_pptx)
-        layout_botones.addWidget(boton_eliminar)
-        
-        return marco_botones
     
     def Abrir_modal(self):
         datos_reporte = self.Obtener_reporte_seleccionado()

@@ -8,7 +8,6 @@ from components.app_style import estilo_app
 
 estilo = estilo_app.obtener_estilo_completo()
 
-# --- Funciones de Utilidad ---
 def get_shadow_effect(radius, color=Qt.gray, offset_x=1, offset_y=1):
     """Crea y configura un efecto de sombra."""
     sombra = QGraphicsDropShadowEffect()
@@ -17,34 +16,8 @@ def get_shadow_effect(radius, color=Qt.gray, offset_x=1, offset_y=1):
     sombra.setOffset(offset_x, offset_y)
     return sombra
 
-def create_card(title, amount, border_color):
-    """Crea una tarjeta de resumen estilizada."""
-    layout = QVBoxLayout()
-    layout.setContentsMargins(15, 5, 15, 5)
-
-    frame = QFrame()
-    frame.setStyleSheet(estilo["styles"]["panel"])
-    frame.setLayout(layout)
-    frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-    frame.setGraphicsEffect(get_shadow_effect(15, QColor(0, 0, 0, 50)))
-
-    # Título
-    title_label = QLabel(title)
-    title_label.setStyleSheet(estilo["styles"]["label"])
-    layout.addWidget(title_label)
-
-    # Cantidad
-    amount_label = QLabel(amount)
-    amount_label.setStyleSheet(estilo["styles"]["label"])
-    layout.addWidget(amount_label)
-
-    layout.addStretch(1)
-    return frame
-
-# --- Clase para el Widget del Gráfico Circular Nativo (QPainter) ---
+# ==Clase para el Widget del Gráfico Circular Nativo (QPainter)==
 class CustomPieChartWidget(QFrame):
-    """Un QFrame que dibuja un gráfico circular simple usando QPainter."""
-
     def __init__(self, title, chart_data=None, parent=None):
         super().__init__(parent)
         self.setMinimumHeight(160)  # Aumentado para espacio del título
@@ -205,20 +178,26 @@ class CustomPieChartWidget(QFrame):
 class Ventana_principal(QFrame):
     def __init__(self):
         super().__init__()
-        self.layout_main = QVBoxLayout(self)
+        # Inicializar Estilo
+        self.estilo = estilo_app.obtener_estilo_completo()
+        
+        # Establecer el Tema del Fondo
         self.setStyleSheet(estilo["styles"]["fondo"])
-        self.setup_panel()
-        self.setup_charts_panel()
-        self.layout_main.addStretch(1) 
+        
 
-         # Registrar esta vista para actualización automática
+        # Registrar esta vista para actualización automática
         estilo_app.registrar_vista(self)
         
         # Conectar señal de actualización
         estilo_app.estilos_actualizados.connect(self.actualizar_estilos)
 
+        # Inicialización de los Métodos
+        self.setup_panel()
+        self.setup_charts_panel()
+
     def setup_panel(self):
-        layout_content = QVBoxLayout()
+        self.layout_principal = QVBoxLayout(self)
+        self.layout_contenido = QVBoxLayout()
 
         Contenedor_panel = QFrame()
         Contenedor_panel.setMinimumHeight(250)
@@ -226,17 +205,14 @@ class Ventana_principal(QFrame):
         Contenedor_panel.setStyleSheet(estilo["styles"]["panel"])
         Contenedor_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         Contenedor_panel.setGraphicsEffect(get_shadow_effect(25))
-        
-        Contenedor_panel.setLayout(layout_content)
-        layout_content.setContentsMargins(15, 0, 15, 0)
-        layout_content.setSpacing(0) 
+        Contenedor_panel.setLayout(self.layout_contenido)
 
         titulo = QLabel("Bienvenido al Sistema de Gestión")
         titulo.setStyleSheet(estilo["styles"]["header"])
         titulo.setAlignment(Qt.AlignCenter)
-        layout_content.addWidget(titulo)
+        self.layout_contenido.addWidget(titulo)
 
-        self.layout_main.addWidget(Contenedor_panel, 0, alignment=Qt.AlignTop)
+        self.layout_principal.addWidget(Contenedor_panel, 0, alignment=Qt.AlignTop)
 
     def setup_charts_panel(self):
         layout_estadistica = QVBoxLayout()
@@ -274,7 +250,7 @@ class Ventana_principal(QFrame):
             layout_charts.addWidget(chart, row, col)
             
         layout_estadistica.addWidget(charts_container)
-        self.layout_main.addWidget(frame_Estadistica)
+        self.layout_principal.addWidget(frame_Estadistica)
 
     def actualizar_estilos(self):
         """Actualiza los estilos de esta vista"""

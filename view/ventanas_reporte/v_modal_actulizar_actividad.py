@@ -1,20 +1,17 @@
 from PyQt5.QtWidgets import (QFrame, QLabel, QVBoxLayout, QHBoxLayout, 
                              QGraphicsDropShadowEffect, QTextEdit, QWidget, 
-                             QPushButton, QLineEdit, QSizePolicy, QFileDialog,
-                             QMessageBox, QDateEdit, QDialog, QComboBox, QTableWidget)
-from PyQt5.QtCore import Qt, QSize, QDate
-from PyQt5.QtGui import QPixmap, QIcon, QFont
+                             QPushButton, QLineEdit, QSizePolicy,
+                             QMessageBox, QDateEdit, QDialog)
+from PyQt5.QtCore import Qt, QDate
+from PyQt5.QtGui import QColor
 from services.Cargar_imagenes import ImageFrame
 from components.app_style import estilo_app
 
-FONT_FAMILY = "Arial"
-COLOR_PRIMARIO = "#005a6e" 
-COLOR_AZUL_HOVER = "#00485a"
-
+# Clase: Ventana Modal para Actualizar Actividades
 class Modal_actulizar_actividades(QDialog):
     def __init__(self, id_actividad, titulo, descripcion, ruta1, ruta2, fecha, controlador, parent = None):
         super().__init__(parent)
-        #valores de la actividad a modificar
+        # Definir variables necesarias así como Estilo
         self.controller = controlador
         self.id_actividad = id_actividad
         self.titulo = titulo
@@ -23,74 +20,71 @@ class Modal_actulizar_actividades(QDialog):
         self.descripcion = descripcion
         self.fecha = fecha
         self.estilo = estilo_app.obtener_estilo_completo()
-        self.setStyleSheet(self.estilo["styles"]["fondo"])
-        self.setWindowTitle("Actividad_actulizacion")
-        self.setWindowModality(Qt.ApplicationModal)
+        self.colores = self.estilo["colors"]
 
-        self.setGeometry(100, 100, 700, 300)
-        self.setMaximumWidth(800)
-        self.layout_main = QVBoxLayout()
-        self.setLayout(self.layout_main)
-        self.setStyleSheet("""QFrame{
-                        border-top-left-radius: 15px;
-                        border-top-right-radius: 15px;
-                        border-bottom-left-radius: 15px;
-                        border-bottom-right-radius: 15px;
-                        }""")
-        
         # Variables para almacenar las rutas de las imágenes
         self.imagen1_path = None
         self.imagen2_path = None
-        
-        self.inicializar_ui()
 
+        # Establecer el Tema de Fondo
+        self.setStyleSheet(self.estilo["styles"]["fondo"])
+
+        # Registrar esta vista para actualización automática
         estilo_app.registrar_vista(self)
-        estilo_app.estilos_actualizados.connect(self.actualizar_estilos)        
-
-    def inicializar_ui(self):
-        """Inicializa todos los componentes de la interfaz de usuario"""
-        self.crear_panel_principal()
-
-    def crear_panel_principal(self):
-        """Crea el panel principal con sombra y estilo"""
-        panel_reporte = self.crear_panel_con_sombra()
-        panel_layout = QVBoxLayout(panel_reporte)
-        panel_layout.setContentsMargins(0, 0, 0, 0)
-        panel_layout.setSpacing(0)
-
-        # Agregar componentes al panel
-        panel_layout.addWidget(self.crear_titulo_seccion())
-        panel_layout.addWidget(self.crear_campo_titulo_actividad())
-        panel_layout.addWidget(self.crear_contenedor_imagenes())
-        panel_layout.addWidget(self.crear_campo_descripcion())
-        panel_layout.addLayout(self.Campo_fecha())
         
-        layout_h = QHBoxLayout()
-        panel_layout.addLayout(layout_h)
-        layout_h.addWidget(self.crear_boton_guardar())
-        
+        # Conectar señal de actualización
+        estilo_app.estilos_actualizados.connect(self.actualizar_estilos)  
 
-        self.layout_main.addWidget(panel_reporte)
+        # Inicializar Métodos iniciales
+        self.setup_ui()
+        self.setup_panel()
 
-    def crear_panel_con_sombra(self):
-        """Crea el panel principal con efecto de sombra"""
-        panel = QFrame()
-        panel.setStyleSheet(self.estilo["styles"]["panel"])
+    def setup_ui(self):
+        # Establecer los parámetros iniciales
+        self.setWindowTitle("Actualizar Actividad")
+        self.setWindowModality(Qt.ApplicationModal)
+        self.resize(800, 600)
 
+    def setup_panel(self):
+        # Layout Principal
+        self.layout_principal = QVBoxLayout(self)
+
+        # Contenedor
+        contenedor_panel = QFrame()
+        contenedor_panel.setMinimumHeight(600)
+        contenedor_panel.setStyleSheet(self.estilo["styles"]["panel"])
+        contenedor_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+        # Sombra de la Ventana
         sombra = QGraphicsDropShadowEffect()
         sombra.setBlurRadius(25)
-        sombra.setColor(Qt.gray)
+        sombra.setColor(QColor(self.colores.get("shadow", Qt.gray)))
         sombra.setOffset(2, 2)
-        panel.setGraphicsEffect(sombra)
+        contenedor_panel.setGraphicsEffect(sombra)
 
-        return panel
+        # Layout del Panel
+        layout_panel = QVBoxLayout(contenedor_panel)
+
+        # Agregar componentes al panel
+        layout_panel.addWidget(self.crear_titulo_seccion())
+        layout_panel.addWidget(self.crear_campo_titulo_actividad())
+        layout_panel.addWidget(self.crear_contenedor_imagenes())
+        layout_panel.addWidget(self.crear_campo_descripcion(), 1)
+        layout_panel.addLayout(self.Campo_fecha())
+        
+        # Layout para el Botón de Guardar
+        layout_h = QHBoxLayout()
+        layout_panel.addLayout(layout_h)
+        layout_h.addWidget(self.crear_boton_guardar())
+
+        # Añadir el contenedor panel al Layout Principal
+        self.layout_principal.addWidget(contenedor_panel)
 
     def crear_titulo_seccion(self):
-        """Crea el título de la sección"""
+        #Crea el título de la sección
         titulo = QLabel("Actualizar Actividad")
         titulo.setStyleSheet(self.estilo["styles"]["header"])
         titulo.setAlignment(Qt.AlignLeft)
-        titulo.setMaximumHeight(70)
         return titulo
 
     def crear_campo_titulo_actividad(self):
@@ -103,18 +97,16 @@ class Modal_actulizar_actividades(QDialog):
     def crear_contenedor_imagenes(self):
         """Crea el contenedor para las imágenes"""
         contenedor = QFrame()
-        contenedor.setStyleSheet("""
-            QFrame {
-                background: white;
-                border: 2px solid #e5e7eb;
+        contenedor.setStyleSheet(f"""
+            QFrame {{
+                background: {self.colores['bg_primary']};
+                border: 2px solid {self.colores['border']};
                 padding: 10px;
                 margin: 0 15px;
-            }
+            }}
         """)
         
         layout_contenedor = QVBoxLayout(contenedor)
-        #layout_contenedor.setContentsMargins(0, 0, 0, 0)
-        #layout_contenedor.setSpacing(0)
         
         # Título de la sección de imágenes
         titulo_imagenes = QLabel("Imágenes de la actividad")
@@ -124,33 +116,29 @@ class Modal_actulizar_actividades(QDialog):
         
         # Fila para las imágenes
         fila_imagenes = QWidget()
-        fila_imagenes.setStyleSheet("padding: 0; margin: 0; background: white;")
+        fila_imagenes.setStyleSheet("background: transparent;")
         layout_fila = QHBoxLayout(fila_imagenes)
         layout_fila.setContentsMargins(0, 0, 0, 0)
         layout_fila.setSpacing(20)
-        #layout_fila.setAlignment(Qt.AlignCenter)
         
         # Crear frames de imágenes
-        self.frame_imagen1 = ImageFrame(1, self.imagen1, self)
-        self.frame_imagen2 = ImageFrame(2, self.imagen2, self)
+        self.frame_imagen1 = ImageFrame(1, self.imagen1, parent=self)
+        self.frame_imagen2 = ImageFrame(2, self.imagen2, parent=self)
         
         layout_fila.addWidget(self.frame_imagen1)
         layout_fila.addWidget(self.frame_imagen2)
-        #layout_fila.addStretch()  # Empuja las imágenes hacia la izquierda
 
         contenedor.setMinimumHeight(230)
-        contenedor.setMaximumHeight(600)
         
-        layout_contenedor.addWidget(fila_imagenes)
+        layout_contenedor.addWidget(fila_imagenes, 1)
         
         return contenedor
 
     def crear_campo_descripcion(self):
-        """Crea el campo de texto para la descripción"""
+        # Crea el campo de texto para la descripción
         self.input_reporte = QTextEdit(self.descripcion)
         self.input_reporte.setPlaceholderText("Ingrese la descripción de la Actividad...")
         self.input_reporte.setStyleSheet(self.estilo["styles"]["input"])
-        self.input_reporte.setMaximumHeight(200)
         return self.input_reporte
     
     def Campo_fecha(self):
@@ -175,18 +163,16 @@ class Modal_actulizar_actividades(QDialog):
         return layout
 
     def crear_boton_guardar(self):
-        """Crea el botón para guardar la actividad"""
-        btn_guardar = QPushButton("Actulizar Actividad")
+        # Crear el Botón para guardar la actividad
+        btn_guardar = QPushButton("Actualizar Actividad")
         btn_guardar.setStyleSheet(self.estilo["styles"]["boton"])
-
-
         btn_guardar.setCursor(Qt.PointingHandCursor)
         btn_guardar.clicked.connect(self.Guardar_datos_actividad)
 
         return btn_guardar 
     
     def Guardar_datos_actividad(self):
-        confirmacion = QMessageBox.question(self, "Actulizar actividad", "Seguro que deseas actulizar la actividad", QMessageBox.Yes, QMessageBox.No)
+        confirmacion = QMessageBox.question(self, "Actualizar actividad", "Seguro que deseas actulizar la actividad", QMessageBox.Yes, QMessageBox.No)
         if confirmacion == QMessageBox.Yes:
             id_actividad = self.id_actividad
             titulo = self.titulo_actividad.text()
@@ -210,10 +196,8 @@ class Modal_actulizar_actividades(QDialog):
 
     # Método en cada vista:
     def actualizar_estilos(self):
-        """Actualiza los estilos de este modal"""
-        print(f"🔄 {self.__class__.__name__} actualizando estilos...")
+        # Actualizar los estilo de la vista
         self.estilo = estilo_app.obtener_estilo_completo()
-        colores = self.estilo["colors"]
         
         # Aplicar fondo al modal
         self.setStyleSheet(self.estilo["styles"]["fondo"])
@@ -227,7 +211,7 @@ class Modal_actulizar_actividades(QDialog):
                 # Actualizar sombra
                 effect = widget.graphicsEffect()
                 if isinstance(effect, QGraphicsDropShadowEffect):
-                    effect.setColor(QColor(colores.get("shadow", Qt.gray)))
+                    effect.setColor(QColor(self.colores.get("shadow", Qt.gray)))
         
         # Actualizar título
         for widget in self.findChildren(QLabel):
@@ -257,8 +241,8 @@ class Modal_actulizar_actividades(QDialog):
             if "Imágenes de la actividad" in child_labels:
                 widget.setStyleSheet(f"""
                     QFrame {{
-                        background: {colores["bg_secondary"]};
-                        border: 1px solid {colores["border"]};
+                        background: {self.colores["bg_secondary"]};
+                        border: 1px solid {self.colores["border"]};
                         border-radius: 8px;
                         padding: 10px;
                         margin: 0 15px;
@@ -271,4 +255,3 @@ class Modal_actulizar_actividades(QDialog):
         if hasattr(self, 'frame_imagen2'):
             self.frame_imagen2.actualizar_estilos()
         
-        print(f"✅ {self.__class__.__name__} estilos actualizados")

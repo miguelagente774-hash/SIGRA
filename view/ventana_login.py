@@ -18,6 +18,7 @@ COLOR_ERROR = "#e74c3c"
 COLOR_EXITO = "#27ae60"
 COLOR_SOMBRA = "#e0e0e0"
 
+# Clase: Ventana Login
 class Ventana_login(QFrame):
     login_exitoso = pyqtSignal()  # Modificado para enviar el nombre de usuario
     
@@ -347,7 +348,7 @@ class Ventana_login(QFrame):
         layout.addWidget(self.boton_login)
         
     def conectar_eventos(self):
-        """Conecta las señales de los widgets"""
+        # Conecta las señales de los widgets
         self.boton_login.clicked.connect(self.verificar_login)
         self.input_usuario.returnPressed.connect(self.verificar_login)
         self.input_password.returnPressed.connect(self.verificar_login)

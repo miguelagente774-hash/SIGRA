@@ -1,6 +1,6 @@
 # controlador_estadistica.py
 from models.Modelo_estadistica import Modelo_estadistica
-from view.vista_estadistica import Ventana_principal, CustomPieChartWidget
+from view.vista_estadistica import Ventana_estadística, Widget_Graficos
 from comunicador import Comunicador_global
 from typing import Dict, List, Any
 
@@ -11,7 +11,7 @@ class ControladorEstadistica:
 
     def get_widget(self):
         """Crea la vista de estadísticas y actualiza los gráficos con datos reales."""
-        self.estadistica = Ventana_principal()
+        self.estadistica = Ventana_estadística()
 
         # Obtener contadores desde el modelo
         contadores = self.modelo.obtener_contadores_periodos()
@@ -21,7 +21,7 @@ class ControladorEstadistica:
         periodos = ["semanal", "mensual", "trimestral", "anual"]
 
         # Buscar widgets de tipo CustomPieChartWidget dentro de la vista
-        charts: List[CustomPieChartWidget] = self.estadistica.findChildren(CustomPieChartWidget)
+        charts: List[Widget_Graficos] = self.estadistica.findChildren(Widget_Graficos)
 
         for i, periodo in enumerate(periodos):
             if i < len(charts):
@@ -50,7 +50,7 @@ class ControladorEstadistica:
         objetivos = [8, 20, 30, 120]
         periodos = ["semanal", "mensual", "trimestral", "anual"]
 
-        charts: List[CustomPieChartWidget] = self.estadistica.findChildren(CustomPieChartWidget)
+        charts: List[Widget_Graficos] = self.estadistica.findChildren(Widget_Graficos)
         for i, periodo in enumerate(periodos):
             if i < len(charts):
                 realizadas = contadores.get(periodo, 0)

@@ -1,65 +1,74 @@
 from PyQt5.QtWidgets import (QFrame, QLabel, QVBoxLayout, 
                             QHBoxLayout, QGraphicsDropShadowEffect, QPushButton,
                             QTableWidget, QTableWidgetItem, QHeaderView, 
-                            QLineEdit, QTextEdit, QComboBox, QDateEdit, QMessageBox)
+                            QSizePolicy, QMessageBox)
 from PyQt5.QtCore import (Qt)
 from PyQt5.QtGui import QColor
 from components.app_style import estilo_app
 
+# Clase: Ventana de Reportes Finalizados
 class Ventana_reporte_finalizados(QFrame):
     def __init__(self, controller):
         super().__init__()
+        # Definir Variables Iniciales
         self.estilo = estilo_app.obtener_estilo_completo()
         self.controller = controller
-        self.setStyleSheet(self.estilo["styles"]["fondo"])
-        self.Main_layout = QVBoxLayout()
-        self.Main_layout.setContentsMargins(40, 40, 40, 40)
-        self.setLayout(self.Main_layout)
-
-        estilo_app.registrar_vista(self)
-        estilo_app.estilos_actualizados.connect(self.actualizar_estilos)        
-
-        #funciones
-        self.Panel_r_finalizado()
-        self.tabla_actividade()
-        self.botones()
-
-    def Panel_r_finalizado(self):
-        self.Panel_layout = QVBoxLayout()
-        self.Panel_layout.setContentsMargins(0, 0, 0, 0)
-        self.Panel_layout.setSpacing(10)
         
-        Panel_R_finalizado = QFrame()
-        Panel_R_finalizado.setLayout(self.Panel_layout)
-        Panel_R_finalizado.setStyleSheet(f"""
-                                         QFrame{{
-                                         background: {estilo_app.obtener_colores_tema()['table_bg']};
-                                         border-top-left-radius: 15px;
-                                         border-top-right-radius: 15px;
-                                         border-bottom-left-radius: 15px;
-                                         border-bottom-right-radius: 15px;
-                                         }}""")
+        # Establecer el Tema del Fondo
+        self.setStyleSheet(self.estilo["styles"]["fondo"])
+                
+        # Registrar esta vista para actualización automática
+        estilo_app.registrar_vista(self)
+        
+        # Conectar señal de actualización
+        estilo_app.estilos_actualizados.connect(self.actualizar_estilos)
+        
+        # Inicializar Métodos Iniciales
+        self.setup_panel()
 
-        #sombra del panel
+    def setup_panel(self):
+        # Layout Principal
+        self.layout_principal = QVBoxLayout(self)
+
+        # Contenedor
+        contenedor_panel = QFrame()
+        contenedor_panel.setMinimumHeight(250)
+        contenedor_panel.setStyleSheet(self.estilo["styles"]["panel"])
+        contenedor_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        contenedor_panel.setMinimumSize(700, 450)
+
+        # Sombra de la Ventana
         sombra = QGraphicsDropShadowEffect()
-        sombra.setBlurRadius(20)
-        sombra.setColor(Qt.gray)
+        sombra.setBlurRadius(25)
+        colores = self.estilo["colors"]
+        sombra.setColor(QColor(colores.get("shadow", Qt.gray)))
         sombra.setOffset(2, 2)
-        Panel_R_finalizado.setGraphicsEffect(sombra)
+        contenedor_panel.setGraphicsEffect(sombra)
 
+        # Layout del Panel
+        layout_panel = QVBoxLayout(contenedor_panel)
+
+        # Título de la Ventana
         titulo = QLabel("Actividades Finalizadas")
         titulo.setStyleSheet(self.estilo["styles"]["header"])
-        titulo.setAlignment(Qt.AlignLeft)
-        self.Panel_layout.addWidget(titulo)
-        #----------no tocar-------------------------
-        self.Main_layout.addWidget(Panel_R_finalizado)
+        titulo.setAlignment(Qt.AlignCenter)
+        layout_panel.addWidget(titulo)
+        
+        # Métodos
+        self.tabla(layout_panel)
+        self.botones(layout_panel)
 
-    def tabla_actividade(self):
+        # Añadir Contenedor al Layout Principal
+        self.layout_principal.addWidget(contenedor_panel)
+
+    def tabla(self, layout):
         #crear tabla
         self.tabla_actividades = QTableWidget()
         datos = self.controller.Obtener_datos_tabla()
         self.tabla_actividades.setEditTriggers(QTableWidget.NoEditTriggers)
         
+        layout.addWidget(self.tabla_actividades)
+
         #ocultar encabezado vertical
         header_verticar = self.tabla_actividades.verticalHeader()
         header_verticar.setSectionResizeMode(QHeaderView.Fixed)
@@ -75,8 +84,6 @@ class Ventana_reporte_finalizados(QFrame):
         self.tabla_actividades.setStyleSheet(self.estilo["styles"]["tabla"])
         encabezados = ["ID", "Titulo", "Descripcion", "Fecha"]
         self.tabla_actividades.setHorizontalHeaderLabels(encabezados)
-
-        self.Panel_layout.addWidget(self.tabla_actividades)
 
         #configuracion de la tabla
         header = self.tabla_actividades.horizontalHeader()
@@ -102,11 +109,10 @@ class Ventana_reporte_finalizados(QFrame):
                 item.setTextAlignment(Qt.AlignCenter)
                 #insertando los datos en sus posiciones correspondiente
                 self.tabla_actividades.setItem(indice_fila, indice_columna, item)
-            
+        
 
-    def botones(self):
+    def botones(self, layout):
         layout_botones = QHBoxLayout()
-        self.Panel_layout.addLayout(layout_botones)
 
         boton_modificar = QPushButton("Modificar")
         boton_modificar.setStyleSheet(self.estilo["styles"]["boton"])
@@ -118,7 +124,8 @@ class Ventana_reporte_finalizados(QFrame):
         boton_eliminar.setStyleSheet(self.estilo["styles"]["boton"])
         boton_eliminar.clicked.connect(self.Elminar_actividad)
         layout_botones.addWidget(boton_eliminar)
-
+        
+        layout.addLayout(layout_botones)
 
     def actulizar_tabla(self):
         datos_nuevo = self.controller.Obtener_datos_tabla()
@@ -174,8 +181,7 @@ class Ventana_reporte_finalizados(QFrame):
 
     # Método en cada vista:
     def actualizar_estilos(self):
-        """Actualiza los estilos de esta vista"""
-        print(f"🔄 {self.__class__.__name__} actualizando estilos...")
+        # Actualizar los estilo de la vista
         self.estilo = estilo_app.obtener_estilo_completo()
         colores = self.estilo["colors"]
         
@@ -187,12 +193,7 @@ class Ventana_reporte_finalizados(QFrame):
             # Buscar el panel principal por su título
             child_labels = [child.text() for child in widget.findChildren(QLabel) if child.text()]
             if "Actividades Finalizadas" in child_labels:
-                widget.setStyleSheet(f"""
-                    QFrame {{
-                        background: {colores["bg_panel"]};
-                        border-radius: 15px;
-                    }}
-                """)
+                widget.setStyleSheet(self.estilo["styles"]["panel"])
                 
                 # Actualizar sombra
                 if widget.graphicsEffect():
@@ -233,5 +234,3 @@ class Ventana_reporte_finalizados(QFrame):
         # Actualizar botones
         for widget in self.findChildren(QPushButton):
             widget.setStyleSheet(self.estilo["styles"]["boton"])
-        
-        print(f"✅ {self.__class__.__name__} estilos actualizados")

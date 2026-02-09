@@ -1,8 +1,8 @@
 import sys
 import os
 import re
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QMessageBox
-from PyQt5.QtCore import QObject, pyqtSignal, QRegExp
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QMessageBox, QAction
+from PyQt5.QtCore import pyqtSignal, QRegExp, QPropertyAnimation, QEasingCurve
 from PyQt5.QtGui import QRegExpValidator, QPalette, QColor
 from components.app_style import estilo_app
 
@@ -33,7 +33,8 @@ class controlador_configuraciones(QWidget):
         self.configurar_validadores()
         
         # Conectar señales
-        self.vista.guardar_clicked.connect(self.on_guardar_clicked)
+        self.vista.guardar_clicked.connect(self.guardar_datos)
+        self.vista.tecla_guardar.triggered.connect(self.guardar_datos)
         
         # Cargar datos iniciales
         self.cargar_datos_iniciales()
@@ -79,18 +80,31 @@ class controlador_configuraciones(QWidget):
     
     def configurar_placeholders_y_tooltips(self):
         # == Configura placeholders y tooltips para los campos== 
+
+        # Campos de Objetivos
+        self.vista.entry_semanal.setPlaceholderText("Ingrese la cantidad de actividades semanales")
+        self.vista.entry_semanal.setToolTip("Solo números")
+
+        self.vista.entry_mensual.setPlaceholderText("Ingrese la cantidad de actividades mensuales")
+        self.vista.entry_mensual.setToolTip("Solo números")
+
+        self.vista.entry_trimestral.setPlaceholderText("Ingrese la cantidad de actividades trimestrales")
+        self.vista.entry_trimestral.setToolTip("Solo números")
+
+        self.vista.entry_anual.setPlaceholderText("Ingrese la cantidad de actividades anuales")
+        self.vista.entry_anual.setToolTip("Solo números")
         
         # Campos de dirección
-        self.vista.entry_estado.setPlaceholderText("Ej: Miranda")
+        self.vista.entry_estado.setPlaceholderText("Ej: Monagas")
         self.vista.entry_estado.setToolTip("Solo letras, espacios y caracteres .-()")
         
-        self.vista.entry_municipio.setPlaceholderText("Ej: Sucre")
+        self.vista.entry_municipio.setPlaceholderText("Ej: Maturín")
         self.vista.entry_municipio.setToolTip("Solo letras, espacios y caracteres .-()")
         
-        self.vista.entry_parroquia.setPlaceholderText("Ej: Petare")
+        self.vista.entry_parroquia.setPlaceholderText("Ej: San Simón")
         self.vista.entry_parroquia.setToolTip("Solo letras, espacios y caracteres .-()")
         
-        self.vista.entry_institucion.setPlaceholderText("Ej: Instituto Nacional de...")
+        self.vista.entry_institucion.setPlaceholderText("Ej: Gobernación")
         self.vista.entry_institucion.setToolTip("Solo letras, espacios y caracteres .-()")
         
         # Campos de nombres de jefaturas
@@ -104,7 +118,7 @@ class controlador_configuraciones(QWidget):
         self.vista.entry_cedula_coord.setPlaceholderText("Ej: V-12345678")
         self.vista.entry_cedula_coord.setToolTip("Formato: V-12345678 o E-12345678")
         
-        self.vista.entry_cedula_gob.setPlaceholderText("Ej: E-87654321")
+        self.vista.entry_cedula_gob.setPlaceholderText("Ej: V-87654321")
         self.vista.entry_cedula_gob.setToolTip("Formato: V-12345678 o E-12345678")
 
         # Campos de Gaceta
@@ -114,10 +128,11 @@ class controlador_configuraciones(QWidget):
         self.vista.entry_fechaPublicacion.setToolTip("Ingrese los datos de la efcha de publicacion")
     
     def cargar_datos_iniciales(self):
-        # == Carga los datos desde la base de datos al iniciar== 
+    # == Carga los datos desde la base de datos al iniciar== 
         try:
             # Obtener datos del modelo
             datos_interfaz = self.modelo.cargar_configuracion_interfaz()
+            datos_objetivos = self.modelo.cargar_datos_objetivos()
             datos_direccion = self.modelo.cargar_datos_direccion()
             datos_jefaturas = self.modelo.cargar_datos_jefaturas()
             datos_gaceta = self.modelo.cargar_datos_gaceta()
@@ -125,6 +140,7 @@ class controlador_configuraciones(QWidget):
             # Preparar datos para la vista
             datos = {
                 "interfaz": datos_interfaz,
+                "objetivos": datos_objetivos,
                 "direccion": datos_direccion,
                 "jefaturas": datos_jefaturas,
                 "gaceta": datos_gaceta
@@ -134,12 +150,10 @@ class controlador_configuraciones(QWidget):
             self.establecer_valores(datos)
             
         except Exception as e:
-            print(f"❌ Error al cargar datos iniciales: {e}")
             self.mostrar_mensaje("Error", f"No se pudieron cargar los datos: {str(e)}", "error")
     
-    def on_guardar_clicked(self):
+    def guardar_datos(self):
         # == Maneja el evento de clic en guardar== 
-        print("Se ha ejecutado el botón")
         try:
             # 1. Obtener datos de la vista
             datos_crudos = self.obtener_valores()
@@ -181,7 +195,6 @@ class controlador_configuraciones(QWidget):
                 self.mostrar_mensaje("Error", "No se pudieron guardar los cambios", "error")
                 
         except Exception as e:
-            print(f"❌ Error en on_guardar_clicked: {e}")
             self.mostrar_mensaje("Error", f"Ocurrió un error: {str(e)}", "error")
 
     
@@ -191,6 +204,10 @@ class controlador_configuraciones(QWidget):
         
         # Validar interfaz
         if not self.validar_interfaz(datos.get("interfaz", {})):
+            return False
+        
+        # Validar objetivo - CORREGIDO: llamar a validar_objetivos
+        if not self.validar_objetivos(datos.get("objetivos", {})):
             return False
         
         # Validar dirección
@@ -230,6 +247,40 @@ class controlador_configuraciones(QWidget):
         
         return True
     
+    def validar_objetivos(self, datos_objetivos):
+        # Validar objetivos
+        entradas = [
+            ("objetivo_semanal", self.vista.entry_semanal, "Semanal"),
+            ("objetivo_mensual", self.vista.entry_mensual, "Mensual"),
+            ("objetivo_trimestral", self.vista.entry_trimestral, "Trimestral"),
+            ("objetivo_anual", self.vista.entry_anual, "Anual")
+        ]
+
+        for campo_key, widget, campo_nombre in entradas:
+            valor = datos_objetivos.get(campo_key, "").strip()
+
+            if not valor:
+                self.mostrar_error(widget, f"{campo_nombre} es requerida")
+                return False
+            
+            # Validar que sea un número positivo (incluye ceros y múltiples dígitos)
+            regex_numeros = QRegExp(r'^\d+$')
+            if not regex_numeros.exactMatch(valor):
+                self.mostrar_error(widget, f"{campo_nombre} debe ser un número")
+                return False
+            
+            # Opcional: Validar rango
+            try:
+                num_valor = int(valor)
+                if num_valor < 0:
+                    self.mostrar_error(widget, f"{campo_nombre} debe ser un número positivo")
+                    return False
+            except ValueError:
+                self.mostrar_error(widget, f"{campo_nombre} debe ser un número válido")
+                return False
+        
+        return True  # ¡¡¡IMPORTANTE!!!
+    
     def validar_direccion(self, datos_direccion):
         # == Valida datos de dirección== 
         campos = [
@@ -242,14 +293,14 @@ class controlador_configuraciones(QWidget):
         for campo_key, widget, campo_nombre in campos:
             valor = datos_direccion.get(campo_key, "").strip()
             
-            # Validar requerido
             if not valor:
-                self.mostrar_error(widget, f"{campo_nombre} es requerido")
+                self.mostrar_error(widget, f"{campo_nombre} es requerida")
                 return False
             
-            # Validar longitud mínima
-            if len(valor) < 3:
-                self.mostrar_error(widget, f"{campo_nombre} debe tener al menos 3 caracteres")
+            # CORREGIDO: Usar la expresión regular correcta para texto
+            regex_texto = QRegExp(r'^[A-Za-zÁáÉéÍíÓóÚúÑñ\s\.\-\(\)]+$')
+            if not regex_texto.exactMatch(valor):
+                self.mostrar_error(widget, f"{campo_nombre} contiene caracteres no válidos")
                 return False
         
         return True
@@ -317,6 +368,12 @@ class controlador_configuraciones(QWidget):
                 "tamaño": datos_crudos["interfaz"]["tamaño"],
                 "negrita": datos_crudos["interfaz"]["negrita"]
             },
+            "objetivos": {
+                "objetivo_semanal": datos_crudos["objetivos"]["objetivo_semanal"].strip(),
+                "objetivo_mensual": datos_crudos["objetivos"]["objetivo_mensual"].strip(),
+                "objetivo_trimestral": datos_crudos["objetivos"]["objetivo_trimestral"].strip(),
+                "objetivo_anual": datos_crudos["objetivos"]["objetivo_anual"].strip(),
+            },
             "direccion": {
                 "estado": datos_crudos["direccion"]["estado"].strip(),
                 "municipio": datos_crudos["direccion"]["municipio"].strip(),
@@ -345,6 +402,15 @@ class controlador_configuraciones(QWidget):
                 datos["interfaz"]["tamaño"],
                 datos["interfaz"]["negrita"]
             )
+
+            # Guardar Objetivosd
+
+            exito_objetivos = self.modelo.guardar_datos_objetivos(
+                datos["objetivos"]["objetivo_semanal"],
+                datos["objetivos"]["objetivo_mensual"],
+                datos["objetivos"]["objetivo_trimestral"],
+                datos["objetivos"]["objetivo_anual"]
+            )
             
             # Guardar dirección
             exito_direccion = self.modelo.guardar_datos_direccion(
@@ -368,13 +434,11 @@ class controlador_configuraciones(QWidget):
                 datos["gaceta"]["fecha_publicacion"]
             )
             
-            return exito_interfaz and exito_direccion and exito_jefaturas and exito_gaceta
+            return exito_interfaz and exito_objetivos and exito_direccion and exito_jefaturas and exito_gaceta
             
         except Exception as e:
             print(f"❌ Error al guardar en BD: {e}")
             return False
-    
-    # ========== MÉTODOS GENERALES ==========
     
     def obtener_valores(self):
         # == Retorna todos los valores actuales a los widgets== 
@@ -385,6 +449,12 @@ class controlador_configuraciones(QWidget):
                 "fuente": self.vista.combo_fuente.currentText(),
                 "tamaño": self.vista.spin_tamano.value(),
                 "negrita": self.vista.check_negrita.isChecked()
+            },
+            "objetivos": {
+                "objetivo_semanal": self.vista.entry_semanal.text(),
+                "objetivo_mensual": self.vista.entry_mensual.text(),
+                "objetivo_trimestral": self.vista.entry_trimestral.text(),
+                "objetivo_anual": self.vista.entry_anual.text()
             },
             "direccion": {
                 "estado": self.vista.entry_estado.text(),
@@ -427,32 +497,65 @@ class controlador_configuraciones(QWidget):
             self.vista.spin_tamano.setValue(interfaz.get("tamaño", 12))
             # Negrita
             self.vista.check_negrita.setChecked(interfaz.get("negrita", False))
+
+        # Objetivos
+        if datos.get("objetivos"):
+            objetivos = datos["objetivos"]
+
+            # Definir variable de los datos obtenidos
+            semanal = objetivos.get("objetivo_semanal", "")
+            mensual = objetivos.get("objetivo_mensual", "")
+            trimestral = objetivos.get("objetivo_trimestral", "")
+            anual = objetivos.get("objetivo_anual", "")
+    
+            # Se ingresan valores por defecto si no hay en la Base de Datos
+            self.vista.entry_semanal.setText(str(semanal if semanal else "5"))
+            self.vista.entry_mensual.setText(str(mensual if mensual else "10"))
+            self.vista.entry_trimestral.setText(str(trimestral if trimestral else "30"))
+            self.vista.entry_anual.setText(str(anual if anual else "90"))
         
         # Dirección
         if datos.get("direccion"):
             direccion = datos["direccion"]
-            self.vista.entry_estado.setText(direccion.get("estado", ""))
-            self.vista.entry_municipio.setText(direccion.get("municipio", ""))
-            self.vista.entry_parroquia.setText(direccion.get("parroquia", ""))
-            self.vista.entry_institucion.setText(direccion.get("institucion", ""))
-        
+
+            # Definir variable de los datos obtenidos
+            estado = direccion.get("estado", "")
+            municipio = direccion.get("municipio", "")
+            parroquia = direccion.get("parroquia", "")
+            institucion = direccion.get("institucion", "")
+            
+            # Se ingresan valores por defecto si no hay en la Base de Datos
+            self.vista.entry_estado.setText(estado if estado else "Monagas")
+            self.vista.entry_municipio.setText(municipio if municipio else "Maturín")
+            self.vista.entry_parroquia.setText(parroquia if parroquia else "San Simón")
+            self.vista.entry_institucion.setText(institucion if institucion else "Gobernación/Institución")
+
         # Jefaturas
         if datos.get("jefaturas"):
             jefaturas = datos["jefaturas"]
-            # Asegurar que las cédulas se carguen (convertir a mayúsculas si vienen de BD)
+            
+            # Definir variable de los datos obtenidos
+            nombre_coord = jefaturas.get("nombre_coordinacion", "")
             cedula_coord = jefaturas.get("cedula_coordinacion", "")
+            nombre_gob = jefaturas.get("nombre_gobernacion", "")
             cedula_gob = jefaturas.get("cedula_gobernacion", "")
             
-            self.vista.entry_nombre_coord.setText(jefaturas.get("nombre_coordinacion", ""))
-            self.vista.entry_cedula_coord.setText(cedula_coord.upper() if cedula_coord else "")
-            self.vista.entry_nombre_gob.setText(jefaturas.get("nombre_gobernacion", ""))
-            self.vista.entry_cedula_gob.setText(cedula_gob.upper() if cedula_gob else "")
+            # Se ingresan valores por defecto si no hay en la Base de Datos
+            self.vista.entry_nombre_coord.setText(nombre_coord if nombre_coord else "Coordinacion")
+            self.vista.entry_cedula_coord.setText(cedula_coord.upper() if cedula_coord else "V-12346789")
+            self.vista.entry_nombre_gob.setText(nombre_gob if nombre_gob else "Gobernador")
+            self.vista.entry_cedula_gob.setText(cedula_gob.upper() if cedula_gob else "V-12346789")
 
         # Gaceta
         if datos.get("gaceta"):
             gaceta = datos["gaceta"]
-            self.vista.entry_decreto.setText(gaceta.get("decreto", ""))
-            self.vista.entry_fechaPublicacion.setText(gaceta.get("fecha_publicacion", ""))
+
+            # Definir variable de los datos obtenidos
+            decreto = gaceta.get("decreto", "")
+            fecha = gaceta.get("fecha_publicacion", "")
+            # Se ingresan valores por defecto si no hay en la Base de Datos
+            self.vista.entry_decreto.setText(decreto if decreto else "Ingrese el Decreto")
+            self.vista.entry_fechaPublicacion.setText(fecha if fecha else "Ingrese la Fecha de Publicación")
 
     
     def get_widget(self):
@@ -468,21 +571,27 @@ class controlador_configuraciones(QWidget):
                 "tamaño": 12,
                 "negrita": False
             },
+            "objetivos": {
+                "objetivo_semanal": "5",
+                "objetivo_mensual": "10",
+                "objetivo_trimestral": "30",
+                "objetivo_anual": "90"
+            },
             "direccion": {
                 "estado": "Monagas",
                 "municipio": "Maturín",
-                "parroquia": "",
-                "institucion": ""
+                "parroquia": "San Simón",
+                "institucion": "Gobernación/Institución"
             },
             "jefaturas": {
-                "nombre_coordinacion": "",
-                "cedula_coordinacion": "",
-                "nombre_gobernacion": "",
-                "cedula_gobernacion": ""
+                "nombre_coordinacion": "Coordinador",
+                "cedula_coordinacion": "V-123456789",
+                "nombre_gobernacion": "Gobernador",
+                "cedula_gobernacion": "V-12346789"
             },
             "gaceta": {
-                "decreto": "",
-                "fecha_publicacion": ""
+                "decreto": "Ingrese los Datos",
+                "fecha_publicacion": "Ingrese la Fecha"
             }
         }
         self.establecer_valores(datos_default)
@@ -494,6 +603,11 @@ class controlador_configuraciones(QWidget):
         self.vista.combo_fuente.setCurrentIndex(0)
         self.vista.spin_tamano.setValue(12)
         self.vista.check_negrita.setChecked(False)
+        # Objetivos
+        self.vista.entry_semanal.clear()
+        self.vista.entry_mensual.clear()
+        self.vista.entry_trimestral.clear()
+        self.vista.entry_anual.clear()
         # Dirección
         self.vista.entry_estado.clear()
         self.vista.entry_municipio.clear()
@@ -563,13 +677,85 @@ class controlador_configuraciones(QWidget):
             # Establecer tooltip con mensaje de error
             widget.setToolTip(f"ERROR: {mensaje}")
             
-            # Cambiar color de fondo a rojo claro usando QPalette (no CSS)
+            # Cambiar color de fondo a rojo claro cuando haya un error
             palette = widget.palette()
             palette.setColor(QPalette.Base, QColor(255, 240, 240))
             widget.setPalette(palette)
             
+            # Desplazar hacia el widget
+            self.desplazar_error(widget, 500)
+
             # Enfocar el widget
             widget.setFocus()
+
+
+    def desplazar_error(self, widget, duration=400):
+        # ==Desplazar  hacia el error==
+        try:
+            # Acceder al scroll_area de la vista
+            scroll_area = self.vista.scroll_area
+            
+            if not scroll_area or not scroll_area.isVisible():
+                print(f"⚠️ ScrollArea no disponible o no visible")
+                return
+            
+            # Obtener el scrollbar vertical
+            vscroll = scroll_area.verticalScrollBar()
+            
+            if not vscroll or not vscroll.isVisible():
+                print(f"⚠️ Scrollbar vertical no disponible")
+                # Intentar método alternativo
+                scroll_area.ensureWidgetVisible(widget)
+                return
+            
+            scroll_area.ensureWidgetVisible(widget, 0, 100)
+            viewport = scroll_area.viewport()
+            scroll_widget = self.vista.scroll_widget
+
+            widget_pos = widget.mapTo(viewport, widget.rect().topLeft())
+            widget_y = widget_pos.y()
+            
+            # Calcular posición objetivo
+            target_y = max(0, widget_y - 100)
+            
+            # Limitar al rango máximo del scrollbar
+            target_y = min(target_y, vscroll.maximum())
+            
+            # Verificar si ya está en la posición correcta
+            current_y = vscroll.value()
+            if abs(current_y - target_y) < 10:  # Ya está cerca
+                print(f"✅ Widget ya visible, no necesita desplazamiento")
+                return
+            
+            # 3. TERCERO: Crear animación suave
+            animation = QPropertyAnimation(vscroll, b"value")
+            animation.setDuration(duration)
+            animation.setStartValue(current_y)
+            animation.setEndValue(target_y)
+            animation.setEasingCurve(QEasingCurve.OutCubic)
+            
+            # Conectar señales para debug
+            animation.finished.connect(lambda: print(f"✅ Animación completada"))
+            
+            # Iniciar animación
+            animation.start()
+            
+            # Forzar actualización inmediata
+            scroll_area.repaint()
+            viewport.update()
+            
+        except Exception as e:
+            print(f"❌ Error crítico en desplazamiento: {e}")
+            import traceback
+            traceback.print_exc()
+            
+            # Último recurso: intentar método simple
+            try:
+                if hasattr(self.vista, 'scroll_area'):
+                    self.vista.scroll_area.ensureWidgetVisible(widget)
+                    print(f"🔄 Usando ensureWidgetVisible como fallback")
+            except Exception as fallback_error:
+                print(f"❌ Fallback también falló: {fallback_error}")
     
     def limpiar_errores(self):
         # == Limpia todos los marcadores de error== 

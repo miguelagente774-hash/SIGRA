@@ -1,67 +1,54 @@
-from PyQt5.QtWidgets import (QFrame, QLabel, QVBoxLayout, QHBoxLayout, 
-                             QGraphicsDropShadowEffect, QTextEdit, QWidget, 
-                             QPushButton, QLineEdit, QSizePolicy, QFileDialog,
-                             QMessageBox, QDateEdit)
-from PyQt5.QtCore import Qt, QSize, QDate, pyqtSignal
-from PyQt5.QtGui import QPixmap, QIcon, QFont
+from PyQt5.QtWidgets import (QFrame, QLabel, QVBoxLayout,
+                             QPushButton, QSizePolicy, QFileDialog,
+                             QMessageBox,)
+from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtGui import QPixmap
 import os
 from components.app_style import estilo_app
 
-FONT_FAMILY = estilo_app.obtener_estilo_completo()["font_family"]
-FONT_SIZE = estilo_app.obtener_estilo_completo()["font_size"]
-FONT_COLOR = "#FFFFFF"
-COLOR_PRIMARIO = estilo_app.obtener_colores_tema()["primary"]
-COLOR_PRIMARIO_HOVER = estilo_app.obtener_colores_tema()["boton_hover"]
-BACKGROUND = estilo_app.obtener_colores_tema()["bg_primary"]
-BACKGROUND_HOVER = estilo_app.obtener_colores_tema()["bg_fondo"]
-BORDER = estilo_app.obtener_colores_tema()["border"]
-BORDER_LIGHT = estilo_app.obtener_colores_tema()["border_light"]
-
-
+# Clase: Frame para cargar y mostrar imágenes
 class ImageFrame(QFrame):
-    """Frame para cargar y mostrar imágenes con opción de eliminación"""
-    
     # Señales para notificar cambios al padre
     imageLoaded = pyqtSignal(int, str)  # (número_imagen, ruta)
     imageRemoved = pyqtSignal(int)      # (número_imagen)
     
     def __init__(self, numero_imagen, ruta_imagen=None, parent=None):
         super().__init__(parent)
+        # Definir Variables iniciales
         self.numero_imagen = numero_imagen
         self.image_path = None
         self.file_path = ruta_imagen
-        
-        # **CAMBIO 1: Definir tamaño fijo para el contenedor**
-        #self.setFixedSize(300, 180)
+        self.estilo = estilo_app.obtener_estilo_completo()
+        self.colores = self.estilo["colors"]
+
+        # Definir parámetros iniciales
         self.setMinimumSize(300, 100)
-        self.setMaximumSize(400, 300)  # Tamaño fijo para mantener consistencia
+        self.setMaximumSize(400, 300)
         
+        # Inicializar Métodos
         self.setup_ui()
         
-
         # Cargar imagen solo si se proporcionó una ruta válida
         if self.file_path and isinstance(self.file_path, str):
             if self.verificar_imagen_valida(self.file_path):
                 self.mostrar_imagen(self.file_path)
-                # **SOLUCIÓN 1: Actualizar image_path también cuando se carga desde el constructor**
                 self.image_path = self.file_path
         
     def setup_ui(self):
-        """Configura la interfaz del frame de imagen"""
+        # Configura la interfaz del frame de imagen
         self.setStyleSheet(f"""
             ImageFrame {{
-                background: {BACKGROUND};
-                border: 2px dashed {BORDER_LIGHT};
+                background: {self.colores["bg_primary"]};
+                border: 2px dashed {self.colores["border_light"]};
                 border-radius: 12px;
-                /* **CAMBIO 2: Quitar min/max width/height ya que usamos fixedSize */
             }}
             ImageFrame:hover {{
-                border-color: {COLOR_PRIMARIO};
-                background: {BACKGROUND};
+                border-color: {self.colores["primary"]};
+                background: {self.colores["bg_primary"]};
             }}
         """)
         
-        # **CAMBIO 3: Usar Fixed en lugar de Expanding**
+        # Usar Fixed en lugar de Expanding**
         self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         
         layout = QVBoxLayout(self)
@@ -77,19 +64,17 @@ class ImageFrame(QFrame):
                 background: transparent;
                 border: none;
                 border-radius: 8px;
-                /* **CAMBIO 4: Tamaño fijo para el QLabel también */
             }
         """)
-        # **CAMBIO 5: Tamaño fijo más pequeño para el label de imagen**
-        self.image_label.setFixedSize(170, 120)  # Un poco más pequeño que el contenedor
+        self.image_label.setFixedSize(170, 120)
         self.image_label.hide()
         
         # Botón para cargar imagen
-        self.load_button = self.create_load_button()
+        self.load_button = self.Boton_Cargar_Imagen()
         self.load_button.clicked.connect(self.cargar_imagen)
         
         # Botón para eliminar imagen
-        self.remove_button = self.create_remove_button()
+        self.remove_button = self.Boton_Remover_Imagen()
         self.remove_button.setVisible(False)
         self.remove_button.clicked.connect(self.eliminar_imagen)
         
@@ -97,8 +82,8 @@ class ImageFrame(QFrame):
         layout.addWidget(self.load_button)
         layout.addWidget(self.remove_button, alignment=Qt.AlignTop | Qt.AlignRight)
         
-    def create_load_button(self):
-        """Crea el botón para cargar imágenes"""
+    def Boton_Cargar_Imagen(self):
+        # Crea el botón para cargar imágenes
         button = QPushButton()
         button.setStyleSheet("""
             QPushButton {
@@ -111,8 +96,7 @@ class ImageFrame(QFrame):
                 background: #f1f1f1;
             }
         """)
-        # **CAMBIO 6: Tamaño fijo para el botón igual que el label**
-        button.setMinimumSize(280, 150)
+        button.setMinimumSize(300, 150)
         button.setMaximumSize(400, 250)
         
         # Layout interno para el botón
@@ -125,9 +109,9 @@ class ImageFrame(QFrame):
         icon_label = QLabel("+")
         icon_label.setStyleSheet(f"""
             QLabel {{
-                font-family: {FONT_FAMILY};
+                font-family: {self.estilo["font_family"]};
                 font-size: 32px;
-                color: {FONT_COLOR};
+                color: #FFFFFF;
                 background: transparent;
                 border: none;
                 margin-top: 5px;
@@ -139,9 +123,9 @@ class ImageFrame(QFrame):
         text_label = QLabel(f"Imagen {self.numero_imagen}")
         text_label.setStyleSheet(f"""
             QLabel {{
-                font-family: {FONT_FAMILY};
+                font-family: {self.estilo["font_family"]};
                 font-size: 14px;
-                color: {FONT_COLOR};
+                color: {self.colores["text_primary"]};
                 font-weight: normal;
                 background: transparent;
                 border: none;
@@ -157,16 +141,16 @@ class ImageFrame(QFrame):
         
         return button
         
-    def create_remove_button(self):
-        """Crea el botón para eliminar imágenes"""
+    def Boton_Remover_Imagen(self):
+        # Crea el botón para eliminar imágenes
         button = QPushButton("✕")
         button.setStyleSheet(f"""
             QPushButton {{
                 background: #ef4444;
-                color: {FONT_COLOR};
+                color: {self.colores["text_primary"]};
                 border: none;
                 border-radius: 50%;
-                font-size: {FONT_SIZE};
+                font-size: {self.estilo["font_size"]};
                 font-weight: bold;
                 min-width: 28px;
                 max-width: 28px;
@@ -181,9 +165,8 @@ class ImageFrame(QFrame):
         return button
         
     def scale_pixmap(self, pixmap):
-        """Escala el pixmap manteniendo la relación de aspecto"""
-        # **CAMBIO 7: Usar el tamaño del label como referencia**
-        label_width = self.image_label.width() - 10  # Un poco de margen
+        # Escala el pixmap manteniendo la relación de aspecto
+        label_width = self.image_label.width() - 10 
         label_height = self.image_label.height() - 10
         
         # Escalar manteniendo la relación de aspecto
@@ -196,7 +179,7 @@ class ImageFrame(QFrame):
         return scaled_pixmap
         
     def mostrar_imagen(self, file_path):
-        """Muestra la imagen en el frame"""
+        # Muestra la imagen en el frame
         try:
             pixmap = QPixmap(file_path)
             
@@ -213,7 +196,7 @@ class ImageFrame(QFrame):
             self.file_path = file_path
             
             # Actualizar visibilidad de elementos
-            self.update_visibility(show_image=True)
+            self.Actualizar_Visibilidad(show_image=True)
             
             return True
             
@@ -221,8 +204,8 @@ class ImageFrame(QFrame):
             QMessageBox.warning(self, "Error", f"Error al cargar la imagen: {str(e)}")
             return False
             
-    def update_visibility(self, show_image=False):
-        """Actualiza la visibilidad de los elementos según el estado"""
+    def Actualizar_Visibilidad(self, show_image=False):
+        # Actualiza la visibilidad de los elementos según el estado
         if show_image:
             self.image_label.show()
             self.load_button.hide()
@@ -230,8 +213,8 @@ class ImageFrame(QFrame):
             # Cambiar borde de punteado a sólido cuando hay imagen
             self.setStyleSheet(f"""
                 ImageFrame {{
-                    background: {BACKGROUND};
-                    border: 2px solid {BORDER};
+                    background: {self.colores["bg_primary"]};
+                    border: 2px solid {self.colores["border"]};
                     border-radius: 12px;
                 }}
             """)
@@ -241,13 +224,13 @@ class ImageFrame(QFrame):
             self.remove_button.setVisible(False)
             self.setStyleSheet(f"""
                 ImageFrame {{
-                background: {BACKGROUND};
-                border: 2px dashed {BORDER_LIGHT};
+                background: {self.colores["bg_primary"]};
+                border: 2px dashed {self.colores["border_light"]};
                 border-radius: 12px;
                 }}
                 ImageFrame:hover {{
-                    border-color: {COLOR_PRIMARIO};
-                    background: {BACKGROUND};
+                    border-color: {self.colores["primary"]};
+                    background: {self.colores["bg_primary"]};
                 }}
             """)
     
@@ -286,7 +269,7 @@ class ImageFrame(QFrame):
         self.image_path = None
         self.file_path = None
         
-        self.update_visibility(show_image=False)
+        self.Actualizar_Visibilidad(show_image=False)
         self.imageRemoved.emit(self.numero_imagen)
         
     def set_imagen(self, file_path):
@@ -315,14 +298,14 @@ class ImageFrame(QFrame):
         # Actualizar estilo del frame
         self.setStyleSheet(f"""
             ImageFrame {{
-                background: {BACKGROUND};
-                border: 2px dashed {BORDER_LIGHT};
+                background: {self.colores["bg_primary"]};
+                border: 2px dashed {self.colores["border_light"]};
                 border-radius: 12px;
                 /* **CAMBIO 2: Quitar min/max width/height ya que usamos fixedSize */
             }}
             ImageFrame:hover {{
-                border-color: {COLOR_PRIMARIO};
-                background: {BACKGROUND};
+                border-color: {self.colores["primary"]};
+                background: {self.colores["bg_primary"]};
             }}
         """)
         

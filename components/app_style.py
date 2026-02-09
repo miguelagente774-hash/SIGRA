@@ -43,8 +43,8 @@ class AppStyle(QObject):
             "bg_secondary": "#2C313A",
             "bg_fondo": "#21252B",
             "bg_panel": "rgba(40, 44, 52, 0.9)",
-            "primary": "#005a6e",
-            "secondary": "#F44336",
+            "primary": "#008faf",
+            "secondary": "#FF6F64",
             "text_primary": "#FFFFFF",
             "text_secondary": "#ABB2BF",
             "text_label": "#D7D7D7",
@@ -137,7 +137,7 @@ class AppStyle(QObject):
             margin: 0;
             border-top-left-radius: 15px;
             border-top-right-radius: 15px;
-            border-bottom-left-radius: 15px;
+            border-bottom-left-radius: 0px;
             border-bottom-right-radius: 0px;
             max-height: 50px;
         }}
@@ -149,20 +149,48 @@ class AppStyle(QObject):
         colores = self.obtener_colores_tema()
         
         return f"""
-        QLineEdit, QTextEdit, QComboBox, QSpinBox{{
+        QLineEdit, QTextEdit, QComboBox{{
             font-family: {self.FONT_FAMILY};
             font-size: {self.FONT_SIZE + 5}px;
-            padding: 8px 10px;
-            margin: 5px;
-            border: 2px solid {colores['border_light']};
-            border-radius: 8px;
+            border: 1.5px solid {colores['border_light']};
+            border-radius: 10px;
+            padding: 14px 18px;
             min-width: {self.FONT_SIZE + 5}px;
-            min-height: {self.FONT_SIZE + 2}px;
+            min-height: {self.FONT_SIZE + 10}px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            margin-left: 5px;
+            margin-right: 5px;
             background: {colores['input_bg']};
             color: {colores['text_primary']};
         }}
+       QSpinBox{{
+        font-family: {self.FONT_FAMILY};
+        font-size: {self.FONT_SIZE + 5}px;
+        border: 1.5px solid {colores['border_light']};
+        border-radius: 10px;
+        padding: 5px;
+        min-height: 30px;
+        min-width: 120px;
+        margin-top: 5px;
+        margin-bottom: 5px;
+        margin-left: 5px;
+        margin-right: 5px;
+        background: {colores['input_bg']};
+        color: {colores['text_primary']};
+        }}
+
+        QSpinBox::up-button, QSpinBox::down-button {{
+            width: 25px;
+        }}
+        
         QLineEdit:focus, QTextEdit:focus, QComboBox:focus, QSpinBox:focus{{
             border: 2px solid {colores['border_input']};
+            background: {colores['input_bg']};
+        }}
+        QLineEdit:hover, QTextEdit:hover, QComboBox:hover, QSpinBox:hover{{
+            border: 2px solid {colores['border_input']};
+            background: {colores['input_bg']};
         }}
         QLineEdit::placeholder, QTextEdit::placeholder{{
             color: {colores['text_secondary']};
@@ -213,6 +241,8 @@ class AppStyle(QObject):
         QFrame{{
             background: {colores['bg_panel']};
             border-radius: 15px;
+            border-top-left-radius: 0px;
+            border-top-right-radius: 0px;
             border: 1px solid {colores['border']};
         }}
         """
@@ -228,12 +258,16 @@ class AppStyle(QObject):
             background-color: {colores['table_bg']};
             color: {colores['text_primary']};
             border: 1px solid {colores['border']};
+            border-top-left-radius: 0px;
+            border-top-right-radius: 0px;
             gridline-color: {colores['border']};
             margin: 10px;
             border-radius: 8px;
         }}
         QHeaderView::section {{
             background-color: {colores["table_header"]};
+            border-top-left-radius: 0px;
+            border-top-right-radius: 0px;
             color: white;
             font-size: {self.FONT_SIZE + 2}px;
             font-weight: bold;
@@ -315,7 +349,7 @@ class AppStyle(QObject):
             font-family: {self.FONT_FAMILY};
             font-size: {self.FONT_SIZE + 5}px;
             color: {colores['text_primary']};
-            background-color: {colores['bg_secondary']};
+            background-color: transparent;
             padding: 6px 5px;
             spacing: 8px;
             min-height: 20px;
@@ -327,7 +361,7 @@ class AppStyle(QObject):
             border: 2px solid {colores['border_input']};
         }}
         QRadioButton::indicator:checked{{
-            background-color: {colores['primary']};
+            background-color: {colores['boton']};
             border: 2px solid {colores['boton']};
         }}
         """
@@ -337,6 +371,7 @@ class AppStyle(QObject):
             font-family: {self.FONT_FAMILY};
             font-size: {self.FONT_SIZE + 1}px;
             color: {colores['text_primary']};
+            background-color: transparent;
             padding: 8px 0px;
             spacing: 8px;
         }}
@@ -348,7 +383,7 @@ class AppStyle(QObject):
             background: {colores['input_bg']};
         }}
         QCheckBox::indicator:checked{{
-            background-color: {colores['bg_primary']};
+            background-color: {colores['boton']};
             border: 2px solid {colores['boton']};
         }}
         """
@@ -477,7 +512,7 @@ class AppStyle(QObject):
         }
 
     def aplicar_estilo_vista(self, vista):
-        """Aplica el estilo a una vista completa"""
+        # Aplica el estilo a una vista completa
         estilo = self.obtener_estilo_completo()
         
         # Aplicar fondo a la vista principal

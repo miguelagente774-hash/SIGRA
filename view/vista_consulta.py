@@ -8,12 +8,11 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor, QBrush
 from components.app_style import estilo_app
 
-# --- CLASE: Ventana_Consulta (Contenido Principal) ---
-
+# Clase: Ventana Consulta
 class Ventana_consulta(QFrame):
     def __init__(self, controlador):
         super().__init__()
-        # Inicializar Controlador y Estilo
+        # Definir Variables Iniciales
         self.controlador = controlador
         self.estilo = estilo_app.obtener_estilo_completo()
 
@@ -26,18 +25,15 @@ class Ventana_consulta(QFrame):
         # Conectar señal de actualización
         estilo_app.estilos_actualizados.connect(self.actualizar_estilos)
         
-        # Inicializar Métodos
-        
+        # Inicializar Métodos Iniciales
         self._configurar_combo_ordenacion()
         self._configurar_tabla()
         self.setup_panel()
         self._conectar_senales()
 
     def setup_panel(self):
-        # Layout Principal y de Contenido
+        # Layout Principal
         self.layout_principal = QVBoxLayout(self)
-        self.layout_principal.setContentsMargins(40, 20, 40, 20)
-        self.layout_principal.setSpacing(0)
 
         # Contenedor
         contenedor_panel = QFrame()
@@ -56,8 +52,6 @@ class Ventana_consulta(QFrame):
 
         # Layout del Panel
         layout_panel = QVBoxLayout(contenedor_panel)
-        layout_panel.setContentsMargins(0, 0, 0, 0)
-        layout_panel.setSpacing(0)
         
         # Título de la Ventana
         titulo = QLabel("Consulta")
@@ -78,6 +72,7 @@ class Ventana_consulta(QFrame):
         # Label de Ordenar
         etiqueta_ordenar = QLabel("Buscar de manera")
         etiqueta_ordenar.setStyleSheet(self.estilo["styles"]["title"])
+        etiqueta_ordenar.setContentsMargins(5, 10, 0, 10)
         etiqueta_ordenar.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         
         # Añadir los Widget a la fila de Búsqueda
@@ -91,23 +86,9 @@ class Ventana_consulta(QFrame):
         self.tabla.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         layout_panel.addWidget(self.tabla, 1)
 
-        # Panel de los Botones
-        panel_botones = QFrame()
-        panel_botones.setStyleSheet(f"""
-                QFrame {{
-                    background: transparent;
-                    border: none;
-                    padding: 0;
-                    margin: 0;
-                }}
-                """)
-        panel_botones.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-
-        # Crear Layout de los Botones
-        layout_botones = QHBoxLayout(panel_botones)
-        layout_botones.setSpacing(30)
-
-        # Crear los botones
+        # Crear Botones
+        layout_botones = QHBoxLayout()
+        layout_panel.addLayout(layout_botones)
         boton_pdf = QPushButton("Reporte-PDF")
         boton_pptx = QPushButton("Reporte-PPTX")
         boton_eliminar = QPushButton("Eliminar")
@@ -122,15 +103,13 @@ class Ventana_consulta(QFrame):
         boton_eliminar.clicked.connect(self.Eliminar_reporte)
         
         # Centrar botones
-        layout_botones.addStretch()
         layout_botones.addWidget(boton_pdf)
         layout_botones.addWidget(boton_pptx)
         layout_botones.addWidget(boton_eliminar)
-        layout_botones.addStretch()
         
-        layout_panel.addWidget(panel_botones)
+        
 
-        # Añadir contenedor al layout principal
+        # Añadir Contenedor al Layout Principal
         self.layout_principal.addWidget(contenedor_panel)
 
     def _configurar_combo_ordenacion(self):
@@ -138,9 +117,6 @@ class Ventana_consulta(QFrame):
         self.combo_ordenacion = QComboBox()
         self.combo_ordenacion.addItem("Ascendente")
         self.combo_ordenacion.addItem("Descendente")
-        self.combo_ordenacion.setFixedHeight(40)
-        self.combo_ordenacion.setMaximumHeight(60)
-        self.combo_ordenacion.setMinimumWidth(120)
         self.combo_ordenacion.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
         self.combo_ordenacion.setStyleSheet(self.estilo["styles"]["input"])
         
@@ -156,17 +132,6 @@ class Ventana_consulta(QFrame):
         self.tabla.verticalHeader().setDefaultSectionSize(40)
         
         cabecera = self.tabla.horizontalHeader()
-        colores = self.estilo["colors"]
-        cabecera.setStyleSheet(f"""
-            QHeaderView::section {{
-                background-color: {colores["table_header"]};
-                color: white;
-                font-weight: bold;
-                padding: 8px;
-                border: 1px solid {colores["border"]};
-                font-size: {self.estilo["font_size"] + 2}px;
-            }}
-        """)
         cabecera.setSectionResizeMode(0, QHeaderView.Fixed)  # ID
         self.tabla.setColumnWidth(0, 100)
         cabecera.setSectionResizeMode(1, QHeaderView.Stretch)  # Título
@@ -269,8 +234,6 @@ class Ventana_consulta(QFrame):
         QMessageBox.critical(self, titulo, mensaje)
 
     def actualizar_estilos(self):
-        """Actualiza los estilos de esta vista"""
-        print(f"🔄 {self.__class__.__name__} actualizando estilos...")
         self.estilo = estilo_app.obtener_estilo_completo()
         colores = self.estilo["colors"]
         
@@ -340,5 +303,3 @@ class Ventana_consulta(QFrame):
                         margin: 0;
                     }}
                 """)
-        
-        print(f"✅ {self.__class__.__name__} estilos actualizados")

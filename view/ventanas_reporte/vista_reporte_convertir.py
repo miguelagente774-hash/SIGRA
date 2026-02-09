@@ -1,71 +1,64 @@
 from PyQt5.QtWidgets import (QFrame, QLabel, QVBoxLayout, QHBoxLayout, 
                              QGraphicsDropShadowEffect, QTableWidget, 
                              QTableWidgetItem, QPushButton, QHeaderView,
-                             QCheckBox, QMessageBox, QLineEdit, QTextEdit, QComboBox, QDateEdit)
+                             QCheckBox, QMessageBox, QLineEdit, QTextEdit, QComboBox, QSizePolicy)
 from PyQt5.QtGui import QColor, QFont
 from PyQt5.QtCore import Qt
 from comunicador import Comunicador_global
 from datetime import datetime
 from components.app_style import estilo_app
 
-FONT_FAMILY = "Arial"
-COLOR_PRIMARIO = "#005a6e" 
-COLOR_AZUL_HOVER = "#00485a"
-
+# Ventana de Convertir Actividades en Reportes
 class Ventana_convertir_reporte(QFrame):
     def __init__(self, controller):
         super().__init__()
+        # Definir Variables Iniciales
         self.estilo = estilo_app.obtener_estilo_completo()
-        self.setStyleSheet(self.estilo["styles"]["fondo"])
         self.controller = controller
-        self.layout_main = QVBoxLayout()
-        self.setLayout(self.layout_main)
+        
+        # Establecer el Tema de Fondo
+        self.setStyleSheet(self.estilo["styles"]["fondo"])
 
+        # Registrar esta vista para actualización automática
         estilo_app.registrar_vista(self)
-        estilo_app.estilos_actualizados.connect(self.actualizar_estilos)        
+        
+        # Conectar señal de actualización
+        estilo_app.estilos_actualizados.connect(self.actualizar_estilos)    
 
-        self.Panel_reporte()
-        self.cargar_datos_tabla()
-        #actulizar tabla cada vez que se agraga una nueva
+        # Conectar señal del Comunicador
         Comunicador_global.actividad_agregada.connect(self.cargar_datos_tabla)
 
+        # Inicializar Métodos Iniciales
+        self.setup_panel()
+        self.cargar_datos_tabla()
 
-    def Panel_reporte(self):
-        # Configurando los layouts
-        Panel_layout = QVBoxLayout()
+    def setup_panel(self):
+        # Layout Principal
+        self.layout_principal = QVBoxLayout(self)
 
-        Panel_reporte = QFrame()
-        Panel_layout.setContentsMargins(0, 0, 0, 0)
-        Panel_layout.setSpacing(0)
-        
-        # **SOLUCIÓN 1: Usar el color del tema para el panel**
-        colores = self.estilo["colors"]
-        Panel_reporte.setStyleSheet(f"""
-            QFrame {{
-                {self.estilo["styles"]["panel"]}
-                background-color: {colores["bg_panel"]};
-                border: none;
-            }}
-        """)
-        Panel_reporte.setLayout(Panel_layout)
+        # Contenedor
+        contenedor_panel = QFrame()
+        contenedor_panel.setMinimumHeight(250)
+        contenedor_panel.setStyleSheet(self.estilo["styles"]["panel"])
+        contenedor_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        contenedor_panel.setMinimumSize(700, 450)
 
+        # Sombra de la Ventana
         sombra = QGraphicsDropShadowEffect()
         sombra.setBlurRadius(25)
-        # **SOLUCIÓN 2: Usar color de sombra del tema**
+        colores = self.estilo["colors"]
         sombra.setColor(QColor(colores.get("shadow", Qt.gray)))
         sombra.setOffset(2, 2)
+        contenedor_panel.setGraphicsEffect(sombra)
 
-        Panel_reporte.setGraphicsEffect(sombra)
+        # Layout del Panel
+        layout_panel = QVBoxLayout(contenedor_panel)
 
+        # Título de la Ventana
         titulo = QLabel("Convertir Reporte")
         titulo.setStyleSheet(self.estilo["styles"]["header"])
-        titulo.setAlignment(Qt.AlignLeft)
-        titulo.setMaximumHeight(70)
-        
-        Panel_layout.addWidget(titulo, alignment=Qt.AlignTop)
-        
-        # Crear contenedor para controles de búsqueda
-        controles_layout = QHBoxLayout()
+        titulo.setAlignment(Qt.AlignCenter)
+        layout_panel.addWidget(titulo)
         
         # Campo de búsqueda
         self.campo_busqueda = QLineEdit()
@@ -73,17 +66,15 @@ class Ventana_convertir_reporte(QFrame):
         self.campo_busqueda.setStyleSheet(self.estilo["styles"]["input"])
         self.campo_busqueda.textChanged.connect(self.filtrar_actividades)
         
-        controles_layout.addWidget(self.campo_busqueda)
-        
-        Panel_layout.addLayout(controles_layout)
+        layout_panel.addWidget(self.campo_busqueda)
         
         # Crear tabla de actividades
-        self.crear_tabla_actividades(Panel_layout)
+        self.crear_tabla_actividades(layout_panel)
         
         # Crear botones de acción
-        self.crear_botones_accion(Panel_layout)
+        self.crear_botones_accion(layout_panel)
 
-        self.layout_main.addWidget(Panel_reporte)
+        self.layout_principal.addWidget(contenedor_panel)
 
     def crear_tabla_actividades(self, layout):
         """Crea la tabla con las actividades y checkboxes de selección"""
@@ -107,13 +98,7 @@ class Ventana_convertir_reporte(QFrame):
         header.setSectionResizeMode(1, QHeaderView.ResizeToContents)  # ID
         header.setSectionResizeMode(2, QHeaderView.Stretch)          # Título
         header.setSectionResizeMode(3, QHeaderView.ResizeToContents) # Fecha
-
-        header.setStyleSheet("margin: 0; padding: 0;")
         
-        # Configurar altura del header y tamaño mínimo
-        header.setMinimumSectionSize(60)  # Tamaño mínimo para columnas
-        header.setDefaultSectionSize(100)  # Tamaño por defecto
-        header.setFixedHeight(70)  # Altura fija del header
         
         # Configurar altura de filas
         self.tabla_actividades.verticalHeader().setDefaultSectionSize(50)
@@ -294,7 +279,7 @@ class Ventana_convertir_reporte(QFrame):
                 titulo = self.tabla_actividades.item(fila, 2).text()
                 fecha = self.tabla_actividades.item(fila, 3).text()
                 
-                print("Id:",id_actividad,"Titulo:", titulo,"Fecha:",fecha)
+                w("Id:",id_actividad,"Titulo:", titulo,"Fecha:",fecha)
                 # Agregar a la lista de seleccionados
                 seleccionados.append({
                     'id': int(id_actividad)
@@ -365,10 +350,8 @@ class Ventana_convertir_reporte(QFrame):
     def mensaje_error(self, titulo, mensaje):
         QMessageBox.critical(self, titulo, mensaje)
 
-    # Método en cada vista:
     def actualizar_estilos(self):
-        """Actualiza los estilos de esta vista"""
-        print(f"🔄 {self.__class__.__name__} actualizando estilos...")
+        # Actualizar los estilo de la vista
         self.estilo = estilo_app.obtener_estilo_completo()
         colores = self.estilo["colors"]
         
@@ -383,14 +366,7 @@ class Ventana_convertir_reporte(QFrame):
                 for child in widget.findChildren(QLabel):
                     if child.text() == "Convertir Reporte":
                         # Este es el panel principal
-                        widget.setStyleSheet(f"""
-                            QFrame {{
-                                {self.estilo["styles"]["panel"]}
-                                background-color: {colores["bg_panel"]};
-                                border: none;
-                                border-radius: 12px;
-                            }}
-                        """)
+                        widget.setStyleSheet(self.estilo["styles"]["panel"])
                         
                         # Actualizar sombra
                         if widget.graphicsEffect():
@@ -431,4 +407,3 @@ class Ventana_convertir_reporte(QFrame):
         for widget in self.findChildren(QPushButton):
             widget.setStyleSheet(self.estilo["styles"]["boton"])
         
-        print(f"✅ {self.__class__.__name__} estilos actualizados")

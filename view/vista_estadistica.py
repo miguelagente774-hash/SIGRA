@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import (
-    QHBoxLayout, QVBoxLayout, QFrame, QLabel, QGraphicsDropShadowEffect,
+    QVBoxLayout, QFrame, QLabel, QGraphicsDropShadowEffect,
     QSizePolicy, QGridLayout
 )
 from PyQt5.QtCore import Qt, QRectF
@@ -16,8 +16,8 @@ def get_shadow_effect(radius, color=Qt.gray, offset_x=1, offset_y=1):
     sombra.setOffset(offset_x, offset_y)
     return sombra
 
-# ==Clase para el Widget del Gráfico Circular Nativo (QPainter)==
-class CustomPieChartWidget(QFrame):
+# Clase para el Widget de Gráfica
+class Widget_Graficos(QFrame):
     def __init__(self, title, chart_data=None, parent=None):
         super().__init__(parent)
         self.setMinimumHeight(160)  # Aumentado para espacio del título
@@ -175,7 +175,8 @@ class CustomPieChartWidget(QFrame):
 
 # ---------------------------------------
 
-class Ventana_principal(QFrame):
+# Clase: Ventana Estadística
+class Ventana_estadística(QFrame):
     def __init__(self):
         super().__init__()
         # Inicializar Estilo
@@ -196,23 +197,21 @@ class Ventana_principal(QFrame):
         self.setup_charts_panel()
 
     def setup_panel(self):
+        # Layout Principal
         self.layout_principal = QVBoxLayout(self)
-        self.layout_contenido = QVBoxLayout()
 
-        Contenedor_panel = QFrame()
-        Contenedor_panel.setMinimumHeight(250)
-        Contenedor_panel.setMaximumHeight(300)
-        Contenedor_panel.setStyleSheet(estilo["styles"]["panel"])
-        Contenedor_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        Contenedor_panel.setGraphicsEffect(get_shadow_effect(25))
-        Contenedor_panel.setLayout(self.layout_contenido)
+        # Contenedor
+        contenedor_panel = QFrame()
+        contenedor_panel.setMinimumHeight(250)
+        contenedor_panel.setStyleSheet(estilo["styles"]["panel"])
+        contenedor_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        contenedor_panel.setGraphicsEffect(get_shadow_effect(25))
 
+        # Título de la Ventana
         titulo = QLabel("Bienvenido al Sistema de Gestión")
         titulo.setStyleSheet(estilo["styles"]["header"])
         titulo.setAlignment(Qt.AlignCenter)
-        self.layout_contenido.addWidget(titulo)
-
-        self.layout_principal.addWidget(Contenedor_panel, 0, alignment=Qt.AlignTop)
+        self.layout_principal.addWidget(titulo)
 
     def setup_charts_panel(self):
         layout_estadistica = QVBoxLayout()
@@ -229,7 +228,7 @@ class Ventana_principal(QFrame):
         layout_estadistica.addWidget(titulo)
 
         layout_charts = QGridLayout()
-        layout_charts.setContentsMargins(15, 15, 15, 15)
+        layout_charts.setContentsMargins(15, 0, 15, 15)
         layout_charts.setSpacing(15)
         
         charts_container = QFrame()
@@ -246,15 +245,14 @@ class Ventana_principal(QFrame):
 
         for i, chart_data in enumerate(data):
             row, col = divmod(i, 2)
-            chart = CustomPieChartWidget(chart_data['title'], chart_data)
+            chart = Widget_Graficos(chart_data['title'], chart_data)
             layout_charts.addWidget(chart, row, col)
             
         layout_estadistica.addWidget(charts_container)
         self.layout_principal.addWidget(frame_Estadistica)
 
     def actualizar_estilos(self):
-        """Actualiza los estilos de esta vista"""
-        print(f"🔄 {self.__class__.__name__} actualizando estilos...")
+        # Actualizar los estilo de la vista
         self.estilo = estilo_app.obtener_estilo_completo()
         colores = self.estilo["colors"]
         
@@ -281,8 +279,6 @@ class Ventana_principal(QFrame):
                 widget.setStyleSheet(self.estilo["styles"]["label"])
         
         # Actualizar gráficos circulares
-        for widget in self.findChildren(CustomPieChartWidget):
+        for widget in self.findChildren(Widget_Graficos):
             # Forzar repintado del gráfico
             widget.repaint()
-        
-        print(f"✅ {self.__class__.__name__} estilos actualizados")

@@ -22,7 +22,6 @@ class ConexionDB:
                 )
             ''')
 
-
             # Tabla Actividad
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS Actividad (
@@ -105,7 +104,18 @@ class ConexionDB:
                     instituto TEXT
                 )
             ''')
-            
+
+            # Tabla de Objetivos de Reporte
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS Objetivos_Reportes (
+                id_objetivo INTEGER PRIMARY KEY AUTOINCREMENT,
+                objetivo_semanal INTEGER,
+                objetivo_mensual INTEGER,
+                objetivo_trimestral INTEGER,
+                objetivo_anual INTEGER
+                )
+            ''')
+
             # Tabla Gaceta
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS Gaceta (
@@ -126,10 +136,12 @@ class ConexionDB:
                     id_Direccion INTEGER,
                     id_coordinacion INTEGER,
                     id_gobernacion INTEGER,
+                    id_objetivo INTEGER,
                     FOREIGN KEY (id_tema) REFERENCES Tema (id_tema),
                     FOREIGN KEY (id_fuente) REFERENCES Fuente (id_fuente),
                     FOREIGN KEY (id_coordinacion) REFERENCES Coordinacion (id_coordinacion),
-                    FOREIGN KEY (id_gobernacion) REFERENCES Gobernacion (id_gobernacion)
+                    FOREIGN KEY (id_gobernacion) REFERENCES Gobernacion (id_gobernacion),
+                    FOREIGN KEY (id_objetivo) REFERENCES Objetivos_Reportes (id_objetivo)
                 )
             ''')
             

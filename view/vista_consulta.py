@@ -224,11 +224,18 @@ class Ventana_consulta(QFrame):
         #    self.tabla.selectRow(0)
 
     def Eliminar_reporte(self):
-        confirmacion = QMessageBox.question(self, "Eliminar Reporte", "Estás seguro que deseas eliminar?", QMessageBox.Yes | QMessageBox.No)    
-        if confirmacion == QMessageBox.Yes:
             datos_reporte = self.Obtener_reporte_seleccionado()
-            id_reporte = datos_reporte[0]
-            self.controlador.Eliminar_reporte(id_reporte)
+            if datos_reporte != None:
+                id_reporte = datos_reporte[0]
+                
+                confirmacion = QMessageBox.question(self, "Eliminar Reporte", "Estás seguro que deseas eliminar?", QMessageBox.Yes | QMessageBox.No)    
+                
+                if confirmacion == QMessageBox.Yes:
+                    self.controlador.Eliminar_reporte(id_reporte)
+            else:
+                self.mensaje_error("error", "no hay una actividad seleccionada")
+            
+
 
     def Obtener_reporte_seleccionado(self):
         #fila seleccionada

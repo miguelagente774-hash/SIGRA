@@ -187,11 +187,8 @@ class ImageFrame(QFrame):
                 QMessageBox.warning(self, "Error", "No se pudo cargar la imagen seleccionada.")
                 return False
                 
-            # **CAMBIO 8: Escalar la imagen al tamaño del contenedor**
             scaled_pixmap = self.scale_pixmap(pixmap)
-            
             self.image_label.setPixmap(scaled_pixmap)
-            # **SOLUCIÓN 2: Actualizar ambas variables para consistencia**
             self.image_path = file_path
             self.file_path = file_path
             
@@ -244,7 +241,6 @@ class ImageFrame(QFrame):
         )
         
         if file_path:
-            # **SOLUCIÓN 3: Usar set_imagen que ya emite la señal y actualiza variables**
             self.set_imagen(file_path)
         
     
@@ -301,7 +297,6 @@ class ImageFrame(QFrame):
                 background: {self.colores["bg_primary"]};
                 border: 2px dashed {self.colores["border_light"]};
                 border-radius: 12px;
-                /* **CAMBIO 2: Quitar min/max width/height ya que usamos fixedSize */
             }}
             ImageFrame:hover {{
                 border-color: {self.colores["primary"]};

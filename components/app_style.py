@@ -466,6 +466,7 @@ class AppStyle(QObject):
         QCalendarWidget QHeaderView::section {{
         background-color: #f8f9fa;
         color: {colores["text_primary"]};
+        min-height: {self.FONT_SIZE +10}px;
         font-weight: bold;
         padding: 6px;
         border: 1px solid #ddd;

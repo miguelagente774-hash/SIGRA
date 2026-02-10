@@ -7,6 +7,7 @@ from PyQt5.QtCore import Qt
 from comunicador import Comunicador_global
 from datetime import datetime
 from components.app_style import estilo_app
+import locale
 
 # Ventana de Convertir Actividades en Reportes
 class Ventana_convertir_reporte(QFrame):
@@ -16,6 +17,9 @@ class Ventana_convertir_reporte(QFrame):
         self.estilo = estilo_app.obtener_estilo_completo()
         self.controller = controller
         
+        #estableciendo el sistema a español
+        locale.setlocale(locale.LC_TIME, "Spanish_Spain")
+
         # Establecer el Tema de Fondo
         self.setStyleSheet(self.estilo["styles"]["fondo"])
 
@@ -141,11 +145,13 @@ class Ventana_convertir_reporte(QFrame):
                 fecha_obj = datetime.strptime(actividad[2], "%d-%m-%Y")
                 año_mes = fecha_obj.strftime("%Y-%m")
                 nombre_mes = fecha_obj.strftime("%B %Y")  # Ej: "Enero 2024"
+                nombre_mes = nombre_mes.capitalize()  # Para asegurar que el nombre del mes esté en mayúscula
+                
             except ValueError:
                 # Si hay error en el formato de fecha, usar un valor por defecto
                 año_mes = "Fecha inválida"
                 nombre_mes = "Fecha inválida"
-            
+
             # Verificar si cambió el mes
             if año_mes != mes_actual:
                 # Si no es el primer mes, agregar separador
@@ -154,9 +160,9 @@ class Ventana_convertir_reporte(QFrame):
                     self.tabla_actividades.insertRow(numero_fila)
                     
                     # **SOLUCIÓN: Usar color del tema para el separador**
-                    elemento_separador = QTableWidgetItem(f"  {nombre_mes}")
+                    elemento_separador = QTableWidgetItem(f"{nombre_mes}")
                     elemento_separador.setBackground(QColor(colores.get("table_header_secondary", "#11c7f0")))  # Color del tema
-                    elemento_separador.setForeground(QColor("white"))  # Texto blanco para mejor contraste
+                    elemento_separador.setForeground(QColor("White"))  # Texto blanco para mejor contraste
                     
                     # Hacer el texto en negrita
                     fuente = QFont()
@@ -279,7 +285,7 @@ class Ventana_convertir_reporte(QFrame):
                 titulo = self.tabla_actividades.item(fila, 2).text()
                 fecha = self.tabla_actividades.item(fila, 3).text()
                 
-                w("Id:",id_actividad,"Titulo:", titulo,"Fecha:",fecha)
+                ("Id:",id_actividad,"Titulo:", titulo,"Fecha:",fecha)
                 # Agregar a la lista de seleccionados
                 seleccionados.append({
                     'id': int(id_actividad)

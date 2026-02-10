@@ -92,9 +92,9 @@ options_acceso = {
             'Shortcut': [
                 ("DesktopShortcut",        # Key
                  "DesktopFolder",          # Folder
-                 "SIGRA",                  # Shortcut Name
+                 f"{NOMBRE_APP}",                  # Shortcut Name
                  "TARGETDIR",              # Component
-                 "[TARGETDIR]SIGRA.exe", # Target
+                 f"[TARGETDIR]{NOMBRE_APP}.exe", # Target
                  None,                     # Arguments
                  None,                     # Description
                  None,                     # Hotkey

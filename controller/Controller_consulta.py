@@ -41,7 +41,6 @@ class controlador_consulta():
                 
                 #exportanto reporte
                 self.Crear_Reporte(self.datos_meses, ruta_final)
-                self.consulta.mensaje_informativo("Informacion", "Reporte Guardado Exitosamente")
         except Exception as e:
             self.consulta.mensaje_error("Error", f"Error al cargar ventana: {e}")
 
@@ -65,7 +64,7 @@ class controlador_consulta():
             self.consulta.mensaje_error("Error", f"fechas: {e}")
 
         try:
-            datos_actividades = self.Obtener_actividades(id_reporte)
+            datos_actividades = self.Obtener_actividades(id_reporte) 
         except Exception as e:
             self.consulta.mensaje_error("Error", f"actividades: {e}")
 
@@ -82,6 +81,7 @@ class controlador_consulta():
         #funcion para hacer reporte
         try:
             Reporte(nombre_reporte, nombre_dir, fecha, listas_meses, listas_ponderaciones, datos_actividades, datos_coordinador, direccion)
+            self.consulta.mensaje_informativo("Informacion", "Reporte Guardado Exitosamente")
         except Exception as e:
             self.consulta.mensaje_error("Error", f"{e}")
 

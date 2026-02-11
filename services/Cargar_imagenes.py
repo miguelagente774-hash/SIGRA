@@ -22,8 +22,8 @@ class ImageFrame(QFrame):
         self.colores = self.estilo["colors"]
 
         # Definir parámetros iniciales
-        self.setMinimumSize(300, 100)
-        self.setMaximumSize(400, 300)
+        self.setMinimumSize(400, 120)
+        #self.setMaximumSize(400, 300)
         
         # Inicializar Métodos
         self.setup_ui()
@@ -49,10 +49,10 @@ class ImageFrame(QFrame):
         """)
         
         # Usar Fixed en lugar de Expanding**
-        self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(5, 5, 5, 5)
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
         layout.setAlignment(Qt.AlignCenter)
         
@@ -63,10 +63,10 @@ class ImageFrame(QFrame):
             QLabel {
                 background: transparent;
                 border: none;
-                border-radius: 8px;
+                border-radius: 0px;
             }
         """)
-        self.image_label.setFixedSize(170, 120)
+        self.image_label.setFixedSize(200, 150)
         self.image_label.hide()
         
         # Botón para cargar imagen
@@ -85,25 +85,26 @@ class ImageFrame(QFrame):
     def Boton_Cargar_Imagen(self):
         # Crea el botón para cargar imágenes
         button = QPushButton()
+        button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         button.setStyleSheet("""
             QPushButton {
                 background: transparent;
                 border: none;
                 border-radius: 8px;
-                padding: 15px;
+                margin: 0;
             }
             QPushButton:hover {
                 background: #f1f1f1;
             }
         """)
-        button.setMinimumSize(300, 150)
-        button.setMaximumSize(400, 250)
+        button.setMinimumSize(300, 200)
+        #button.setMaximumSize(400, 250)
         
         # Layout interno para el botón
         button_layout = QVBoxLayout()
         button_layout.setContentsMargins(0, 0, 0, 0)
         button_layout.setSpacing(0)
-        button_layout.setAlignment(Qt.AlignCenter)
+        #button_layout.setAlignment(Qt.AlignCenter)
         
         # Icono de añadir
         icon_label = QLabel("+")
@@ -114,7 +115,7 @@ class ImageFrame(QFrame):
                 color: #FFFFFF;
                 background: transparent;
                 border: none;
-                margin-top: 5px;
+                margin-top: 0;
             }}
         """)
         icon_label.setAlignment(Qt.AlignCenter)
@@ -125,12 +126,12 @@ class ImageFrame(QFrame):
             QLabel {{
                 font-family: {self.estilo["font_family"]};
                 font-size: 14px;
-                color: {self.colores["text_primary"]};
+                color: white;
                 font-weight: normal;
                 background: transparent;
                 border: none;
-                margin-bottom: 10px;
-                padding: 5px 15px;
+                margin-bottom: 3px;
+                padding: 5px;
             }}
         """)
         text_label.setAlignment(Qt.AlignCenter)
@@ -156,6 +157,7 @@ class ImageFrame(QFrame):
                 max-width: 28px;
                 min-height: 28px;
                 max-height: 28px;
+                padding: 50px;
             }}
             QPushButton:hover {{
                 background: #dc2626;

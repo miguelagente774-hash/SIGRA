@@ -20,11 +20,42 @@ botones_estilos = """
         }  
         QPushButton:hover{
         background: #007a94;
+        border: none;
         
         }    
+
+        QPushButton:focus{
+        outline: none;
+        }
+
         QPushButton:pressed{
         background: #00485a;
+        border: none;
         }"""
+
+botones_estilos_activo = """
+        QPushButton{
+        background: #0086a3;
+        color: White;
+        font-weight: bold;
+        font-size: 13px;
+        padding: 10px 20px;
+        margin: 6px 15px;
+        border-radius: 8px;
+        border: none;
+        }  
+        QPushButton:hover{
+        background: #0099b8;
+        }
+
+        QPushButton:focus{
+        outline: none;
+        }
+
+        QPushButton:pressed{
+        background: #00738a;
+        }"""
+
 
 botones_estilos_submenu = """
         QPushButton{
@@ -40,7 +71,12 @@ botones_estilos_submenu = """
         QPushButton:hover{
         background: rgba(0, 122, 148, 0.9);
         border-left: 3px solid #00bcd4;
-        }    
+        } 
+
+        QPushButton:focus{
+        outline: none;
+        }
+
         QPushButton:pressed{
         background: rgba(0, 72, 90, 0.9);
         }"""
@@ -58,28 +94,16 @@ botones_estilos_submenu_activo = """
         }  
         QPushButton:hover{
         background: #0099b8;
-        }    
+        } 
+
+        QPushButton:focus{
+        outline: none;
+        }
+
         QPushButton:pressed{
         background: #00738a;
         }"""
 
-botones_estilos_activo = """
-        QPushButton{
-        background: #0086a3;
-        color: White;
-        font-weight: bold;
-        font-size: 13px;
-        padding: 10px 20px;
-        margin: 6px 15px;
-        border-radius: 8px;
-        border: none;
-        }  
-        QPushButton:hover{
-        background: #0099b8;
-        }    
-        QPushButton:pressed{
-        background: #00738a;
-        }"""
 
 class Menu(QFrame):
     def __init__(self, ventana):
@@ -93,12 +117,13 @@ class Menu(QFrame):
         # Configurando menu 
         self.setMinimumWidth(220)
         self.setMaximumWidth(290)
+        self.setObjectName("menu")
         self.setStyleSheet("""
-            QFrame {
-                background: #003642;
+            QFrame#menu {
+                background-color: #003642;
                 border-top-right-radius: 12px;
                 border-bottom-right-radius: 12px;
-            }
+                }
         """)
         self.setLayout(self.layout_main)
         
@@ -248,9 +273,13 @@ class Menu(QFrame):
         }  
         QPushButton:hover{
         background: #A00000;
+        border: none;
         }    
         QPushButton:pressed{
         background: #600000;
+        }
+        QPushButton:focus{
+        outline: none;
         }""")
         boton_salir.clicked.connect(self.exit_app)
         layout_botones.addWidget(boton_salir)
@@ -340,8 +369,51 @@ class Menu(QFrame):
              self.contenedor_submenu.setVisible(False)
 
     def exit_app(self):
-          confirmacion = QMessageBox.question(self, 'Salir del Programa', "¿Estás seguro de que deseas salir del programa?", QMessageBox.Yes | QMessageBox.No)
-
-          if confirmacion == QMessageBox.Yes:
-                sys.exit()
+        confirmacion = QMessageBox(self)
+        confirmacion.setWindowTitle("Confirmar salida")
+        confirmacion.setText("¿Está seguro que desea salir del sistema?")
+        confirmacion.setIcon(QMessageBox.Question)
+        confirmacion.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        confirmacion.setDefaultButton(QMessageBox.No)
         
+        # APLICAR EL ESTILO ANTES DE EJECUTAR
+        confirmacion.setStyleSheet("""
+            QMessageBox {
+                background: none;
+                border-radius: 0;
+                border: none;
+            }
+            QLabel {
+                background: transparent;
+                color: #212529;
+                font-size: 12px;
+                font-weight: bold;
+                padding: 0;
+                border: none;
+            }
+            QPushButton {
+                background-color: #007bff;
+                color: white;
+                border: none;
+                padding: 8px 20px;
+                border-radius: 5px;
+                font-weight: bold;
+                min-width: 80px;
+            }
+            QPushButton:hover {
+                background-color: #0056b3;
+            }
+            QPushButton[text="&No"] {
+                background-color: #6c757d;
+            }
+            QPushButton[text="&No"]:hover {
+                background-color: #5a6268;
+            }
+        """)
+        
+        # Ahora sí, ejecutar
+        respuesta = confirmacion.exec_()
+        
+        if respuesta == QMessageBox.Yes:
+            sys.exit()
+            

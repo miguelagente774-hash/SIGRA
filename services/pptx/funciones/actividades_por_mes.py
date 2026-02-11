@@ -72,7 +72,7 @@ def Actividad_por_mes(pptx, mes, año, ponderacion):
     
     # ENCABEZADOS (Fila 0)
 
-    tabla.cell(0, 0).text = "OBJETIVO ESPESIFICO"       # Columna 2  
+    tabla.cell(0, 0).text = "OBJETIVO ESPECIFICO"       # Columna 2  
     tabla.cell(0, 1).text = "OBJETIVO OPERACIONAL" # Columna 3
     tabla.cell(0, 2).text = "PONDERACION"      # Columna 4
     

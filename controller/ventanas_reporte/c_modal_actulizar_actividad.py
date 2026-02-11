@@ -2,6 +2,7 @@ from view.ventanas_reporte.v_modal_actulizar_actividad import Modal_actulizar_ac
 from models.models_reportes.m_modal_actulizar_actividad import Modelo_actualizar
 from comunicador import Comunicador_global
 import os
+from pathlib import Path
 from services.gestor_imgenes import Gestor_imagenes
 
 class Controller_modal():
@@ -53,6 +54,9 @@ class Controller_modal():
         self.vista.close()
     
     def eliminar_imagenes_anteriores(self, imagen_vieja1, imagen_vieja2):
+        imagen1 = Path(imagen_vieja1)
+        imagen2 = Path(imagen_vieja2)
         #removiendo(eliminado) imagenes anteriores de la carpeta
-        os.remove(imagen_vieja1)
-        os.remove(imagen_vieja2)
+        if  imagen1.exists() and imagen2.exists():
+            os.remove(imagen_vieja1)
+            os.remove(imagen_vieja2)

@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import (QFrame, QLabel, QVBoxLayout, QHBoxLayout,
                              QPushButton, QLineEdit, QSizePolicy,
                              QMessageBox, QDateEdit, QDialog)
 from PyQt5.QtCore import Qt, QDate
-from PyQt5.QtGui import QColor
+from PyQt5.QtGui import QColor, QIcon
 from services.Cargar_imagenes import ImageFrame
 from components.app_style import estilo_app
 
@@ -21,6 +21,7 @@ class Modal_actulizar_actividades(QDialog):
         self.fecha = fecha
         self.estilo = estilo_app.obtener_estilo_completo()
         self.colores = self.estilo["colors"]
+        self.setWindowIcon(QIcon("img/icono.ico"))
 
         # Variables para almacenar las rutas de las imágenes
         self.imagen1_path = None

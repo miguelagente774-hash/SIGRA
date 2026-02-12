@@ -161,8 +161,11 @@ class Ventana_convertir_reporte(QFrame):
                     
                     # **SOLUCIÓN: Usar color del tema para el separador**
                     elemento_separador = QTableWidgetItem(f"{nombre_mes}")
-                    elemento_separador.setBackground(QColor(colores.get("table_header_secondary", "#11c7f0")))  # Color del tema
+                    elemento_separador.setBackground(QColor(colores["table_header_secondary"]))  # Color del tema
                     elemento_separador.setForeground(QColor("White"))  # Texto blanco para mejor contraste
+                    
+                    # Deshabilitar edición del separador
+                    elemento_separador.setFlags(elemento_separador.flags() & ~Qt.ItemIsSelectable & ~Qt.ItemIsEditable)
                     
                     # Hacer el texto en negrita
                     fuente = QFont()
@@ -172,14 +175,11 @@ class Ventana_convertir_reporte(QFrame):
                     # Centrar el texto
                     elemento_separador.setTextAlignment(Qt.AlignCenter)
                     
-                    # Deshabilitar edición del separador
-                    elemento_separador.setFlags(elemento_separador.flags() & ~Qt.ItemIsEditable)
-                    
-                    # Colocar en la columna de título (columna 2)
-                    self.tabla_actividades.setItem(numero_fila, 2, elemento_separador)
+                    # Colocar en la columna de título (columna 0)
+                    self.tabla_actividades.setItem(numero_fila, 0, elemento_separador)
                     
                     # Unir celdas para el separador (columnas 2, 3)
-                    self.tabla_actividades.setSpan(numero_fila, 2, 1, 2)
+                    self.tabla_actividades.setSpan(numero_fila, 0, 1, 4)
                     
                     # Avanzar a la siguiente fila
                     numero_fila += 1

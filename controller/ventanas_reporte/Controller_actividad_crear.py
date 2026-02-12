@@ -76,4 +76,5 @@ class controlador_reporte_crear():
         # Limpiar frames de imágenes
         self.vista.frame_imagen1.eliminar_imagen()
         self.vista.frame_imagen2.eliminar_imagen()
+        self.vista.mensaje_informativo("Informacion", "Todo los campos han sido limpiados")
     

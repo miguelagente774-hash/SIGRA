@@ -360,21 +360,3 @@ class Ventana_login(QFrame):
             }}
         """
         return estilo_base
-        
-    def mostrar_error(self, mensaje):
-        # Muestra un mensaje de error
-        self.label_error.setText(f"⚠ {mensaje}")
-        self.label_error.setVisible(True)
-        
-        # Aplicar estilo de error a los campos
-        self.input_usuario.setStyleSheet(self.obtener_estilo_input(True))
-        self.input_password.setStyleSheet(self.obtener_estilo_input(True))
-        
-    def limpiar_error(self):
-        """Limpia los mensajes de error"""
-        self.label_error.setText("")
-        self.label_error.setVisible(False)
-        
-        # Restaurar estilos originales
-        self.input_usuario.setStyleSheet(self.obtener_estilo_input(False))
-        self.input_password.setStyleSheet(self.obtener_estilo_input(False))

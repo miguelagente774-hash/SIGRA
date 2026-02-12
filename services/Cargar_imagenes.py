@@ -239,7 +239,7 @@ class ImageFrame(QFrame):
             self,
             f"Seleccionar Imagen {self.numero_imagen}",
             "",
-            "Archivos de imagen (*.png *.jpg *.jpeg *.bmp *.gif *.webp *.svg);;Todos los archivos (*)"
+            "Archivos de imagen (*.png *.jpg *.jpeg)"
         )
         
         if file_path:

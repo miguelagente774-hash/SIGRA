@@ -4,6 +4,7 @@ from controller.ventanas_reporte.c_modal_actulizar_actividad import Controller_m
 from comunicador import Comunicador_global
 import os
 from pathlib import Path
+from PyQt5.QtWidgets import QMessageBox
 
 class controlador_reporte_finalizados():
     def __init__(self):
@@ -49,23 +50,26 @@ class controlador_reporte_finalizados():
     
     def Eliminar_actividad(self, id_actividad):
         if id_actividad != None:
-                #elimando images de la actividad a eliminar (para ahorrar memoria en el disco)
-                try:
-                    imagenes = self.modelo.Obtener_url_imagenes(id_actividad)
-                    rutas = imagenes[0]
-                    
-                    #verificar si exiten las rutas para eliminar
-                    imagen1 = Path(rutas[0])
-                    imagen2 = Path(rutas[1])
-                    if  imagen1.exists() and imagen2.exists():
-                        os.remove(rutas[0])
-                        os.remove(rutas[1])
-                except:
-                    self.actividades_finalizadas.Mensaje_error("error", "Nose pudo eliminar la imagenes")
-                #eliminando datos de la actividad de la base de datos
-                self.modelo.Eliminar_datos(id_actividad)
-                self.actividades_finalizadas.actulizar_tabla()
-                Comunicador_global.actividad_agregada.emit()   
+
+            confirmacion = QMessageBox.question(self.actividades_finalizadas, "Eliminar actividad", "Estas seguro que deseas eliminar?", QMessageBox.Yes, QMessageBox.No)
+            if confirmacion == QMessageBox.Yes:
+                    #elimando images de la actividad a eliminar (para ahorrar memoria en el disco)
+                    try:
+                        imagenes = self.modelo.Obtener_url_imagenes(id_actividad)
+                        rutas = imagenes[0]
+                        
+                        #verificar si exiten las rutas para eliminar
+                        imagen1 = Path(rutas[0])
+                        imagen2 = Path(rutas[1])
+                        if  imagen1.exists() and imagen2.exists():
+                            os.remove(rutas[0])
+                            os.remove(rutas[1])
+                    except:
+                        self.actividades_finalizadas.Mensaje_error("error", "Nose pudo eliminar la imagenes")
+                    #eliminando datos de la actividad de la base de datos
+                    self.modelo.Eliminar_datos(id_actividad)
+                    self.actividades_finalizadas.actulizar_tabla()
+                    Comunicador_global.actividad_agregada.emit()   
         else:
             self.actividades_finalizadas.Mensaje_Warning("Advertencia", "Por favor seleccione una fila")
 

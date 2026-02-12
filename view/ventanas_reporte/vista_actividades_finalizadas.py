@@ -164,11 +164,9 @@ class Ventana_reporte_finalizados(QFrame):
         self.controller.Abrir_modal()
 
     def Elminar_actividad(self):
-        confirmacion = QMessageBox.question(self, "Eliminar actividad", "Estas seguro que deseas eliminar?", QMessageBox.Yes, QMessageBox.No)
-        if confirmacion == QMessageBox.Yes:
-            id_actividad = self.Obtener_indice_tabla()
-            self.tabla_actividades.viewport().installEventFilter(self)
-            self.controller.Eliminar_actividad(id_actividad)
+        id_actividad = self.Obtener_indice_tabla()
+        self.tabla_actividades.viewport().installEventFilter(self)
+        self.controller.Eliminar_actividad(id_actividad)
 
     def Mensaje_error(self, titulo, mensaje):
         QMessageBox.critical(self, titulo, mensaje)

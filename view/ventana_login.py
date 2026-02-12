@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import (QHBoxLayout, QVBoxLayout, QFrame, QAction,
                             QLabel, QGraphicsDropShadowEffect, QSpacerItem,
                             QSizePolicy, QLineEdit, QPushButton, QApplication)
 from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtGui import QPixmap, QFont, QColor
+from PyQt5.QtGui import QPixmap, QColor
 import sys
 
 # Paleta de colores mejorada
@@ -25,18 +25,13 @@ class Ventana_login(QFrame):
     def __init__(self):
         super().__init__()
         self.inicializar_ui()
-        self.conectar_eventos()
         
     def inicializar_ui(self):
-        """Configuración inicial de la interfaz de usuario"""
-        self.setMinimumSize(900, 650)
+        # Configuración Inicial del Interfaz
         self.setStyleSheet(f"""
             QFrame {{
-                background: qlineargradient(
-                    x1: 0, y1: 0, x2: 1, y2: 1,
-                    stop: 0 {COLOR_GRIS_CLARO},
-                    stop: 1 #f0f4f8
-                );
+                background: {COLOR_BLANCO};
+                border-radius: 20px;
             }}
         """)
         
@@ -50,40 +45,37 @@ class Ventana_login(QFrame):
         contenedor_centro.setStyleSheet("background: transparent;")
         layout_centro = QVBoxLayout()
         layout_centro.setContentsMargins(0, 0, 0, 0)
-        layout_centro.addStretch()
         
         self.contenedor_main = QFrame()
         self.contenedor_main.setStyleSheet("background: transparent;")
         
         self.layout_contenedor = QHBoxLayout()
         self.layout_contenedor.setContentsMargins(0, 0, 0, 0)
-        self.layout_contenedor.addStretch()
         self.contenedor_main.setLayout(self.layout_contenedor)
         
         layout_centro.addWidget(self.contenedor_main, alignment=Qt.AlignCenter)
         layout_centro.addStretch()
         contenedor_centro.setLayout(layout_centro)
         
-        self.layout_main.addWidget(contenedor_centro)
+        self.layout_main.addWidget(contenedor_centro, 1)
         
         self.crear_panel_login()
         
         # Acción para atajo de teclado
         self.login_action = QAction("Login", self)
         self.login_action.setShortcut("Return")
-        self.login_action.triggered.connect(self.verificar_login)
         self.addAction(self.login_action)
         
     def crear_panel_login(self):
-        """Crea el panel del formulario de login"""
+        """Crea el panel del formulario de login con el botón al final"""
         # Contenedor principal del login
         self.contenedor_login = QFrame()
         self.contenedor_login.setFixedWidth(420)
+        self.contenedor_login.setMinimumHeight(600) 
         
-        # Layout del login
         layout_login = QVBoxLayout()
         layout_login.setContentsMargins(0, 0, 0, 0)
-        layout_login.setSpacing(20)
+        layout_login.setSpacing(0) # Manejaremos los espacios con margins internos
         self.contenedor_login.setLayout(layout_login)
         
         # Estilo del contenedor
@@ -92,30 +84,25 @@ class Ventana_login(QFrame):
                 background-color: {COLOR_BLANCO};
                 border-radius: 16px;
                 border: 1px solid {COLOR_GRIS_BORDE};
-                margin: 0;
             }}
         """)
         
-        # Sombra más pronunciada
+        # Sombra
         sombra = QGraphicsDropShadowEffect()
         sombra.setBlurRadius(30)
         sombra.setColor(QColor(0, 0, 0, 25))
         sombra.setOffset(0, 5)
         self.contenedor_login.setGraphicsEffect(sombra)
         
-        # Encabezado
+        # 1. Elementos superiores
         self.crear_encabezado_login(layout_login)
-        
-        # Logo
         self.crear_logo(layout_login)
-        
-        # Campos del formulario
         self.crear_campos_formulario(layout_login)
         
-        # Botón de login
-        self.crear_boton_login(layout_login)
+        # 2. EL STRETCH: Empuja todo lo anterior hacia arriba
+        layout_login.addStretch(1)
         
-        # Mensaje de error
+        # 3. Mensaje de error (encima del botón)
         self.label_error = QLabel("")
         self.label_error.setStyleSheet(f"""
             QLabel {{
@@ -123,7 +110,7 @@ class Ventana_login(QFrame):
                 font-family: {FONT_FAMILY};
                 font-size: 13px;
                 padding: 12px;
-                margin: 5px 0;
+                margin: 0 15px 10px 15px;
                 background-color: #fdeded;
                 border: 1px solid {COLOR_ERROR}20;
                 border-radius: 8px;
@@ -133,12 +120,16 @@ class Ventana_login(QFrame):
         self.label_error.setAlignment(Qt.AlignCenter)
         self.label_error.setVisible(False)
         layout_login.addWidget(self.label_error)
+
+        # 4. Botón de login (al final)
+        self.crear_boton_login(layout_login)
         
-        # Espaciador final
-        layout_login.addSpacerItem(QSpacerItem(40, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
+        # 5. Espaciador mínimo al final para que no toque el borde redondeado
+        layout_login.addSpacing(15)
         
         self.layout_contenedor.addWidget(self.contenedor_login)
         self.layout_contenedor.addStretch()
+
         
     def crear_encabezado_login(self, layout):
         """Crea el encabezado del panel de login"""
@@ -158,7 +149,7 @@ class Ventana_login(QFrame):
             }}
         """)
         titulo.setAlignment(Qt.AlignCenter)
-        titulo.setMinimumHeight(50)
+        
         layout.addWidget(titulo)
         
         # Subtítulo opcional para más elegancia
@@ -227,7 +218,7 @@ class Ventana_login(QFrame):
         
         self.input_usuario = QLineEdit()
         self.input_usuario.setPlaceholderText("Ingrese su usuario")
-        self.input_usuario.setMinimumHeight(48)
+        
         self.input_usuario.setStyleSheet(f"""
             QLineEdit {{
                 background: {COLOR_BLANCO};
@@ -236,7 +227,6 @@ class Ventana_login(QFrame):
                 padding: 14px 18px;
                 font-size: 15px;
                 font-family: {FONT_FAMILY};
-                margin: 0;
                 selection-background-color: {COLOR_PRIMARIO};
                 color: {COLOR_TEXTO};
                 margin: 0 15px;
@@ -276,7 +266,6 @@ class Ventana_login(QFrame):
         self.input_password = QLineEdit()
         self.input_password.setPlaceholderText("Ingrese su contraseña")
         self.input_password.setEchoMode(QLineEdit.Password)
-        self.input_password.setMinimumHeight(48)
         self.input_password.setStyleSheet(f"""
             QLineEdit {{
                 background: {COLOR_BLANCO};
@@ -285,7 +274,6 @@ class Ventana_login(QFrame):
                 padding: 14px 18px;
                 font-size: 15px;
                 font-family: {FONT_FAMILY};
-                margin: 0;
                 selection-background-color: {COLOR_PRIMARIO};
                 color: {COLOR_TEXTO};
                 margin: 0 15px;
@@ -303,13 +291,12 @@ class Ventana_login(QFrame):
             }}
         """)
         layout_form.addWidget(self.input_password)
-        
+
         layout.addWidget(contenedor_form)
         
     def crear_boton_login(self, layout):
         """Crea el botón de inicio de sesión"""
         self.boton_login = QPushButton("Iniciar Sesión")
-        self.boton_login.setMinimumHeight(52)
         self.boton_login.setCursor(Qt.PointingHandCursor)
         
         # Estilo más moderno con transiciones
@@ -350,37 +337,8 @@ class Ventana_login(QFrame):
         
         layout.addWidget(self.boton_login)
         
-    def conectar_eventos(self):
-        # Conecta las señales de los widgets
-        self.boton_login.clicked.connect(self.verificar_login)
-        self.input_usuario.returnPressed.connect(self.verificar_login)
-        self.input_password.returnPressed.connect(self.verificar_login)
-        
-    def verificar_login(self):
-        """Verifica las credenciales del usuario"""
-        usuario = self.input_usuario.text().strip()
-        password = self.input_password.text().strip()
-        
-        # Validación básica
-        if not usuario or not password:
-            self.mostrar_error("Por favor, complete todos los campos")
-            return
-            
-        if len(usuario) < 3:
-            self.mostrar_error("El usuario debe tener al menos 3 caracteres")
-            return
-            
-        if len(password) < 5:
-            self.mostrar_error("La contraseña debe tener al menos 5 caracteres")
-            return
-        
-        # Si pasa todas las validaciones
-        self.limpiar_error()
-        print(f"Login exitoso: {usuario}")
-        self.login_exitoso.emit()
-        
     def obtener_estilo_input(self, error=False):
-        """Devuelve el estilo para los inputs"""
+        # Devuelve el estilo para los inputs
         estilo_base = f"""
             QLineEdit {{
                 background: {COLOR_BLANCO};
@@ -389,7 +347,7 @@ class Ventana_login(QFrame):
                 padding: 14px 18px;
                 font-size: 15px;
                 font-family: {FONT_FAMILY};
-                margin: 0;
+                margin: 0 15px;
                 selection-background-color: {COLOR_PRIMARIO};
                 color: {COLOR_TEXTO};
             }}
@@ -404,7 +362,7 @@ class Ventana_login(QFrame):
         return estilo_base
         
     def mostrar_error(self, mensaje):
-        """Muestra un mensaje de error"""
+        # Muestra un mensaje de error
         self.label_error.setText(f"⚠ {mensaje}")
         self.label_error.setVisible(True)
         

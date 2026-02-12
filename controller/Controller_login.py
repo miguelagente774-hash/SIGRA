@@ -7,7 +7,7 @@ class controlador_login():
 
     def __init__(self):
         # Inicializar vista
-        self.login = Ventana_login()
+        self.vista = Ventana_login()
         
         # Inicializar modelo
         try:
@@ -23,40 +23,48 @@ class controlador_login():
         self._configurar_conexiones()
     
     def _configurar_conexiones(self):
-        """Configura conexiones entre vista y controlador"""
+        # ==Configura conexiones entre vista y controlador==
         # Conectar botón de login
-        if hasattr(self.login, 'boton_login'):
+        if hasattr(self.vista, 'boton_login'):
             try:
-                self.login.boton_login.clicked.disconnect()
+                self.vista.boton_login.clicked.disconnect()
             except:
                 pass
-            self.login.boton_login.clicked.connect(self.verificar_login)
+            self.vista.boton_login.clicked.connect(self.verificar_login)
         
         # Conectar atajo de teclado (Enter)
-        if hasattr(self.login, 'login_action'):
+        if hasattr(self.vista, 'login_action'):
             try:
-                self.login.login_action.triggered.disconnect()
+                self.vista.login_action.triggered.disconnect()
             except:
                 pass
-            self.login.login_action.triggered.connect(self.verificar_login)
-        
+            self.vista.login_action.triggered.connect(self.verificar_login)
     
     def verificar_login(self):
         # --Método principal para la verificación del Logueo--
         
         # Obtener las credenciales previamente adquiridas de la vista
-        username = self.login.input_usuario.text().strip()
-        password = self.login.input_password.text().strip()
+        username = self.vista.input_usuario.text().strip()
+        password = self.vista.input_password.text().strip()
         
-        # Validar campos no vacíos
+        # Validación básica
         if not username:
-            QMessageBox.warning(self.login, "Campo requerido", "Ingrese el nombre de usuario")
-            self.login.input_usuario.setFocus()
+            self.vista.mostrar_error("Campo Requerido, ingrese el nombre de usuario")
+            self.vista.input_usuario.setFocus()
             return
-        
         if not password:
-            QMessageBox.warning(self.login, "Campo requerido", "Ingrese la contraseña")
-            self.login.input_password.setFocus()
+            self.vista.mostrar_error("Campo Requerido, ingrese la contraseña")
+            self.vista.input_password.setFocus()
+            return
+        if not username or not password:
+            self.vista.mostrar_error("Por favor, complete todos los campos")
+            return
+        if len(username) < 3:
+            self.vista.mostrar_error("El usuario debe tener al menos 3 caracteres")
+            return
+            
+        if len(password) < 5:
+            self.vista.mostrar_error("La contraseña debe tener al menos 5 caracteres")
             return
         
         # Enviar al modelo para autenticación
@@ -67,19 +75,19 @@ class controlador_login():
             self.usuario_actual = datos_usuario
             
             # Mostrar mensaje y emitir señal
-            QMessageBox.information(self.login, "Éxito", mensaje)
-            self.login.login_exitoso.emit()
+            QMessageBox.information(self.vista, "Éxito", mensaje)
+            self.vista.login_exitoso.emit()
         else:
             # Login fallido
             print(f"❌ {mensaje}")
-            QMessageBox.critical(self.login, "Error", mensaje)
-            self.login.input_password.clear()
-            self.login.input_password.setFocus()
+            QMessageBox.critical(self.vista, "Error", mensaje)
+            self.vista.input_password.clear()
+            self.vista.input_password.setFocus()
     
     
     def get_widget(self):
         # Retorna el widget de login
-        return self.login
+        return self.vista
     
     def get_usuario_actual(self):
         # Obtiene usuario autenticado

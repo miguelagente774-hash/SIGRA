@@ -36,7 +36,8 @@ class AppStyle(QObject):
             "scroll_bg": "#f0f0f0",
             "scroll_handle": "#c0c0c0",
             "boton": "#005a6e",
-            "boton_hover": "#00485a"
+            "boton_hover": "#00485a",
+            "boton_pressed": "#003441"
         },
         "oscuro": {
             "bg_primary": "rgba(40, 44, 52, 0.95)",
@@ -60,7 +61,8 @@ class AppStyle(QObject):
             "scroll_bg": "#2C313A",
             "scroll_handle": "#4B5362",
             "boton": "#005a6e",
-            "boton_hover": "#00485a"
+            "boton_hover": "#00485a",
+            "boton_pressed": "#003441"
         }
     }
 
@@ -114,9 +116,12 @@ class AppStyle(QObject):
         }}  
         QPushButton:hover{{
             background: {colores['boton_hover']};
-        }}    
+        }}
+        QPushButton:focus{{
+        outline: none;
+        }}
         QPushButton:pressed{{
-            background: {colores['boton_hover'].replace('a', '8')};
+            background: {colores['boton_pressed']};
         }}  
         """
     

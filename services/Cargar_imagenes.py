@@ -157,7 +157,6 @@ class ImageFrame(QFrame):
                 max-width: 28px;
                 min-height: 28px;
                 max-height: 28px;
-                padding: 50px;
             }}
             QPushButton:hover {{
                 background: #dc2626;

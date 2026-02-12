@@ -332,6 +332,9 @@ class Ventana_login(QFrame):
                 background-color: {COLOR_AZUL_HOVER};
                 padding: 15px;
             }}
+            QPushButton:focus{{
+             outline: none;
+            }}
             QPushButton:disabled {{
                 background-color: #bdc3c7;
                 color: #7f8c8d;

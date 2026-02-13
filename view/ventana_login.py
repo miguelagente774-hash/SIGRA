@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from PyQt5.QtWidgets import (QHBoxLayout, QVBoxLayout, QFrame, QAction,
                             QLabel, QGraphicsDropShadowEffect, QSpacerItem,
                             QSizePolicy, QLineEdit, QPushButton, QApplication)
@@ -20,8 +21,8 @@ COLOR_SOMBRA = "#e0e0e0"
 
 # Clase: Ventana Login
 class Ventana_login(QFrame):
-    login_exitoso = pyqtSignal()  # Modificado para enviar el nombre de usuario
-    
+    login_exitoso = pyqtSignal()
+    recuperar_login = pyqtSignal()    
     def __init__(self):
         super().__init__()
         self.inicializar_ui()
@@ -336,6 +337,24 @@ class Ventana_login(QFrame):
         self.boton_login.setGraphicsEffect(sombra_boton)
         
         layout.addWidget(self.boton_login)
+
+        self.btn_recuperar = QPushButton("¿Olvidó su contraseña?")
+        self.btn_recuperar.setCursor(Qt.PointingHandCursor)
+        self.btn_recuperar.setStyleSheet(f"""
+            QPushButton {{
+                background: transparent;
+                color: {COLOR_PRIMARIO};
+                font-size: 12px;
+                text-decoration: underline;
+                border: none;
+                margin-top: 5px;
+            }}
+            QPushButton:hover {{ color: {COLOR_SECUNDARIO}; }}
+        """)
+        
+        layout.addWidget(self.btn_recuperar, alignment=Qt.AlignCenter)
+        
+
         
     def obtener_estilo_input(self, error=False):
         # Devuelve el estilo para los inputs

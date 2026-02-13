@@ -11,35 +11,8 @@ class Model_Login:
     
         # Verificar que la tabla Usuario exista con la estructura básica
         self._verificar_tabla_usuario()
-        self._crear_usuario_admin()
         self._crear_tabla()
 
-    def _verificar_tabla_usuario(self):
-        #Verifica que la tabla Usuario exista
-        try:
-            cursor = self.conexion_db.cursor
-            
-            # Verificar si la tabla Usuario existe
-            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='Usuario'")
-            tabla_existe = cursor.fetchone()
-            
-            if tabla_existe:
-                # Verificar estructura de la tabla
-                cursor.execute("PRAGMA table_info(Usuario)")
-                columnas = cursor.fetchall()
-                columnas_nombres = [col[1] for col in columnas]
-                
-                # Verificar columnas mínimas requeridas
-                columnas_requeridas = ['id_usuario', 'user', 'password']
-                for col in columnas_requeridas:
-                    if col not in columnas_nombres:
-                        return False
-                return True
-
-        except Exception as e:
-            print(f"❌ Error verificando tabla Usuario: {e}")
-            return False
-        
     def _hash_password(self, password: str) -> str:
         # Genera hash SHA-256 de la contraseña, encriptando la contraseña
         return hashlib.sha256(password.encode()).hexdigest()
@@ -57,8 +30,8 @@ class Model_Login:
             )
         ''')
         
-    def _crear_usuario_admin(self):
-        """Crea un usuario administrador por defecto si no existe"""
+    def _crear_usuario_admin(self, usuario, password, datos_seguridad):
+        # Crea un usuario administrador por defecto si no existe
         try:
             cursor = self.conexion_db.cursor
             # Verificar si ya existe el usuario admin
@@ -67,23 +40,34 @@ class Model_Login:
             
             if existe == 0:
                 # Crear la contraseña para el usuario
-                password_hash = self._hash_password("admin")
+                password_hash = self._hash_password(str(password))
                 
-                # Insertar los valores en la base de dato
-                cursor.execute('''
-                    INSERT INTO Usuario (user, password)
-                    VALUES (?, ?)
-                ''', ('admin', password_hash))
-                
+
+                sql = """
+                    INSERT INTO Usuario (user, password, 
+                               pregunta_seguridad_1, respuesta_seguridad_1,
+                               pregunta_seguridad_2, respuesta_seguridad_2,
+                               pregunta_seguridad_3, respuesta_seguridad_3)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """
+                valores = (
+                    usuario, 
+                    password_hash,
+                    datos_seguridad[0]['pregunta'], datos_seguridad[0]['respuesta'],
+                    datos_seguridad[1]['pregunta'], datos_seguridad[1]['respuesta'],
+                    datos_seguridad[2]['pregunta'], datos_seguridad[2]['respuesta']
+                )
+                cursor.execute(sql, valores)
                 self.conexion_db.conexion.commit()
                 print("Usuario admin creado")
-                print("Usuario: admin")
-                print("Contraseña: admin")
+                print(f"Usuario: {usuario}")
+                print(f"Contraseña: {password}")
+                return True
             else:
-                print("Usuario admin ya existe")
-                
+                print("Usuario admin ya existe")                
         except Exception as e:
             print(f"❌ Error al crear usuario admin: {e}")
+            return False
     
     def autenticar_usuario(self, username: str, password: str) -> Tuple[bool, str, Optional[Dict]]:
         # Validaciones básicas
@@ -139,21 +123,94 @@ class Model_Login:
         """Obtiene los datos del usuario actualmente autenticado"""
         return self.usuario_actual
     
+    def _verificar_tabla_usuario(self):
+        #Verifica que la tabla Usuario exista
+        try:
+            cursor = self.conexion_db.cursor
+            
+            # Verificar si la tabla Usuario existe
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='Usuario'")
+            tabla_existe = cursor.fetchone()
+            
+            if tabla_existe:
+                # Verificar estructura de la tabla
+                cursor.execute("PRAGMA table_info(Usuario)")
+                columnas = cursor.fetchall()
+                columnas_nombres = [col[1] for col in columnas]
+                
+                # Verificar columnas mínimas requeridas
+                columnas_requeridas = ['id_usuario', 'user', 'password', 'pregunta_seguridad_1', 'respuesta_seguridad_1']
+                for col in columnas_requeridas:
+                    if col not in columnas_nombres:
+                        return False
+                return True
+            return True
+
+        except Exception as e:
+            print(f"❌ Error verificando tabla Usuario: {e}")
+            return False
+      
+    def verificar_usuarios_existentes(self) -> bool:
+        """Retorna True si existe al menos un usuario en la base de datos."""
+        try:
+            cursor = self.conexion_db.cursor
+            cursor.execute("SELECT COUNT(*) FROM Usuario")
+            resultado = cursor.fetchone()
+            return resultado[0] > 0 if resultado else False
+        except Exception:
+            return False
+
+    # En Modelo_login.py
+
+    def obtener_preguntas_usuario(self, username):
+        """Retorna las 3 preguntas de seguridad de un usuario específico."""
+        try:
+            cursor = self.conexion_db.cursor
+            cursor.execute("""
+                SELECT pregunta_seguridad_1, pregunta_seguridad_2, pregunta_seguridad_3 
+                FROM Usuario WHERE user = ?""", (username,))
+            return cursor.fetchone()
+        except Exception as e:
+            print(f"Error al obtener preguntas: {e}")
+            return None
+
+    def validar_respuestas_sistema(self, username, respuestas):
+        """Compara las respuestas ingresadas con las de la base de datos."""
+        try:
+            cursor = self.conexion_db.cursor
+            cursor.execute("""
+                SELECT respuesta_seguridad_1, respuesta_seguridad_2, respuesta_seguridad_3 
+                FROM Usuario WHERE user = ?""", (username,))
+            resultado = cursor.fetchone()
+            
+            if resultado:
+                # Comparamos ignorando mayúsculas/minúsculas y espacios
+                valido = all(r_user.strip().lower() == r_db.lower() 
+                             for r_user, r_db in zip(respuestas, resultado))
+                return valido
+            return False
+        except Exception:
+            return False
+
+    def actualizar_password(self, username, nueva_password):
+        """Actualiza la contraseña con el nuevo hash."""
+        try:
+            cursor = self.conexion_db.cursor
+            password_hash = self._hash_password(nueva_password)
+            cursor.execute("UPDATE Usuario SET password = ? WHERE user = ?", (password_hash, username))
+            self.conexion_db.conexion.commit()
+            return True
+        except Exception:
+            return False
+        
+
     def cerrar_sesion(self):
         """Cierra la sesión del usuario actual"""
         self.usuario_actual = None
     
-    def verificar_usuario_existe(self, username: str) -> bool:
-        """Verifica si un usuario existe en la base de datos"""
-        try:
-            cursor = self.conexion_db.cursor
-            cursor.execute("SELECT id_usuario FROM Usuario WHERE user = ?", (username,))
-            return cursor.fetchone() is not None
-        except:
-            return False
-        
+
     def __del__(self):
-        """Destructor: cierra la conexión al eliminar el objeto"""
+        # Destructor: cierra la conexión al eliminar el objeto
         try:
             self.conexion_db.Cerrar()
         except:

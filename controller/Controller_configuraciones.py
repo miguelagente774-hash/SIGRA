@@ -68,6 +68,16 @@ class controlador_configuraciones(QWidget):
         self.vista.entry_cedula_coord.setValidator(validador_cedula)
         self.vista.entry_cedula_gob.setValidator(validador_cedula)
         
+        # Validadores para Objetivos
+        regex_objetivos = QRegExp(r'^\d+$')
+        validador_objetivos = QRegExpValidator(regex_objetivos, self)
+
+        # Aplicar en Objetivos
+        self.vista.entry_semanal.setValidator(validador_objetivos)
+        self.vista.entry_mensual.setValidator(validador_objetivos)
+        self.vista.entry_trimestral.setValidator(validador_objetivos)
+        self.vista.entry_anual.setValidator(validador_objetivos)
+
         # Validador para tamaño de fuente (solo números)
         regex_numeros = QRegExp(r'^\d+$')
         validador_numeros = QRegExpValidator(regex_numeros, self)
@@ -248,39 +258,53 @@ class controlador_configuraciones(QWidget):
         return True
     
     def validar_objetivos(self, datos_objetivos):
-        # Validar objetivos
-        entradas = [
+        # ==Validar objetivos==
+
+        # Definir los Widgets y nombres para la validación de campos
+        objetivos = [
             ("objetivo_semanal", self.vista.entry_semanal, "Semanal"),
             ("objetivo_mensual", self.vista.entry_mensual, "Mensual"),
             ("objetivo_trimestral", self.vista.entry_trimestral, "Trimestral"),
             ("objetivo_anual", self.vista.entry_anual, "Anual")
         ]
-
-        for campo_key, widget, campo_nombre in entradas:
+        # Validar que no estén vacíos
+        for campo_key, widget, campo_nombre in objetivos:
             valor = datos_objetivos.get(campo_key, "").strip()
-
             if not valor:
                 self.mostrar_error(widget, f"{campo_nombre} es requerida")
                 return False
-            
-            # Validar que sea un número positivo (incluye ceros y múltiples dígitos)
-            regex_numeros = QRegExp(r'^\d+$')
-            if not regex_numeros.exactMatch(valor):
-                self.mostrar_error(widget, f"{campo_nombre} debe ser un número")
+
+        try:
+            # 1. Obtener el texto y convertir a entero (usamos 0 si está vacío)
+            semanal = int(self.vista.entry_semanal.text() or 0)
+            mensual = int(self.vista.entry_mensual.text() or 0)
+            trimestral = int(self.vista.entry_trimestral.text() or 0)
+            anual = int(self.vista.entry_anual.text() or 0)
+
+            # 2. Verificar la jerarquía lógica
+            # Semanal no puede ser mayor a Mensual
+            if semanal > mensual:
+                self.mostrar_error(self.vista.entry_semanal, "El objetivo Semanal no puede superar al Mensual")
                 return False
-            
-            # Opcional: Validar rango
-            try:
-                num_valor = int(valor)
-                if num_valor < 0:
-                    self.mostrar_error(widget, f"{campo_nombre} debe ser un número positivo")
-                    return False
-            except ValueError:
-                self.mostrar_error(widget, f"{campo_nombre} debe ser un número válido")
+
+            # Mensual no puede ser mayor a Trimestral
+            if mensual > trimestral:
+                self.mostrar_error(self.vista.entry_mensual, "El objetivo Mensual no puede superar al Trimestral")
                 return False
+
+            # Trimestral no puede ser mayor a Anual
+            if trimestral > anual:
+                self.mostrar_error(self.vista.entry_trimestral, "El objetivo Trimestral no puede superar al Anual")
+                return False
+
+            # Si llegó aquí, todo es válido
+            return True
+
+        except ValueError:
+            # Si alguno no es número, el error se captura aquí de forma general
+            self.mostrar_error(self, "Ingrese solo números enteros")
+            return False
         
-        return True  # ¡¡¡IMPORTANTE!!!
-    
     def validar_direccion(self, datos_direccion):
         # == Valida datos de dirección== 
         campos = [
@@ -297,7 +321,6 @@ class controlador_configuraciones(QWidget):
                 self.mostrar_error(widget, f"{campo_nombre} es requerida")
                 return False
             
-            # CORREGIDO: Usar la expresión regular correcta para texto
             regex_texto = QRegExp(r'^[A-Za-zÁáÉéÍíÓóÚúÑñ\s\.\-\(\)]+$')
             if not regex_texto.exactMatch(valor):
                 self.mostrar_error(widget, f"{campo_nombre} contiene caracteres no válidos")
@@ -723,9 +746,6 @@ class controlador_configuraciones(QWidget):
             
             # Verificar si ya está en la posición correcta
             current_y = vscroll.value()
-            if abs(current_y - target_y) < 10:  # Ya está cerca
-                print(f"✅ Widget ya visible, no necesita desplazamiento")
-                return
             
             # 3. TERCERO: Crear animación suave
             animation = QPropertyAnimation(vscroll, b"value")

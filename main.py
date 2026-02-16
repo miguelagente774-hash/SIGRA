@@ -9,6 +9,14 @@ from PyQt5.QtCore import pyqtSignal, Qt
 from controller.Controller_login import controlador_login
 from controller.Controller_main import Controlador_principal
 import sys
+import pyautogui
+
+def calcular_dimensiones_pantalla():
+    ancho, alto = pyautogui.size()
+    ancho = int(ancho - 20)  # Ajusta el ancho al 90% del tamaño de la pantalla
+    alto = int(alto - 70)    # Ajusta el alto al 90% del tamaño de la pantalla
+    return ancho, alto
+
 
 class App(QMainWindow):
     login_exitoso = pyqtSignal()
@@ -54,8 +62,11 @@ class App(QMainWindow):
         self.show() # Es necesario re-mostrar la ventana al cambiar los flags
 
         # Establecer tamaño fijo
-        self.setFixedSize(1200, 800)
+        self.setFixedSize(1200, 700)
 
+        #Obtener dimensiones de la pantalla y ajustar el tamaño de la ventana
+        ancho_pantalla, alto_pantalla = calcular_dimensiones_pantalla()
+        self.setFixedSize(ancho_pantalla, alto_pantalla)
         # Centrar la Ventana después del Cambio de Tamaño
         qr = self.frameGeometry()
         cp = QApplication.desktop().availableGeometry().center()

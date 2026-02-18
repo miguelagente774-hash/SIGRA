@@ -89,23 +89,23 @@ class Ventana_consulta(QFrame):
         # Crear Botones
         layout_botones = QHBoxLayout()
         layout_panel.addLayout(layout_botones)
-        boton_pdf = QPushButton("Reporte-PDF")
-        boton_pptx = QPushButton("Reporte-PPTX")
-        boton_eliminar = QPushButton("Eliminar")
+        self.boton_pdf = QPushButton("Reporte-PDF")
+        self.boton_pptx = QPushButton("Reporte-PPTX")
+        self.boton_eliminar = QPushButton("Eliminar")
 
         # Aplicar estilo a todos los botones
-        for boton in [boton_pdf, boton_pptx, boton_eliminar]:
+        for boton in [self.boton_pdf, self.boton_pptx, self.boton_eliminar]:
             boton.setStyleSheet(self.estilo["styles"]["boton"])
         
         # Conectar señales
-        boton_pdf.clicked.connect(self.Abrir_modal_pdf)
-        boton_pptx.clicked.connect(self.Abrir_modal)
-        boton_eliminar.clicked.connect(self.Eliminar_reporte)
+        self.boton_pdf.clicked.connect(self.Abrir_modal_pdf)
+        self.boton_pptx.clicked.connect(self.Abrir_modal)
+        self.boton_eliminar.clicked.connect(self.Eliminar_reporte)
         
         # Centrar botones
-        layout_botones.addWidget(boton_pdf)
-        layout_botones.addWidget(boton_pptx)
-        layout_botones.addWidget(boton_eliminar)
+        layout_botones.addWidget(self.boton_pdf)
+        layout_botones.addWidget(self.boton_pptx)
+        layout_botones.addWidget(self.boton_eliminar)
         
         
 
@@ -141,12 +141,25 @@ class Ventana_consulta(QFrame):
         # Aplicar Estilo a la Tabla
         self.tabla.setStyleSheet(self.estilo["styles"]["tabla"])
         
-        self.actulizar_tabla()
+        self.actualizar_tabla()
+        self.tabla.itemSelectionChanged.connect(self._verificar_seleccion)
         
         
-    def actulizar_tabla(self):
+    def actualizar_tabla(self):
         self.datos_prueba = self.controlador.Obtener_reportes()
         self._cargar_datos_en_tabla(self.datos_prueba)
+        
+        # Auto-seleccionar primera fila si hay datos
+        if len(self.datos_prueba) > 0:
+            self.tabla.selectRow(0)
+
+    def _verificar_seleccion(self):
+        """Verifica si hay una fila seleccionada y actualiza UI si es necesario"""
+        tiene_seleccion = self.tabla.currentRow() >= 0
+        # Aquí podrías habilitar/deshabilitar botones si quieres
+        self.boton_pptx.setEnabled(tiene_seleccion)
+        self.boton_pdf.setEnabled(tiene_seleccion)
+        self.boton_eliminar.setEnabled(tiene_seleccion)
 
     def _conectar_senales(self):
         # ==Conecta las señales de los widgets a sus métodos==
@@ -203,16 +216,20 @@ class Ventana_consulta(QFrame):
 
 
     def Obtener_reporte_seleccionado(self):
-        #fila seleccionada
+        # Fila seleccionada
         fila_seleccionda = self.tabla.currentRow()
         if fila_seleccionda >= 0:
             id_reporte = self.tabla.item(fila_seleccionda, 0).text()
             nombre_reporte = self.tabla.item(fila_seleccionda, 1).text()
             datos_reporte = [id_reporte, nombre_reporte]
+            
+            # Log para depuración
+            print(f"✅ Reporte seleccionado: ID={id_reporte}, Nombre={nombre_reporte}")
+            return datos_reporte
         else:
-            datos_reporte = None
+            print("❌ No hay fila seleccionada en la tabla")
+            return None
 
-        return datos_reporte
     
     def Abrir_modal(self):
         datos_reporte = self.Obtener_reporte_seleccionado()

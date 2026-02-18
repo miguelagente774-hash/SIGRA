@@ -18,7 +18,7 @@ class controlador_consulta():
 
     def get_widget(self):
         self.consulta = Ventana_consulta(self)
-        Comunicador_global.Reporte_agregado.connect(self.consulta.actulizar_tabla)
+        Comunicador_global.Reporte_agregado.connect(self.consulta.actualizar_tabla)
         return self.consulta
     
     def Obtener_reportes(self):
@@ -30,69 +30,143 @@ class controlador_consulta():
 
     def abrir_modal(self, Nombre_reporte):
         try:
+            # Primero verificar que hay un reporte seleccionado
+            datos_reporte = self.consulta.Obtener_reporte_seleccionado()
+            if not datos_reporte:
+                self.consulta.mensaje_advertencia(
+                    "Advertencia", 
+                    "Por favor seleccione un reporte de la tabla antes de exportar"
+                )
+                return
+                
             modal = Modal_exportar_Reporte(Nombre_reporte, self)
             if modal.exec_() == QDialog.Accepted:
                 self.datos_meses = modal.obtener_lista_simple()
-                #Obtener ruta de donde guardar el archivo
-                directorio = QFileDialog.getExistingDirectory(None, "Selecciona la carpeta de destino")
-                if directorio:
-                # Uniendo ruta con el nombre del archivo
-                    ruta_final = Path(directorio) / Nombre_reporte
                 
-                #exportanto reporte
-                self.Crear_Reporte(self.datos_meses, ruta_final)
+                # Obtener ruta de donde guardar el archivo
+                directorio = QFileDialog.getExistingDirectory(
+                    None, 
+                    "Selecciona la carpeta de destino"
+                )
+                
+                if directorio:
+                    # Uniendo ruta con el nombre del archivo
+                    ruta_final = Path(directorio) / Nombre_reporte
+                    
+                    # Exportar reporte
+                    self.Crear_Reporte(self.datos_meses, ruta_final)
+                    
         except Exception as e:
             self.consulta.mensaje_error("Error", f"Error al cargar ventana: {e}")
+         
 
     #------------------------------ creacion reporte --------------------------
     def Crear_Reporte(self, datos_meses, ruta_final):
+        # Inicializar variables con valores por defecto
+        id_reporte = None
+        nombre_reporte = None
+        nombre_dir = None
+        fecha = None
+        listas_meses = None
+        listas_ponderaciones = None
+        datos_actividades = None
+        datos_coordinador = None
+        direccion = None
+        
         try:
             datos_reporte = self.consulta.Obtener_reporte_seleccionado()
+            if not datos_reporte:
+                self.consulta.mensaje_error("Error", "No se pudo obtener el reporte seleccionado")
+                return
+                
             id_reporte = datos_reporte[0]
             nombre_reporte = ruta_final
         except Exception as e:
-            self.consulta.mensaje_error("Error", f"datos_reporte: {e}")
+            self.consulta.mensaje_error("Error", f"Error al obtener datos del reporte: {e}")
+            return
 
         try: 
             nombre_dir = self.Obtener_jefe()
+            if not nombre_dir:
+                self.consulta.mensaje_error("Error", "No se pudo obtener datos del jefe")
+                return
         except Exception as e:
-            self.consulta.mensaje_error("Error", f"nombre_dir: {e}")
+            self.consulta.mensaje_error("Error", f"Error al obtener datos del jefe: {e}")
+            return
 
         try:
             fecha, listas_meses, listas_ponderaciones = self.Obtener_fechas_porcentajes(datos_meses)
+            if not all([fecha, listas_meses, listas_ponderaciones]):
+                self.consulta.mensaje_error("Error", "Error al procesar fechas y porcentajes")
+                return
         except Exception as e:
-            self.consulta.mensaje_error("Error", f"fechas: {e}")
+            self.consulta.mensaje_error("Error", f"Error al procesar fechas: {e}")
+            return
 
         try:
             datos_actividades = self.Obtener_actividades(id_reporte) 
+            if datos_actividades is None:
+                self.consulta.mensaje_error("Error", "No se pudieron obtener las actividades")
+                return
         except Exception as e:
-            self.consulta.mensaje_error("Error", f"actividades: {e}")
+            self.consulta.mensaje_error("Error", f"Error al obtener actividades: {e}")
+            return
 
         try:
             datos_coordinador = self.Obtener_coodinador()
+            if not datos_coordinador:
+                self.consulta.mensaje_error("Error", "No se pudieron obtener datos del coordinador")
+                return
         except Exception as e:
-            self.consulta.mensaje_error("Error", f"datos_coordinador: {e}")
+            self.consulta.mensaje_error("Error", f"Error al obtener datos del coordinador: {e}")
+            return
 
         try:
             direccion = self.Obtener_direccion()
+            if not direccion:
+                self.consulta.mensaje_error("Error", "No se pudo obtener la dirección")
+                return
         except Exception as e:
-            self.consulta.mensaje_error("Error", f"datos_direccion: {e}")
+            self.consulta.mensaje_error("Error", f"Error al obtener dirección: {e}")
+            return
 
-        #funcion para hacer reporte
+        # Generar el reporte solo si todas las variables están definidas
         try:
-            Reporte(nombre_reporte, nombre_dir, fecha, listas_meses, listas_ponderaciones, datos_actividades, datos_coordinador, direccion)
-            self.consulta.mensaje_informativo("Informacion", "Reporte Guardado Exitosamente")
+            if all([nombre_reporte, nombre_dir, fecha, listas_meses, 
+                    listas_ponderaciones, datos_actividades, datos_coordinador, direccion]):
+                Reporte(nombre_reporte, nombre_dir, fecha, listas_meses, 
+                    listas_ponderaciones, datos_actividades, datos_coordinador, direccion)
+                self.consulta.mensaje_informativo("Información", "Reporte Guardado Exitosamente")
+            else:
+                self.consulta.mensaje_error("Error", "Faltan datos para generar el reporte")
         except Exception as e:
-            self.consulta.mensaje_error("Error", f"{e}")
+            self.consulta.mensaje_error("Error", f"Error al generar reporte: {e}")
 
     def abrir_modal_pdf(self, Nombre_reporte):
-        """Abre el modal de selección de meses y luego pregunta dónde guardar el PDF.
-        Genera un PPTX temporal, lo convierte a PDF en la ruta seleccionada y elimina temporales.
-        """
+        # Abre el modal de selección de meses y luego pregunta dónde guardar el PDF. Genera un PPTX temporal, lo convierte a PDF en la ruta seleccionada y elimina temporales.
         try:
+            # Primero verificar que hay un reporte seleccionado
+            datos_reporte = self.consulta.Obtener_reporte_seleccionado()
+            if not datos_reporte:
+                self.consulta.mensaje_advertencia(
+                    "Advertencia", 
+                    "Por favor seleccione un reporte de la tabla antes de exportar"
+                )
+                return
+        
             modal = Modal_exportar_Reporte(Nombre_reporte, self)
             if modal.exec_() == QDialog.Accepted:
                 datos_meses = modal.obtener_lista_simple()
+                id_reporte = datos_reporte[0]
+
+                id_reporte = None
+                nombre_dir = None
+                fecha = None
+                listas_meses = None
+                listas_ponderaciones = None
+                datos_actividades = None
+                datos_coordinador = None
+                direccion = None
 
                 # Obtener ruta de destino del PDF
                 ruta_pdf, _ = QFileDialog.getSaveFileName(None, "Guardar PDF como", f"{Nombre_reporte}.pdf", "PDF Files (*.pdf)")
@@ -275,7 +349,7 @@ class controlador_consulta():
             try:
                 self.modelo.Eliminar_reporte(id_reporte)
                 self.consulta.mensaje_informativo("Informacion", f"Reporte Nro {id_reporte} Eliminado ")
-                self.consulta.actulizar_tabla()
+                self.consulta.actualizar_tabla()
             except Exception as e:
                 self.consulta.mensaje_error("Error", f"Error al Eliminar Reporte: {e}")
         else:

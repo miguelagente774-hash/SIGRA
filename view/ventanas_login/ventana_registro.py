@@ -100,17 +100,25 @@ class Ventana_setup(QFrame):
         # Instanciar los métodos para el panel
         self.crear_encabezado_registro(layout_registro)
         self.crear_campos_formulario(layout_registro)
-        
-        # El Strectch para ajustar
-        layout_registro.addStretch(1)
-        
+
+        # Contenedor para el Mensaje de error
+        self.contenedor_error = QFrame()
+        self.contenedor_error.setMinimumHeight(60)
+        self.contenedor_error.setMaximumHeight(80)
+        self.contenedor_error.setStyleSheet("background: transparent; border: none; margin: 5px 15px;")
+
+        # Layout para el Mensaje de Error
+        layout_error = QVBoxLayout(self.contenedor_error)
+        layout_error.setContentsMargins(0, 0, 0, 0)
+        layout_error.setSpacing(0)
+
         # Mensaje de error
         self.label_error = QLabel("")
         self.label_error.setStyleSheet(f"""
             QLabel {{
                 color: {COLOR_ERROR};
                 font-family: {FONT_FAMILY};
-                font-size: 13px;
+                font-size: 12px;
                 padding: 12px;
                 margin: 0 15px 10px 15px;
                 background-color: #fdeded;
@@ -119,16 +127,18 @@ class Ventana_setup(QFrame):
                 font-weight: 500;
             }}
         """)
-        self.setMinimumHeight(25)
         self.label_error.setAlignment(Qt.AlignCenter)
         self.label_error.setVisible(False)
-        layout_registro.addWidget(self.label_error)
+        self.label_error.setWordWrap(True)
+        
+        layout_error.addWidget(self.label_error)
+        layout_registro.addWidget(self.contenedor_error)
 
-        # 4. Botón de login (al final)
+        # Botón de login
         self.crear_boton_registro(layout_registro)
         
-        # 5. Espaciador mínimo al final para que no toque el borde redondeado
-        layout_registro.addSpacing(20)
+        # Espaciador mínimo al final para que no toque el borde
+        layout_registro.addSpacing(10)
         
         self.layout_contenedor.addWidget(self.contenedor_registro)
 
@@ -161,7 +171,7 @@ class Ventana_setup(QFrame):
                 background: transparent;
                 font-family: {FONT_FAMILY};
                 font-size: 18px;
-                color: #7f8c8d;
+                color: #222;
                 font-weight: normal;
                 padding: 0;
                 margin: 0 0 10px 0;
@@ -172,24 +182,31 @@ class Ventana_setup(QFrame):
         layout.addWidget(subtitulo)
 
     def crear_campos_formulario(self, layout):
-        # Campos del Formulario de Registro
+    # ==Campos del Formulario de Registro==
         self.label_preguntas = QLabel("Preguntas de Seguridad")
-        self.label_preguntas.setStyleSheet(f"color: {COLOR_TEXTO}; font-weight: bold; margin: 10px 0 0 15px;")
+        self.label_preguntas.setStyleSheet(f"color: {COLOR_TEXTO}; font-weight: bold; margin: 10px 0 5px 15px;")
         layout.addWidget(self.label_preguntas)
 
         # Contenedor para el Grid
         contenedor_grid = QFrame()
         contenedor_grid.setStyleSheet("margin: 0 15px; border: none;")
+        contenedor_grid.setFixedHeight(120)
+        
         grid_layout = QGridLayout(contenedor_grid)
-        grid_layout.setContentsMargins(0, 5, 0, 0)
+        grid_layout.setContentsMargins(0, 5, 0, 20)
         grid_layout.setSpacing(10)
+
+        # Establecer alturas minimas para las filas
+        grid_layout.setRowMinimumHeight(0, 50)
+        grid_layout.setRowMinimumHeight(1, 50)
 
         # Definir las preguntas
         preguntas_lista = [
             "¿Nombre de tu mascota?",
             "¿Ciudad de nacimiento?",
             "¿Nombre de tu abuela?",
-            
+            "¿Tu comida favorita?",
+            "¿Tu película favorita?"
         ]
 
         # Crear los 3 Combos (Fila 0) y los 3 Inputs (Fila 1)
@@ -197,22 +214,21 @@ class Ventana_setup(QFrame):
         self.inputs_seguridad = []
 
         for i in range(3):
-            # ComboBox
             combo = QComboBox()
             combo.addItems(preguntas_lista)
-            combo.setCurrentIndex(i) # Para que no sean iguales por defecto
+            combo.setCurrentIndex(i)
             combo.setStyleSheet(self.obtener_estilo_combo())
-            grid_layout.addWidget(combo, 0, i) # Fila 0, Columna i
+            combo.setMinimumHeight(45)
+            grid_layout.addWidget(combo, 0, i)
             self.combos_seguridad.append(combo)
 
-            # QLine Edit para las Respuestas
             input_respuesta = QLineEdit()
             input_respuesta.setPlaceholderText(f"Respuesta {i+1}")
             input_respuesta.setStyleSheet(self.obtener_estilo_input())
-            grid_layout.addWidget(input_respuesta, 1, i) # Fila 1, Columna i
+            input_respuesta.setMinimumHeight(45)
+            grid_layout.addWidget(input_respuesta, 1, i)
             self.inputs_seguridad.append(input_respuesta)
         
-
         layout.addWidget(contenedor_grid)
 
         # ==Campos de Contraseñas: Label de Contraseña==
@@ -220,28 +236,138 @@ class Ventana_setup(QFrame):
         self.label_pass.setStyleSheet(f"color: {COLOR_TEXTO}; font-weight: bold; margin-left: 15px;")
         layout.addWidget(self.label_pass)
         
-        # ==Campos de Contraseñas: Input de Contraseña==
+        # ==Contenedor para contraseña con botón DENTRO del input==
+        self.contenedor_password = QFrame()
+        self.contenedor_password.setStyleSheet("background: transparent; border: none; margin: 0 15px;")
+        self.contenedor_password.setFixedHeight(45)
+        
+        # Crear un layout horizontal para el contenedor
+        layout_password = QHBoxLayout(self.contenedor_password)
+        layout_password.setContentsMargins(0, 0, 0, 0)
+        layout_password.setSpacing(0)
+        
+        # Input de contraseña (ocupará el espacio disponible)
         self.input_password = QLineEdit()
         self.input_password.setPlaceholderText("Ingrese su contraseña")
         self.input_password.setEchoMode(QLineEdit.Password)
-        self.input_password.setStyleSheet(self.obtener_estilo_input())
-        layout.addWidget(self.input_password)
+        self.input_password.setMinimumHeight(45)
+        
+        # Estilo para el input
+        self.input_password.setStyleSheet(f"""
+            QLineEdit {{
+                background: {COLOR_BLANCO};
+                border: 1.5px solid {COLOR_GRIS_BORDE};
+                border-radius: 10px;
+                padding: 14px 45px 14px 18px;
+                font-size: 15px;
+                font-family: {FONT_FAMILY};
+                selection-background-color: {COLOR_PRIMARIO};
+                color: {COLOR_TEXTO};
+            }}
+            QLineEdit:focus {{
+                border: 1.5px solid {COLOR_PRIMARIO};
+                background-color: {COLOR_BLANCO};
+            }}
+            QLineEdit:hover {{
+                border: 1.5px solid {COLOR_SECUNDARIO};
+            }}
+        """)
+        layout_password.addWidget(self.input_password)
+        
+        # Botón mostrar/ocultar (con tamaño fijo)
+        self.btn_mostrar_pass = QPushButton("👁")
+        self.btn_mostrar_pass.setCursor(Qt.PointingHandCursor)
+        self.btn_mostrar_pass.setFixedSize(50, 50)
+        self.btn_mostrar_pass.setStyleSheet(f"""
+            QPushButton {{
+                background-color: transparent;
+                border: none;
+                font-size: 20px;
+                color: {COLOR_TEXTO};
+                margin-left: -10px;  /* Margen negativo para superponerlo */
+            }}
+            QPushButton:hover {{
+                color: {COLOR_SECUNDARIO};
+            }}
+            QPushButton:pressed {{
+                color: {COLOR_PRIMARIO};
+            }}
+        """)
+        self.btn_mostrar_pass.setCheckable(True)
+        layout_password.addWidget(self.btn_mostrar_pass)
+        
+        layout.addWidget(self.contenedor_password)
 
-        # ==Campos de Contraseñas: Label de Confirmar Contraseña==
+        # ==Label de Confirmar Contraseña==
         self.label_confirm = QLabel("Confirmar Contraseña")
         self.label_confirm.setStyleSheet(f"color: {COLOR_TEXTO}; font-weight: bold; margin-left: 15px;")
         layout.addWidget(self.label_confirm)
 
-        # ==Campos de Contraseñas: Input de Confirmar Contraseña==
+        # ==Contenedor para confirmar contraseña con botón DENTRO del input==
+        self.contenedor_confirm = QFrame()
+        self.contenedor_confirm.setStyleSheet("background: transparent; border: none; margin: 0 15px;")
+        self.contenedor_confirm.setFixedHeight(45)
+        
+        # Crear un layout horizontal para el contenedor
+        layout_confirm = QHBoxLayout(self.contenedor_confirm)
+        layout_confirm.setContentsMargins(0, 0, 0, 0)
+        layout_confirm.setSpacing(0)
+        
+        # Input de confirmar contraseña
         self.input_password_confirmation = QLineEdit()
         self.input_password_confirmation.setPlaceholderText("Confirme su contraseña")
         self.input_password_confirmation.setEchoMode(QLineEdit.Password)
-        self.input_password_confirmation.setStyleSheet(self.obtener_estilo_input())
-        layout.addWidget(self.input_password_confirmation)
+        self.input_password_confirmation.setMinimumHeight(45)
+        
+        # Estilo para el input
+        self.input_password_confirmation.setStyleSheet(f"""
+            QLineEdit {{
+                background: {COLOR_BLANCO};
+                border: 1.5px solid {COLOR_GRIS_BORDE};
+                border-radius: 10px;
+                padding: 14px 45px 14px 18px;
+                font-size: 15px;
+                font-family: {FONT_FAMILY};
+                selection-background-color: {COLOR_PRIMARIO};
+                color: {COLOR_TEXTO};
+            }}
+            QLineEdit:focus {{
+                border: 1.5px solid {COLOR_PRIMARIO};
+                background-color: {COLOR_BLANCO};
+            }}
+            QLineEdit:hover {{
+                border: 1.5px solid {COLOR_SECUNDARIO};
+            }}
+        """)
+        layout_confirm.addWidget(self.input_password_confirmation)
+        
+        # Botón mostrar/ocultar (con tamaño fijo)
+        self.btn_mostrar_confirm = QPushButton("👁")
+        self.btn_mostrar_confirm.setCursor(Qt.PointingHandCursor)
+        self.btn_mostrar_confirm.setFixedSize(50, 50)
+        self.btn_mostrar_confirm.setStyleSheet(f"""
+            QPushButton {{
+                background-color: transparent;
+                border: none;
+                font-size: 20px;
+                margin-left: -10px;
+                color: {COLOR_TEXTO};
+            }}
+            QPushButton:hover {{
+                color: {COLOR_SECUNDARIO};
+            }}
+            QPushButton:pressed {{
+                color: {COLOR_PRIMARIO};
+            }}
+        """)
+        self.btn_mostrar_confirm.setCheckable(True)
+        layout_confirm.addWidget(self.btn_mostrar_confirm)
+        
+        layout.addWidget(self.contenedor_confirm)
         
     def crear_boton_registro(self, layout):
-        """Crea el botón de inicio de sesión"""
-        self.boton_registro = QPushButton("Crear Usuario")
+        # Crear el Botón para Validar el Registro
+        self.boton_registro = QPushButton("Validar Preguntas")
         self.boton_registro.setCursor(Qt.PointingHandCursor)
         
         # Estilo más moderno con transiciones
@@ -253,20 +379,20 @@ class Ventana_setup(QFrame):
                 font-weight: 600;
                 font-size: 16px;
                 min-height: 18px;
-                padding: 16px;
+                padding: 12px;  /* Reducido padding */
                 border-radius: 10px;
                 border: none;
-                margin: 25px 15px 10px 15px;
+                margin: 0 15px 5px 15px;  /* Reducido margen superior */
             }}
             QPushButton:hover {{
                 background-color: {COLOR_SECUNDARIO};
             }}
             QPushButton:pressed {{
                 background-color: {COLOR_AZUL_HOVER};
-                padding: 15px;
+                padding: 11px;
             }}
             QPushButton:focus{{
-             outline: none;
+                outline: none;
             }}
             QPushButton:disabled {{
                 background-color: #bdc3c7;
@@ -310,13 +436,14 @@ class Ventana_setup(QFrame):
     def obtener_estilo_combo(self):
         return f""" 
         QComboBox {{
-            font-family: {FONT_FAMILY};
-            font-size: {FONT_SIZE}px;
-            border: 1.5px solid {COLOR_GRIS_BORDE};
-            border-radius: 10px;
-            padding: 10px 15px;
-            background: {COLOR_BLANCO};
-            color: {COLOR_TEXTO};
+        font-family: {FONT_FAMILY};
+        font-size: {FONT_SIZE}px;
+        border: 1.5px solid {COLOR_GRIS_BORDE};
+        border-radius: 10px;
+        padding: 8px 12px;
+        background: {COLOR_BLANCO};
+        color: {COLOR_TEXTO};
+        min-height: 25px;
         }}
         QComboBox:focus, QComboBox:hover {{
             border: 2px solid {COLOR_PRIMARIO};
@@ -326,12 +453,50 @@ class Ventana_setup(QFrame):
             width: 30px;
         }}
         QComboBox::down-arrow {{
-            /* Dibujamos una flecha con CSS puro */
             border-left: 6px solid transparent;
             border-right: 6px solid transparent;
             border-top: 8px solid {COLOR_PRIMARIO};
             margin-right: 10px;
         }}
+        QComboBox QAbstractItemView {{
+            border: 1px solid {COLOR_GRIS_BORDE};
+            border-radius: 5px;
+            background: {COLOR_BLANCO};
+            selection-background-color: {COLOR_PRIMARIO};
+        }}
     """
         
 
+    def obtener_estilo_combo_error(self):
+            """Estilo para combobox en estado de error"""
+            return f""" 
+            QComboBox {{
+                font-family: {FONT_FAMILY};
+                font-size: {FONT_SIZE}px;
+                border: 2px solid {COLOR_ERROR};
+                border-radius: 10px;
+                padding: 8px 12px;
+                background: {COLOR_BLANCO};
+                color: {COLOR_TEXTO};
+                min-height: 25px;
+            }}
+            QComboBox:focus, QComboBox:hover {{
+                border: 2px solid {COLOR_ERROR};
+            }}
+            QComboBox::drop-down {{
+                border: none;
+                width: 30px;
+            }}
+            QComboBox::down-arrow {{
+                border-left: 6px solid transparent;
+                border-right: 6px solid transparent;
+                border-top: 8px solid {COLOR_ERROR};
+                margin-right: 10px;
+            }}
+            QComboBox QAbstractItemView {{
+                border: 1px solid {COLOR_ERROR};
+                border-radius: 5px;
+                background: {COLOR_BLANCO};
+                selection-background-color: {COLOR_ERROR}80;
+            }}
+            """

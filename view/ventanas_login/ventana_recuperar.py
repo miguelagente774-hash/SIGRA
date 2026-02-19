@@ -255,10 +255,14 @@ class Ventana_recuperar(QFrame):
     def crear_elementos_ocultos(self, layout):
         # Labels y Edits de Contraseña
         self.label_nueva_pass = QLabel("Nueva Contraseña:")
+        self.label_nueva_pass.setStyleSheet(f"color: {COLOR_TEXTO}; font-weight: bold;")
+        self.label_nueva_pass.setContentsMargins(20, 0, 0, 0)
         self.input_nueva_pass = QLineEdit()
         self.input_nueva_pass.setEchoMode(QLineEdit.Password)
         
         self.label_conf_pass = QLabel("Confirmar Contraseña:")
+        self.label_conf_pass.setStyleSheet(f"color: {COLOR_TEXTO}; font-weight: bold;")
+        self.label_conf_pass.setContentsMargins(20, 0, 0, 0)
         self.input_conf_pass = QLineEdit()
         self.input_conf_pass.setEchoMode(QLineEdit.Password)
 
@@ -266,11 +270,11 @@ class Ventana_recuperar(QFrame):
         elementos = [self.label_nueva_pass, self.input_nueva_pass, 
                      self.label_conf_pass, self.input_conf_pass]
         
-        for el in elementos:
-            el.setVisible(False)
-            if isinstance(el, QLineEdit):
-                el.setStyleSheet(self.obtener_estilo_input())
-            layout.addWidget(el)
+        for variable in elementos:
+            variable.setVisible(False)
+            if isinstance(variable, QLineEdit):
+                variable.setStyleSheet(self.obtener_estilo_input())
+            layout.addWidget(variable)
 
     def toggle_campos_password(self, mostrar=True):
         self.label_nueva_pass.setVisible(mostrar)

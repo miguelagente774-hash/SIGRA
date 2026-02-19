@@ -1,9 +1,10 @@
-from view.ventana_login import Ventana_login
-from view.ventanas_login.ventana_setup import Ventana_setup
+from view.ventanas_login.ventana_login import Ventana_login
+from view.ventanas_login.ventana_registro import Ventana_setup
 from view.ventanas_login.ventana_recuperar import Ventana_recuperar
 from models.Modelo_login import Model_Login
-from PyQt5.QtWidgets import QMessageBox
-from PyQt5.QtCore import QObject
+from PyQt5.QtWidgets import QMessageBox, QLineEdit
+from PyQt5.QtCore import QObject, QRegExp
+from PyQt5.QtGui import QRegExpValidator
 
 # Clase Principal para el Login del Sistema:
 class controlador_login():
@@ -129,97 +130,294 @@ class controlador_setup(QObject):
         self.vista = Ventana_setup()
         self.modelo = Model_Login()
         
-        # Conectar botón de la vista
+        # Configurar validaciones con RegExp
+        self.configurar_validaciones()
+
+        # Configurar conexiones
         self.vista.boton_registro.clicked.connect(self.procesar_registro)
-
-        self.conexiones()
-
-    def conexiones(self):
         self.vista.registro_action.triggered.connect(self.procesar_registro)
+        self.vista.btn_mostrar_pass.clicked.connect(self.toggle_password_visibility)
+        self.vista.btn_mostrar_confirm.clicked.connect(self.toggle_confirm_password_visibility)
+
+    def configurar_validaciones(self):
+        # ==Configurar Validaciones a la Entrada de Datos==
+
+        # =Validación para las respuestas de seguridad con RegExp=
+        regex_respuestas = QRegExp("^[A-Za-záéíóúÁÉÍÓÚñÑ ]+$") # Solo letras mayúsculas, minúsculas, espacios y acentos
+        validator_respuestas = QRegExpValidator(regex_respuestas)
+        
+        # Aplicar el validador a cada campo de respuesta de seguridad
+
+        for input_respuesta in self.vista.inputs_seguridad:
+            input_respuesta.setValidator(validator_respuestas)
+
 
     def procesar_registro(self):
-        self.limpiar_error()
         # == Procesar el Registro del Usuario Admin==
-        # Se Obtiene los Datos de la Vista
-        password = self.vista.input_password.text().strip()
-        password_confirmacion = self.vista.input_password_confirmation.text().strip()
+
+        self.limpiar_error()
+        
+        # Obtener datos de seguridad
         datos_seguridad = self.obtener_datos_seguridad()
         
-        # Las 3 Preguntas de Seguridad
-        pregunta_1 = datos_seguridad[0]['pregunta']
-        pregunta_2 = datos_seguridad[1]['pregunta']
-        pregunta_3 = datos_seguridad[2]['pregunta']
-        
-        # Las 3 Respuestas de Seguridad
-        respuesta_1 = datos_seguridad[0]['respuesta']
-        respuesta_2 = datos_seguridad[1]['respuesta']
-        respuesta_3 = datos_seguridad[2]['respuesta']
-        
-        # Validaciones
+        # --- VALIDACIONES DE PREGUNTAS (Combos) ---
         preguntas_seleccionadas = [d['pregunta'] for d in datos_seguridad]
+        
+        # Verificar preguntas duplicadas
         if len(set(preguntas_seleccionadas)) < 3:
-            self.mostrar_error("No puedes seleccionar la misma pregunta más de una vez.")
+            # Encontrar índices de preguntas duplicadas
+            indices_duplicados = []
+            for i in range(3):
+                for j in range(i+1, 3):
+                    if datos_seguridad[i]['pregunta'] == datos_seguridad[j]['pregunta']:
+                        indices_duplicados.append(i)
+                        indices_duplicados.append(j)
+            
+            self.mostrar_error(
+                mensaje="No puedes seleccionar la misma pregunta más de una vez.",
+                tipo_error='preguntas',
+                indices=indices_duplicados
+            )
             return
         
-        respuestas_ingresadas = [d['respuesta'].lower() for d in datos_seguridad if d['respuesta']]
+        # --- VALIDACIONES DE RESPUESTAS VACÍAS ---
+        respuestas_vacias = [i for i, d in enumerate(datos_seguridad) if not d['respuesta']]
+        if respuestas_vacias:
+            self.mostrar_error(
+                mensaje="Todas las respuestas de seguridad son obligatorias",
+                tipo_error='respuestas vacías',
+                indices=respuestas_vacias
+            )
+            return
+        
+        # --- VALIDACIONES DE RESPUESTAS DUPLICADAS ---
+        respuestas_ingresadas = [d['respuesta'].lower() for d in datos_seguridad]
         if len(set(respuestas_ingresadas)) < 3:
-            # Solo validamos si todas están llenas, si no, saltará el error de "obligatorias"
-            if len(respuestas_ingresadas) == 3:
-                self.mostrar_error("Las respuestas de seguridad deben ser diferentes entre sí.")
-                return
+            # Encontrar índices de respuestas duplicadas
+            indices_duplicados_resp = []
+            for i in range(3):
+                for j in range(i+1, 3):
+                    if datos_seguridad[i]['respuesta'].lower() == datos_seguridad[j]['respuesta'].lower():
+                        indices_duplicados_resp.append(i)
+                        indices_duplicados_resp.append(j)
+            
+            self.mostrar_error(
+                mensaje="Las respuestas de seguridad deben ser diferentes entre sí.",
+                tipo_error='respuestas duplicadas',
+                indices=list(set(indices_duplicados_resp))  # Eliminar duplicados de índices
+            )
+            return
+        
+        # --- VALIDACIONES DE CONTRASEÑA ---
+        password = self.vista.input_password.text().strip()
+        password_confirmacion = self.vista.input_password_confirmation.text().strip()
+        
+        # Verificar si la contraseña está vacía
+        if not password:
+            self.mostrar_error(
+                mensaje="La contraseña no puede estar vacía",
+                tipo_error='password'
+            )
+            self.vista.input_password.setFocus()
+            return
+        
+        # Verificar longitud mínima
+        if len(password) < 8:
+            self.mostrar_error(
+                mensaje="La contraseña debe tener al menos 8 caracteres",
+                tipo_error='password'
+            )
+            self.vista.input_password.setFocus()
+            return
+        
+        import re
+         # Regex: Al menos:
+        # - Una letra mayúscula (?=.*[A-Z])
+        # - Una letra minúscula (?=.*[a-z])
+        # - Un número (?=.*\d)
+        # - Un carácter especial (?=.*[@$!%*?&])
+        # - Mínimo 8 caracteres {8,}
+        password_pattern = re.compile(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$')
+    
+        if not password_pattern.match(password):
+            self.mostrar_error(
+                mensaje="La contraseña debe tener al menos: 1 mayúscula, 1 minúscula, 1 número y 1 carácter especial (@$!%*?&)",
+                tipo_error='password'
+            )
+            self.vista.input_password.setFocus()
+            return
 
-        if len(password) < 5:
-            self.mostrar_error("La contraseña debe tener al menos 5 caracteres")
-            return
         
+        # Verificar que las contraseñas coincidan
         if password != password_confirmacion:
-            self.mostrar_error("Las contraseñas no coinciden")
+            self.mostrar_error(
+                mensaje="Las contraseñas no coinciden",
+                tipo_error='password_confirm'
+            )
+            self.vista.input_password_confirmation.setFocus()
             return
         
-        # Verificar que no haya respuestas vacías
-        if any(not d['respuesta'] for d in datos_seguridad):
-            self.mostrar_error("Todas las respuestas de seguridad son obligatorias")
+        # Verificar que la contraseña no sea igual a ninguna respuesta
+        if password.lower() in respuestas_ingresadas:
+            self.mostrar_error(
+                mensaje="La contraseña no puede ser igual a ninguna respuesta de seguridad",
+                tipo_error='password'
+            )
+            self.vista.input_password.setFocus()
             return
         
-        # Guardar en DB (El usuario inicial suele ser 'admin')
+        # --- GUARDAR EN BASE DE DATOS ---
         exito = self.modelo._crear_usuario_admin("admin", password, datos_seguridad)
         
         if exito:
-            QMessageBox.information(self.vista, "Éxito", "Administrador registrado correctamente.")
+            QMessageBox.information(
+                self.vista, 
+                "Éxito", 
+                "Administrador registrado correctamente\n\nUsuario: admin\nContraseña: " + password
+            )
             self.vista.registro_exitoso.emit()
         else:
-            # Login fallido
-            QMessageBox.critical(self.vista, "Error", "Error crítico al guardar en la base de datos")
-            self.vista.input_password.setFocus()
+            QMessageBox.critical(
+                self.vista, 
+                "Error", 
+                "Error crítico al guardar en la base de datos"
+            )
             self.vista.input_password.clear()
             self.vista.input_password_confirmation.clear()
-            
+            self.vista.input_password.setFocus()
 
-    def mostrar_error(self, mensaje):
-        # Muestra un mensaje de error
+    def mostrar_error(self, mensaje, tipo_error='general', indices=None):
+        """
+        Muestra un mensaje de error y resalta los campos específicos
+        
+        Args:
+            mensaje (str): Mensaje de error a mostrar
+            tipo_error (str): Tipo de error para saber qué campos resaltar
+                Opciones: 'preguntas', 'respuestas vacías', 'respuestas duplicadas', 
+                         'password', 'password_confirm', 'general'
+            indices (list): Lista de índices de campos de seguridad a resaltar (0, 1, 2)
+        """
+        # Mostrar mensaje de error
         self.vista.label_error.setText(f"⚠ {mensaje}")
         self.vista.label_error.setVisible(True)
         
-        # Aplicar estilo de error a los campos
-        estilo_error = self.vista.obtener_estilo_input(True)
-        self.vista.input_password.setStyleSheet(self.vista.obtener_estilo_input(True))
-        self.vista.input_password_confirmation.setStyleSheet(self.vista.obtener_estilo_input(True))
+        # Restablecer todos los estilos primero
+        self.restaurar_estilos_base()
         
+        # Obtener estilos
+        estilo_error = self.vista.obtener_estilo_input(True)
+        estilo_error_combo = self.vista.obtener_estilo_combo_error()
+        
+        # Resaltar campos según el tipo de error
+        if tipo_error == 'preguntas':
+            # Resaltar combos específicos
+            if indices:
+                for i in indices:
+                    if i < len(self.vista.combos_seguridad):
+                        self.vista.combos_seguridad[i].setStyleSheet(estilo_error_combo)
+            else:
+                # Si no hay índices específicos, resaltar todos
+                for combo in self.vista.combos_seguridad:
+                    combo.setStyleSheet(estilo_error_combo)
+        
+        elif tipo_error in ['respuestas vacías', 'respuestas duplicadas']:
+            # Resaltar inputs de respuesta específicos
+            if indices:
+                for i in indices:
+                    if i < len(self.vista.inputs_seguridad):
+                        self.vista.inputs_seguridad[i].setStyleSheet(estilo_error)
+            else:
+                # Si no hay índices específicos, resaltar todos
+                for input_seg in self.vista.inputs_seguridad:
+                    input_seg.setStyleSheet(estilo_error)
+        
+        elif tipo_error == 'password':
+            # Resaltar solo el campo de contraseña
+            self.vista.input_password.setStyleSheet(estilo_error)
+        
+        elif tipo_error == 'password_confirm':
+            # Resaltar el campo de confirmación de contraseña
+            self.vista.input_password_confirmation.setStyleSheet(estilo_error)
+        
+        elif tipo_error == 'general':
+            # Resaltar todos los campos
+            for combo in self.vista.combos_seguridad:
+                combo.setStyleSheet(estilo_error_combo)
+            for input_seg in self.vista.inputs_seguridad:
+                input_seg.setStyleSheet(estilo_error)
+            self.vista.input_password.setStyleSheet(estilo_error)
+            self.vista.input_password_confirmation.setStyleSheet(estilo_error)
+
+    def reiniciar_formulario(self):
+        """Reinicia el formulario a su estado inicial"""
+        self.vista.alternar_campos_contraseñas(False)
+        self.vista.boton_registro.setText("Validar Preguntas")
+        
+        # Limpiar campos
         for input_seg in self.vista.inputs_seguridad:
-            input_seg.setStyleSheet(estilo_error)
+            input_seg.clear()
+        self.vista.input_password.clear()
+        self.vista.input_password_confirmation.clear()
+        
+        # Restablecer combos a valores por defecto
+        for i, combo in enumerate(self.vista.combos_seguridad):
+            combo.setCurrentIndex(i)
+
+    def restaurar_estilos_base(self):
+        """Restaura los estilos base de todos los campos"""
+        estilo_normal = self.vista.obtener_estilo_input(False)
+        estilo_combo_normal = self.vista.obtener_estilo_combo()
+        
+        # Restaurar inputs de seguridad
+        for input_seg in self.vista.inputs_seguridad:
+            input_seg.setStyleSheet(estilo_normal)
+        
+        # Restaurar combos
+        for combo in self.vista.combos_seguridad:
+            combo.setStyleSheet(estilo_combo_normal)
+        
+        # Restaurar campos de contraseña
+        self.vista.input_password.setStyleSheet(estilo_normal)
+        self.vista.input_password_confirmation.setStyleSheet(estilo_normal)
 
     def limpiar_error(self):
-        # Limpia los mensajes de error
+        """Limpia los mensajes de error y restaura estilos"""
         self.vista.label_error.setText("")
         self.vista.label_error.setVisible(False)
-        
-        # Restaurar estilos originales
-        estilo_error = self.vista.obtener_estilo_input(False)
-        self.vista.input_password.setStyleSheet(self.vista.obtener_estilo_input(False))
-        self.vista.input_password_confirmation.setStyleSheet(self.vista.obtener_estilo_input(False))
+        self.restaurar_estilos_base()
 
+    def reiniciar_formulario(self):
+        """Reinicia el formulario a su estado inicial"""
+        # Limpiar campos
         for input_seg in self.vista.inputs_seguridad:
-            input_seg.setStyleSheet(estilo_error)
+            input_seg.clear()
+        self.vista.input_password.clear()
+        self.vista.input_password_confirmation.clear()
+        
+        # Restablecer combos a valores por defecto
+        for i, combo in enumerate(self.vista.combos_seguridad):
+            combo.setCurrentIndex(i)
+        
+        # Limpiar errores
+        self.limpiar_error()
+
+    def toggle_password_visibility(self):
+        """Alterna la visibilidad de la contraseña"""
+        if self.vista.btn_mostrar_pass.isChecked():
+            self.vista.input_password.setEchoMode(QLineEdit.Normal)
+            self.vista.btn_mostrar_pass.setText("🔒")
+        else:
+            self.vista.input_password.setEchoMode(QLineEdit.Password)
+            self.vista.btn_mostrar_pass.setText("👁")
+
+    def toggle_confirm_password_visibility(self):
+        """Alterna la visibilidad de la confirmación de contraseña"""
+        if self.vista.btn_mostrar_confirm.isChecked():
+            self.vista.input_password_confirmation.setEchoMode(QLineEdit.Normal)
+            self.vista.btn_mostrar_confirm.setText("🔒")
+        else:
+            self.vista.input_password_confirmation.setEchoMode(QLineEdit.Password)
+            self.vista.btn_mostrar_confirm.setText("👁")
 
     def obtener_datos_seguridad(self):
         # Retorna una lista de diccionarios con la pregunta y respuesta de cada campo.
@@ -252,6 +450,7 @@ class controlador_recuperar():
 
         self.cargar_preguntas_iniciales()
         self.vista.boton_recuperar.clicked.connect(self.gestionar_boton_principal)
+        self.vista.registro_action.triggered.connect(self.gestionar_boton_principal)
 
     def cargar_preguntas_iniciales(self):
         preguntas = self.modelo.obtener_preguntas_usuario(self.usuario_actual)

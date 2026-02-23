@@ -1,8 +1,10 @@
-from PySignal import Signal
+from PyQt5.QtCore import QObject, pyqtSignal
 
-class Comunicar():
+class ComunicadorGlobal(QObject):
+    actividad_agregada = pyqtSignal()
+    Reporte_agregado = pyqtSignal()
+    
     def __init__(self):
-        self.actividad_agregada = Signal()
-        self.Reporte_agregado = Signal()
+        super().__init__()
 
-Comunicador_global = Comunicar()
+Comunicador_global = ComunicadorGlobal()

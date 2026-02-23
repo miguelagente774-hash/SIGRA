@@ -20,7 +20,7 @@ def get_shadow_effect(radius, color=Qt.gray, offset_x=1, offset_y=1):
 class Widget_Graficos(QFrame):
     def __init__(self, title, chart_data=None, parent=None):
         super().__init__(parent)
-        self.setMinimumHeight(160)  # Aumentado para espacio del título
+        self.setMinimumHeight(160)
         self.setStyleSheet("background: transparent; border: none;")
         
         # Data Configuration
@@ -51,12 +51,12 @@ class Widget_Graficos(QFrame):
         rect = self.contentsRect()
         
         # ===== 1. PINTAR EL TÍTULO =====
-        title_height = 30  # Altura reservada para el título
+        title_height = 30
         title_rect = QRectF(rect.left(), rect.top(), rect.width(), title_height)
         
         label_style = estilo["styles"]["label"]
         
-        # Fondo para el título (opcional, puedes quitarlo si quieres)
+        # Fondo para el título
         painter.setBrush(QBrush(QColor(estilo_app.obtener_colores_tema()['bg_secondary'])))
         painter.setPen(Qt.NoPen)
         painter.drawRect(title_rect)
@@ -68,10 +68,8 @@ class Widget_Graficos(QFrame):
         
         # Ajustar texto si es muy largo
         display_title = self.title
-        if len(self.title) > 30:  # Si el título es muy largo
-            # Intentar cortar inteligentemente
+        if len(self.title) > 30:
             if "Objetivo:" in self.title:
-                # Mantener la primera parte y el objetivo
                 parts = self.title.split("Objetivo:")
                 if len(parts) > 1:
                     display_title = f"{parts[0].strip()}... Objetivo:{parts[1]}"
@@ -81,23 +79,20 @@ class Widget_Graficos(QFrame):
         painter.drawText(title_rect, Qt.AlignCenter | Qt.AlignVCenter, display_title)
         
         # ===== 2. PINTAR EL GRÁFICO =====
-        # Área para el gráfico (dejando espacio para el título)
         chart_area = QRectF(
             rect.left() + 5, 
-            rect.top() + title_height + 5,  # +5 para separación
+            rect.top() + title_height + 5,
             rect.width() - 10, 
             rect.height() - title_height - 10
         )
         
-        # Factor de escala para responsividad
         scale_factor = rect.width() / 250
-        DYN_FONT_SIZE = max(7, int(8 * scale_factor))  # Aumentado para mejor legibilidad
+        DYN_FONT_SIZE = max(7, int(8 * scale_factor))
         DYN_ICON_SIZE = max(5, int(5 * scale_factor))
         DYN_LEGEND_SPACING = max(10, int(12 * scale_factor))
         
         TEXT_MARGIN_LEFT = 3
         
-        # Dimensiones del Gráfico
         PIE_WIDTH_RATIO = 0.35
         pie_area_width = chart_area.width() * PIE_WIDTH_RATIO
         diameter = min(pie_area_width, chart_area.height()) - 10
@@ -108,7 +103,6 @@ class Widget_Graficos(QFrame):
         total = sum(self.data)
         start_angle = 90 * 16 
         
-        # Posición de la Leyenda
         legend_x = chart_area.left() + pie_area_width + 10
         total_items = len(self.data) if self.data else 1
         legend_y = center_y - (((total_items - 1) * DYN_LEGEND_SPACING) / 2) - (DYN_ICON_SIZE / 2)
@@ -122,22 +116,18 @@ class Widget_Graficos(QFrame):
                 span_angle = round(percentage * 360 * 16)
                 color = self.colors[i % len(self.colors)]
 
-                # Dibujar la porción del pastel
                 painter.setBrush(QBrush(color))
                 painter.setPen(QPen(Qt.white, 1))
                 painter.drawPie(pie_rect, start_angle, span_angle)
 
-                # Dibujar la Leyenda
                 current_item_y_pos = legend_y + (i * DYN_LEGEND_SPACING)
                 painter.setPen(Qt.NoPen)
                 painter.setBrush(QBrush(color))
                 painter.drawRect(int(legend_x), int(current_item_y_pos), DYN_ICON_SIZE, DYN_ICON_SIZE)
                 
-                # Texto de leyenda
                 text_color = estilo_app.obtener_colores_tema()['text_primary']
                 painter.setPen(QPen(QColor(text_color)))
                 
-                # Acortar texto si es necesario
                 label_name = self.labels[i]
                 if len(label_name) > 20:
                     label_name = label_name[:18] + "..."
@@ -154,7 +144,6 @@ class Widget_Graficos(QFrame):
 
                 start_angle += span_angle
 
-            # Centro blanco para efecto dona
             hole_factor = 0.65 
             hole_size = diameter * hole_factor
             hole_rect = QRectF(center_x - hole_size / 2, center_y - hole_size / 2, hole_size, hole_size)
@@ -167,7 +156,6 @@ class Widget_Graficos(QFrame):
             painter.setPen(QPen(QColor(text_color)))
             painter.drawText(chart_area.toRect(), Qt.AlignCenter, "Sin Datos")
         
-        # ===== 3. BORDE SUAVE ALREDEDOR DEL WIDGET =====
         painter.setPen(QPen(QColor(estilo_app.obtener_colores_tema()['border_light']), 1))
         painter.setBrush(Qt.NoBrush)
         painter.drawRoundedRect(rect.adjusted(1, 1, -1, -1), 5, 5)
@@ -185,12 +173,14 @@ class Ventana_estadística(QFrame):
         # Establecer el Tema del Fondo
         self.setStyleSheet(estilo["styles"]["fondo"])
         
-
         # Registrar esta vista para actualización automática
         estilo_app.registrar_vista(self)
         
         # Conectar señal de actualización
         estilo_app.estilos_actualizados.connect(self.actualizar_estilos)
+
+        # Lista para almacenar los gráficos
+        self.widgets_graficos = []
 
         # Inicialización de los Métodos
         self.setup_panel()
@@ -199,56 +189,55 @@ class Ventana_estadística(QFrame):
     def setup_panel(self):
         # Layout Principal
         self.layout_principal = QVBoxLayout(self)
-
-        # Contenedor
-        contenedor_panel = QFrame()
-        contenedor_panel.setMinimumHeight(250)
-        contenedor_panel.setStyleSheet(estilo["styles"]["panel"])
-        contenedor_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        contenedor_panel.setGraphicsEffect(get_shadow_effect(25))
+        self.layout_principal.setContentsMargins(10, 10, 10, 10)
 
         # Título de la Ventana
-        titulo = QLabel("Bienvenido al Sistema de Gestión")
-        titulo.setStyleSheet(estilo["styles"]["header"])
-        titulo.setAlignment(Qt.AlignCenter)
-        self.layout_principal.addWidget(titulo)
+        self.titulo = QLabel("Bienvenido al Sistema de Gestión")
+        self.titulo.setStyleSheet(estilo["styles"]["header"])
+        self.titulo.setAlignment(Qt.AlignCenter)
+        self.layout_principal.addWidget(self.titulo)
 
     def setup_charts_panel(self):
-        layout_estadistica = QVBoxLayout()
-        layout_estadistica.setSpacing(10) 
-        
+        # Contenedor principal de estadísticas
         frame_Estadistica = QFrame()
         frame_Estadistica.setStyleSheet(estilo["styles"]["panel"])
-        frame_Estadistica.setLayout(layout_estadistica)
         frame_Estadistica.setGraphicsEffect(get_shadow_effect(15))
+        
+        layout_estadistica = QVBoxLayout(frame_Estadistica)
+        layout_estadistica.setSpacing(10)
 
         titulo = QLabel("Control de Reportes")
         titulo.setStyleSheet(estilo["styles"]["header"])
         titulo.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
         layout_estadistica.addWidget(titulo)
 
+        # Layout para los gráficos (Grid 2x2)
         layout_charts = QGridLayout()
         layout_charts.setContentsMargins(15, 0, 15, 15)
         layout_charts.setSpacing(15)
         
-        charts_container = QFrame()
-        charts_container.setLayout(layout_charts)
-        
-        common_labels = ['Actividades Realizadas', 'Actividades sin Hacer']
-        
-        data = [
-            {'title': "Semanal (Objetivo: 8)", 'data': [7, 1], 'labels': common_labels},
-            {'title': "Mensual (Objetivo: 20)", 'data': [16, 4], 'labels': common_labels},
-            {'title': "Trimestral (Objetivo: 30)", 'data': [25, 5], 'labels': common_labels},
-            {'title': "Anual (Objetivo: 120)", 'data': [100, 20], 'labels': common_labels},
+        # Crear los 4 gráficos con títulos iniciales
+        titulos_iniciales = [
+            "Semanal (Objetivo: 0)",
+            "Mensual (Objetivo: 0)",
+            "Trimestral (Objetivo: 0)",
+            "Anual (Objetivo: 0)"
         ]
+        
+        # Posiciones en el grid: (fila, columna)
+        posiciones = [(0, 0), (0, 1), (1, 0), (1, 1)]
+        
+        for i, titulo in enumerate(titulos_iniciales):
+            chart_data = {
+                'data': [0, 0],
+                'labels': ['Actividades Realizadas', 'Actividades sin Hacer']
+            }
+            chart = Widget_Graficos(titulo, chart_data)
+            chart.setMinimumHeight(200)
+            layout_charts.addWidget(chart, posiciones[i][0], posiciones[i][1])
+            self.widgets_graficos.append(chart)
 
-        for i, chart_data in enumerate(data):
-            row, col = divmod(i, 2)
-            chart = Widget_Graficos(chart_data['title'], chart_data)
-            layout_charts.addWidget(chart, row, col)
-            
-        layout_estadistica.addWidget(charts_container)
+        layout_estadistica.addLayout(layout_charts)
         self.layout_principal.addWidget(frame_Estadistica)
 
     def actualizar_estilos(self):
@@ -262,10 +251,7 @@ class Ventana_estadística(QFrame):
         # Actualizar todos los paneles con sombra
         for widget in self.findChildren(QFrame):
             if widget.graphicsEffect():
-                # Actualizar estilo del panel
                 widget.setStyleSheet(self.estilo["styles"]["panel"])
-                
-                # Actualizar sombra
                 effect = widget.graphicsEffect()
                 if isinstance(effect, QGraphicsDropShadowEffect):
                     effect.setColor(QColor(colores.get("shadow", Qt.gray)))
@@ -280,5 +266,4 @@ class Ventana_estadística(QFrame):
         
         # Actualizar gráficos circulares
         for widget in self.findChildren(Widget_Graficos):
-            # Forzar repintado del gráfico
             widget.repaint()

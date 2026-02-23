@@ -55,3 +55,42 @@ class Modelo_estadistica():
             "trimestral": self.contar_actividades_ultimos_dias(90),
             "anual": self.contar_actividades_ultimos_dias(365),
         }
+
+    
+    def cargar_datos_objetivos(self) -> Dict[str, str]:
+        """Carga los datos de objetivos desde la BD"""
+        try:
+            cursor = self.db.conexion.cursor()
+            
+            # Obtener los objetivos desde la tabla Objetivos_Reportes
+            cursor.execute("""
+                SELECT objetivo_semanal, objetivo_mensual, 
+                       objetivo_trimestral, objetivo_anual 
+                FROM Objetivos_Reportes WHERE id_objetivo = 1
+            """)
+            datos = cursor.fetchone()
+            
+            if datos:
+                return {
+                    "objetivo_semanal": datos[0] if datos else "5",
+                    "objetivo_mensual": datos[1] if datos else "10",
+                    "objetivo_trimestral": datos[2] if datos else "30",
+                    "objetivo_anual": datos[3] if datos else "90"
+                }
+            else:
+            # Si no hay datos, retornar valores por defecto
+                return {
+                    "objetivo_semanal": "5",
+                    "objetivo_mensual": "10", 
+                    "objetivo_trimestral": "30",
+                    "objetivo_anual": "90"
+                }
+            
+        except Exception as e:
+            print(f"❌ Error al cargar objetivos: {e}")
+            return {
+                "objetivo_semanal": "5",
+                "objetivo_mensual": "10",
+                "objetivo_trimestral": "30",
+                "objetivo_anual": "90"
+            }

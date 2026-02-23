@@ -2,7 +2,6 @@
 #todo se va importar aqui
 
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QStackedLayout, QFrame)
-from controller.Controller_login import controlador_login
 from controller.Controller_estadisticas import ControladorEstadistica 
 from controller.Controller_consulta import controlador_consulta
 from controller.Controller_configuraciones import controlador_configuraciones

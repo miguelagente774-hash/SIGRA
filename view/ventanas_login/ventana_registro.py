@@ -85,8 +85,8 @@ class Ventana_setup(QFrame):
                 border: none;
             }},
             QLabel {{
-            border: none;
-            background: transparent:
+                border: none;
+                background: transparent:
             }}
         """)
         
@@ -367,7 +367,7 @@ class Ventana_setup(QFrame):
         
     def crear_boton_registro(self, layout):
         # Crear el Botón para Validar el Registro
-        self.boton_registro = QPushButton("Validar Preguntas")
+        self.boton_registro = QPushButton("Registrarse")
         self.boton_registro.setCursor(Qt.PointingHandCursor)
         
         # Estilo más moderno con transiciones

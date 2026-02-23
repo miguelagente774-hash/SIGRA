@@ -67,7 +67,7 @@ class App(QMainWindow):
         # == Muestra el recuperar
         self.controlador_recuperar = controlador_recuperar()
         
-        self.controlador_recuperar.get_widget().recuperacion_exitoso.connect(self.mostrar_login)
+        self.controlador_recuperar.get_widget().recuperacion_exitosa.connect(self.mostrar_login)
         
         self.setCentralWidget(self.controlador_recuperar.get_widget())
         

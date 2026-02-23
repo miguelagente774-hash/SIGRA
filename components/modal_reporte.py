@@ -1,10 +1,12 @@
 # Ventana modal para exportar reporte a pptx
 from PyQt5.QtWidgets import (QPushButton, QDialog, QLabel, QVBoxLayout, QComboBox, QLineEdit, QHBoxLayout,
-                             QMessageBox, QGroupBox, QGridLayout, QApplication)
+                             QMessageBox, QGroupBox, QGridLayout, QApplication, QFrame)
 from PyQt5.QtCore import Qt
+from components.app_style import estilo_app
 
 COLOR_PRIMARIO = "#005a6e" 
 COLOR_SECUNDARIO = "#e8f4f8"
+COLOR_BORDER = "#E3F2FD"
 COLOR_BOTON_HOVER = "#007d99"
 COLOR_BOTON_ACTIVO = "#004a5c"
 FONT_FAMILY = "Arial"
@@ -12,22 +14,42 @@ FONT_FAMILY = "Arial"
 class Modal_exportar_Reporte(QDialog):
     def __init__(self, nombre_reporte, parent):
         super().__init__(parent=None)
+        # Definir Variables Iniciales
         self.nombre_reporte = nombre_reporte
         self.meses_seleccionados = []
+        self.estilo = estilo_app.obtener_estilo_completo()
         
         # Variables para almacenar los datos que se retornarán
         self.datos_exportar = []
         self.trimestre_seleccionado = ""
         
-        # Reajustando propiedades de la ventana
-        self.setGeometry(600, 100, 400, 700)
+        # 1. Propiedades de la ventana: Transparencia ACTIVADA
         self.setWindowFlags(Qt.Dialog | Qt.FramelessWindowHint)
+        self.setAttribute(Qt.WA_TranslucentBackground)
+        self.setGeometry(600, 100, 400, 700)
         self.centrar_ventana()
 
-        # Configurando layout principal o main
-        self.Layout_main = QVBoxLayout()
+        # 2. Layout principal sin márgenes
+        self.Layout_main = QVBoxLayout(self)
         self.Layout_main.setContentsMargins(0, 0, 0, 0)
-        self.setLayout(self.Layout_main)
+
+        # 3. CREAR UN CONTENEDOR MAESTRO (El que tendrá el fondo y el redondeo)
+        self.contenedor_modal = QFrame()
+        self.contenedor_modal.setObjectName("ContenedorMaestro")
+        self.Layout_main.addWidget(self.contenedor_modal)
+
+        # 4. Estilo: Aplicamos el fondo y redondeo al CONTENEDOR, no al QDialog
+        self.setStyleSheet(f"""
+            QFrame#ContenedorMaestro {{
+                background-color: #f0f0f0; 
+                border: 2px solid {COLOR_BORDER}; 
+                border-radius: 12px;
+            }}
+        """)
+
+        # 5. Todo el contenido ahora debe ir dentro del layout de 'contenedor_modal'
+        self.layout_contenido_real = QVBoxLayout(self.contenedor_modal)
+        self.layout_contenido_real.setContentsMargins(0, 0, 0, 0)
 
         self.Interfaz_gui()
 
@@ -49,7 +71,7 @@ class Modal_exportar_Reporte(QDialog):
         # Configurando layouts
         layout_interfaz = QVBoxLayout() 
         layout_interfaz.setContentsMargins(0, 0, 0, 10)
-        self.Layout_main.addLayout(layout_interfaz)
+        self.layout_contenido_real.addLayout(layout_interfaz)
         
         titulo = QLabel("Exportar Reporte")
         titulo.setStyleSheet(f"""
@@ -62,6 +84,8 @@ class Modal_exportar_Reporte(QDialog):
                              font-weight: bold;
                              border-top-left-radius: 8px;
                              border-top-right-radius: 8px;
+                             border-bottom-left-radius: 0px;
+                             border-bottom-right-radius: 0px;
                              letter-spacing: 1px;""")
         titulo.setMaximumHeight(70)
         titulo.setAlignment(Qt.AlignCenter)

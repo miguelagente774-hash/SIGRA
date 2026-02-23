@@ -38,6 +38,7 @@ class controlador_configuraciones(QWidget):
         
         # Cargar datos iniciales
         self.cargar_datos_iniciales()
+        self.cargar_preguntas_iniciales()
     
     def configurar_validadores(self):
         # == Configura validadores con expresiones regulares para todos los campos== 
@@ -68,6 +69,16 @@ class controlador_configuraciones(QWidget):
         self.vista.entry_cedula_coord.setValidator(validador_cedula)
         self.vista.entry_cedula_gob.setValidator(validador_cedula)
         
+        # Validadores para Objetivos
+        regex_objetivos = QRegExp(r'^\d+$')
+        validador_objetivos = QRegExpValidator(regex_objetivos, self)
+
+        # Aplicar en Objetivos
+        self.vista.entry_semanal.setValidator(validador_objetivos)
+        self.vista.entry_mensual.setValidator(validador_objetivos)
+        self.vista.entry_trimestral.setValidator(validador_objetivos)
+        self.vista.entry_anual.setValidator(validador_objetivos)
+
         # Validador para tamaño de fuente (solo números)
         regex_numeros = QRegExp(r'^\d+$')
         validador_numeros = QRegExpValidator(regex_numeros, self)
@@ -75,6 +86,15 @@ class controlador_configuraciones(QWidget):
         # Aplicar al spin de tamaño
         self.vista.spin_tamano.lineEdit().setValidator(validador_numeros)
         
+        # Validadores para respuestas de seguridad (solo letras, espacios y algunos caracteres)
+        regex_respuesta = QRegExp(r'^[A-Za-zÁáÉéÍíÓóÚúÑñ\s\.\-]+$')
+        validador_respuesta = QRegExpValidator(regex_respuesta, self)
+        
+        # Aplicar a campos de respuesta de seguridad
+        self.vista.entry_respuesta1.setValidator(validador_respuesta)
+        self.vista.entry_respuesta2.setValidator(validador_respuesta)
+        self.vista.entry_respuesta3.setValidator(validador_respuesta)
+
         # Configurar placeholder y tooltips para ayudar al usuario
         self.configurar_placeholders_y_tooltips()
     
@@ -126,6 +146,16 @@ class controlador_configuraciones(QWidget):
         self.vista.entry_decreto.setToolTip("Ingrese los datos necesarios")
         self.vista.entry_fechaPublicacion.setPlaceholderText("Ingrese un dato Válido")
         self.vista.entry_fechaPublicacion.setToolTip("Ingrese los datos de la efcha de publicacion")
+
+        # Campos de seguridad
+        self.vista.entry_respuesta1.setPlaceholderText("Ingrese su respuesta")
+        self.vista.entry_respuesta1.setToolTip("Solo letras, espacios y caracteres .-")
+        
+        self.vista.entry_respuesta2.setPlaceholderText("Ingrese su respuesta")
+        self.vista.entry_respuesta2.setToolTip("Solo letras, espacios y caracteres .-")
+        
+        self.vista.entry_respuesta3.setPlaceholderText("Ingrese su respuesta")
+        self.vista.entry_respuesta3.setToolTip("Solo letras, espacios y caracteres .-")
     
     def cargar_datos_iniciales(self):
     # == Carga los datos desde la base de datos al iniciar== 
@@ -136,6 +166,7 @@ class controlador_configuraciones(QWidget):
             datos_direccion = self.modelo.cargar_datos_direccion()
             datos_jefaturas = self.modelo.cargar_datos_jefaturas()
             datos_gaceta = self.modelo.cargar_datos_gaceta()
+            datos_seguridad = self.modelo.cargar_datos_seguridad()
             
             # Preparar datos para la vista
             datos = {
@@ -143,7 +174,8 @@ class controlador_configuraciones(QWidget):
                 "objetivos": datos_objetivos,
                 "direccion": datos_direccion,
                 "jefaturas": datos_jefaturas,
-                "gaceta": datos_gaceta
+                "gaceta": datos_gaceta,
+                "seguridad": datos_seguridad
             }
             
             # Establecer en vista
@@ -222,6 +254,9 @@ class controlador_configuraciones(QWidget):
         if not self.validar_gaceta(datos.get("gaceta", {})):
             return False
         
+        if not self.validar_seguridad(datos.get("seguridad", {})):
+            return False
+        
         return True
     
     def validar_interfaz(self, datos_interfaz):
@@ -248,39 +283,53 @@ class controlador_configuraciones(QWidget):
         return True
     
     def validar_objetivos(self, datos_objetivos):
-        # Validar objetivos
-        entradas = [
+        # ==Validar objetivos==
+
+        # Definir los Widgets y nombres para la validación de campos
+        objetivos = [
             ("objetivo_semanal", self.vista.entry_semanal, "Semanal"),
             ("objetivo_mensual", self.vista.entry_mensual, "Mensual"),
             ("objetivo_trimestral", self.vista.entry_trimestral, "Trimestral"),
             ("objetivo_anual", self.vista.entry_anual, "Anual")
         ]
-
-        for campo_key, widget, campo_nombre in entradas:
+        # Validar que no estén vacíos
+        for campo_key, widget, campo_nombre in objetivos:
             valor = datos_objetivos.get(campo_key, "").strip()
-
             if not valor:
                 self.mostrar_error(widget, f"{campo_nombre} es requerida")
                 return False
-            
-            # Validar que sea un número positivo (incluye ceros y múltiples dígitos)
-            regex_numeros = QRegExp(r'^\d+$')
-            if not regex_numeros.exactMatch(valor):
-                self.mostrar_error(widget, f"{campo_nombre} debe ser un número")
+
+        try:
+            # 1. Obtener el texto y convertir a entero (usamos 0 si está vacío)
+            semanal = int(self.vista.entry_semanal.text() or 0)
+            mensual = int(self.vista.entry_mensual.text() or 0)
+            trimestral = int(self.vista.entry_trimestral.text() or 0)
+            anual = int(self.vista.entry_anual.text() or 0)
+
+            # 2. Verificar la jerarquía lógica
+            # Semanal no puede ser mayor a Mensual
+            if semanal > mensual:
+                self.mostrar_error(self.vista.entry_semanal, "El objetivo Semanal no puede superar al Mensual")
                 return False
-            
-            # Opcional: Validar rango
-            try:
-                num_valor = int(valor)
-                if num_valor < 0:
-                    self.mostrar_error(widget, f"{campo_nombre} debe ser un número positivo")
-                    return False
-            except ValueError:
-                self.mostrar_error(widget, f"{campo_nombre} debe ser un número válido")
+
+            # Mensual no puede ser mayor a Trimestral
+            if mensual > trimestral:
+                self.mostrar_error(self.vista.entry_mensual, "El objetivo Mensual no puede superar al Trimestral")
                 return False
+
+            # Trimestral no puede ser mayor a Anual
+            if trimestral > anual:
+                self.mostrar_error(self.vista.entry_trimestral, "El objetivo Trimestral no puede superar al Anual")
+                return False
+
+            # Si llegó aquí, todo es válido
+            return True
+
+        except ValueError:
+            # Si alguno no es número, el error se captura aquí de forma general
+            self.mostrar_error(self, "Ingrese solo números enteros")
+            return False
         
-        return True  # ¡¡¡IMPORTANTE!!!
-    
     def validar_direccion(self, datos_direccion):
         # == Valida datos de dirección== 
         campos = [
@@ -297,7 +346,6 @@ class controlador_configuraciones(QWidget):
                 self.mostrar_error(widget, f"{campo_nombre} es requerida")
                 return False
             
-            # CORREGIDO: Usar la expresión regular correcta para texto
             regex_texto = QRegExp(r'^[A-Za-zÁáÉéÍíÓóÚúÑñ\s\.\-\(\)]+$')
             if not regex_texto.exactMatch(valor):
                 self.mostrar_error(widget, f"{campo_nombre} contiene caracteres no válidos")
@@ -359,6 +407,37 @@ class controlador_configuraciones(QWidget):
             
         # Validar Fecha de Publicacion
 
+    def validar_seguridad(self, datos_seguridad):
+            """Valida las preguntas y respuestas de seguridad"""
+            # Validar que las respuestas no estén vacías
+            respuestas = [
+                ("respuesta_1", self.vista.entry_respuesta1, "Respuesta 1"),
+                ("respuesta_2", self.vista.entry_respuesta2, "Respuesta 2"),
+                ("respuesta_3", self.vista.entry_respuesta3, "Respuesta 3")
+            ]
+            
+            for campo_key, widget, campo_nombre in respuestas:
+                valor = datos_seguridad.get(campo_key, "").strip()
+                if not valor:
+                    self.mostrar_error(widget, f"{campo_nombre} es requerida")
+                    return False
+                if len(valor) < 3:
+                    self.mostrar_error(widget, f"{campo_nombre} debe tener al menos 3 caracteres")
+                    return False
+            
+            # Validar que las preguntas sean diferentes
+            preguntas = [
+                datos_seguridad.get("pregunta_1", ""),
+                datos_seguridad.get("pregunta_2", ""),
+                datos_seguridad.get("pregunta_3", "")
+            ]
+            
+            if len(set(preguntas)) < 3:
+                self.mostrar_mensaje("Error", "Las preguntas de seguridad deben ser diferentes", "error")
+                return False
+            
+            return True
+
     def preparar_datos_para_guardar(self, datos_crudos):
         # == Prepara y limpia los datos para guardar en BD== 
         return {
@@ -389,6 +468,14 @@ class controlador_configuraciones(QWidget):
             "gaceta": {
                 "decreto": datos_crudos["gaceta"]["decreto"].strip(),
                 "fecha_publicacion": datos_crudos["gaceta"]["fecha_publicacion"].strip()
+            },
+            "seguridad": {
+                "pregunta_1": datos_crudos["seguridad"]["pregunta_1"].strip(),
+                "respuesta_1": datos_crudos["seguridad"]["respuesta_1"].strip(),
+                "pregunta_2": datos_crudos["seguridad"]["pregunta_2"].strip(),
+                "respuesta_2": datos_crudos["seguridad"]["respuesta_2"].strip(),
+                "pregunta_3": datos_crudos["seguridad"]["pregunta_3"].strip(),
+                "respuesta_3": datos_crudos["seguridad"]["respuesta_3"].strip()
             }
         }
     
@@ -433,8 +520,18 @@ class controlador_configuraciones(QWidget):
                 datos["gaceta"]["decreto"],
                 datos["gaceta"]["fecha_publicacion"]
             )
+
+            # Guardar preguntas de seguridad
+            exito_seguridad = self.modelo.guardar_datos_seguridad(
+            datos["seguridad"]["pregunta_1"],
+            datos["seguridad"]["respuesta_1"],
+            datos["seguridad"]["pregunta_2"],
+            datos["seguridad"]["respuesta_2"],
+            datos["seguridad"]["pregunta_3"],
+            datos["seguridad"]["respuesta_3"]
+        )
             
-            return exito_interfaz and exito_objetivos and exito_direccion and exito_jefaturas and exito_gaceta
+            return exito_interfaz and exito_objetivos and exito_direccion and exito_jefaturas and exito_gaceta and exito_seguridad
             
         except Exception as e:
             print(f"❌ Error al guardar en BD: {e}")
@@ -471,6 +568,14 @@ class controlador_configuraciones(QWidget):
             "gaceta": {
                 "decreto": self.vista.entry_decreto.text(),
                 "fecha_publicacion": self.vista.entry_fechaPublicacion.text()
+            },
+            "seguridad": {
+            "pregunta_1": self.vista.combo_pregunta1.currentText(),
+            "respuesta_1": self.vista.entry_respuesta1.text(),
+            "pregunta_2": self.vista.combo_pregunta2.currentText(),
+            "respuesta_2": self.vista.entry_respuesta2.text(),
+            "pregunta_3": self.vista.combo_pregunta3.currentText(),
+            "respuesta_3": self.vista.entry_respuesta3.text()
             }
         }
     
@@ -528,7 +633,7 @@ class controlador_configuraciones(QWidget):
             self.vista.entry_estado.setText(estado if estado else "Monagas")
             self.vista.entry_municipio.setText(municipio if municipio else "Maturín")
             self.vista.entry_parroquia.setText(parroquia if parroquia else "San Simón")
-            self.vista.entry_institucion.setText(institucion if institucion else "Gobernación/Institución")
+            self.vista.entry_institucion.setText(institucion if institucion else "Gobernación Institución")
 
         # Jefaturas
         if datos.get("jefaturas"):
@@ -556,6 +661,38 @@ class controlador_configuraciones(QWidget):
             # Se ingresan valores por defecto si no hay en la Base de Datos
             self.vista.entry_decreto.setText(decreto if decreto else "Ingrese el Decreto")
             self.vista.entry_fechaPublicacion.setText(fecha if fecha else "Ingrese la Fecha de Publicación")
+
+        # Seguridad
+        if datos.get("seguridad"):
+            seguridad = datos["seguridad"]
+            
+            # Establecer preguntas - buscar el índice correcto
+            pregunta_1 = seguridad.get("pregunta_1", "¿Nombre de tu mascota?")
+            index = self.vista.combo_pregunta1.findText(pregunta_1)
+            if index >= 0:
+                self.vista.combo_pregunta1.setCurrentIndex(index)
+            else:
+                # Si no encuentra la pregunta, establecer la primera
+                self.vista.combo_pregunta1.setCurrentIndex(0)
+            
+            pregunta_2 = seguridad.get("pregunta_2", "¿Ciudad de nacimiento?")
+            index = self.vista.combo_pregunta2.findText(pregunta_2)
+            if index >= 0:
+                self.vista.combo_pregunta2.setCurrentIndex(index)
+            else:
+                self.vista.combo_pregunta2.setCurrentIndex(1)  # Segunda opción por defecto
+            
+            pregunta_3 = seguridad.get("pregunta_3", "¿Nombre de tu abuela?")
+            index = self.vista.combo_pregunta3.findText(pregunta_3)
+            if index >= 0:
+                self.vista.combo_pregunta3.setCurrentIndex(index)
+            else:
+                self.vista.combo_pregunta3.setCurrentIndex(2)  # Tercera opción por defecto
+            
+            # Establecer respuestas
+            self.vista.entry_respuesta1.setText(seguridad.get("respuesta_1", ""))
+            self.vista.entry_respuesta2.setText(seguridad.get("respuesta_2", ""))
+            self.vista.entry_respuesta3.setText(seguridad.get("respuesta_3", ""))
 
     
     def get_widget(self):
@@ -723,9 +860,6 @@ class controlador_configuraciones(QWidget):
             
             # Verificar si ya está en la posición correcta
             current_y = vscroll.value()
-            if abs(current_y - target_y) < 10:  # Ya está cerca
-                print(f"✅ Widget ya visible, no necesita desplazamiento")
-                return
             
             # 3. TERCERO: Crear animación suave
             animation = QPropertyAnimation(vscroll, b"value")
@@ -772,7 +906,13 @@ class controlador_configuraciones(QWidget):
             self.vista.entry_nombre_gob,
             self.vista.entry_cedula_gob,
             self.vista.combo_fuente,
-            self.vista.spin_tamano
+            self.vista.spin_tamano,
+            self.vista.entry_respuesta1,
+            self.vista.entry_respuesta2,
+            self.vista.entry_respuesta3,
+            self.vista.combo_pregunta1,
+            self.vista.combo_pregunta2,
+            self.vista.combo_pregunta3
         ]
         
         # Restaurar solo color de fondo y tooltips, NO los estilos CSS
@@ -800,6 +940,56 @@ class controlador_configuraciones(QWidget):
         
         # Restaurar tooltips originales
         self.configurar_placeholders_y_tooltips()
+
+    def cargar_preguntas_iniciales(self):
+        """Carga las preguntas de seguridad desde la base de datos"""
+        try:
+            # Obtener preguntas del usuario admin
+            preguntas = self.modelo.obtener_preguntas_usuario("admin")
+            
+            if preguntas and len(preguntas) >= 3:
+                print(f"✅ Cargando preguntas: {preguntas}")
+                
+                # Verificar que los combos existen
+                if hasattr(self.vista, 'preguntas_seguridad') and len(self.vista.preguntas_seguridad) >= 3:
+                    
+                    # Para cada pregunta, establecer el texto en el combo correspondiente
+                    for i, texto_pregunta in enumerate(preguntas):
+                        if i < len(self.vista.preguntas_seguridad):
+                            combo = self.vista.preguntas_seguridad[i]
+                            
+                            # Buscar el índice del texto en el combo
+                            index = combo.findText(texto_pregunta)
+                            if index >= 0:
+                                combo.setCurrentIndex(index)
+                                print(f"✅ Pregunta {i+1} cargada: {texto_pregunta}")
+                            else:
+                                print(f"⚠️ No se encontró '{texto_pregunta}' en las opciones")
+                                # Si no se encuentra, dejar el valor por defecto
+                                combo.setCurrentIndex(i if i < combo.count() else 0)
+                
+                # También cargar las respuestas si existen
+                if hasattr(self, 'cargar_respuestas_seguridad'):
+                    self.cargar_respuestas_seguridad()
+            else:
+                print("⚠️ No se encontraron preguntas en la base de datos")
+                
+        except Exception as e:
+            print(f"❌ Error al cargar preguntas iniciales: {e}")
+            import traceback
+            traceback.print_exc()
+
+    def obtener_datos_seguridad(self):
+        # Retorna una lista de diccionarios con la pregunta y respuesta de cada campo.
+        datos = []
+        for i in range(3):
+            pregunta = self.vista.preguntas_seguridad[i].currentText()
+            respuesta = self.vista.respuestas_seguridad[i].text().strip()
+            datos.append({
+                "pregunta": pregunta,
+                "respuesta": respuesta
+            })
+        return datos
 
     def cerrar(self):
         # == Cierra conexiones== 

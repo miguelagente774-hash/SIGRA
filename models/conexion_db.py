@@ -52,7 +52,13 @@ class ConexionDB:
                 CREATE TABLE IF NOT EXISTS Usuario (
                     id_usuario INTEGER PRIMARY KEY AUTOINCREMENT,
                     user TEXT UNIQUE NOT NULL,
-                    password TEXT NOT NULL
+                    password TEXT NOT NULL,
+                    pregunta_seguridad_1 TEXT NO NULL,
+                    pregunta_seguridad_2 TEXT NO NULL,
+                    pregunta_seguridad_3 TEXT NO NULL,
+                    respuesta_seguridad_1 TEXT NO NULL,
+                    respuesta_seguridad_2 TEXT NO NULL,
+                    respuesta_seguridad_3 TEXT NO NULL
                 )
             ''')
             

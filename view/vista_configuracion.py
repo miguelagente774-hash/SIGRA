@@ -83,6 +83,7 @@ class Ventana_configuracion(QFrame):
         self.crear_panel_direccion()
         self.crear_panel_jefaturas()
         self.crear_panel_gaceta()
+        self.crear_panel_seguridad()
         self.crear_boton_guardar()
         
         # Spacer final para empujar contenido hacia arriba
@@ -575,9 +576,167 @@ class Ventana_configuracion(QFrame):
         
         # Guardar referencia
         self.panel_gaceta = panel_gaceta
-    
-    # ========== BOTÓN GUARDAR ==========
-    
+
+    def crear_panel_seguridad(self):
+        # ==Crear Panel de Preguntas y Respuestas de Seguridad==
+        panel_preguntas = QFrame()
+        panel_preguntas.setStyleSheet(self.estilo["styles"]["panel"])
+        
+        sombra = QGraphicsDropShadowEffect()
+        sombra.setBlurRadius(15)
+        sombra.setColor(Qt.gray)
+        sombra.setOffset(1, 1)
+        panel_preguntas.setGraphicsEffect(sombra)
+        
+        # Layout del panel
+        layout_panel = QVBoxLayout(panel_preguntas)
+        layout_panel.setContentsMargins(0, 0, 0, 0)
+        layout_panel.setSpacing(0)
+        
+        # Título del panel
+        titulo_panel = QLabel("Preguntas y Respuestas de Seguridad")
+        titulo_panel.setStyleSheet(self.estilo["styles"]["header"])
+        layout_panel.addWidget(titulo_panel)
+        
+        # Contenido del panel
+        contenido_frame = QFrame()
+        contenido_frame.setStyleSheet("background: transparent;")
+        layout_contenido = QVBoxLayout(contenido_frame)
+        layout_contenido.setContentsMargins(20, 20, 20, 20)
+        layout_contenido.setSpacing(20)
+
+        # Lista de preguntas disponibles
+        self.lista_preguntas = [
+            "¿Nombre de tu mascota?",
+            "¿Ciudad de nacimiento?",
+            "¿Nombre de tu abuela?",
+            "¿Tu comida favorita?",
+            "¿Tu película favorita?",
+            "¿Nombre de tu mejor amigo?",
+            "¿Tu deporte favorito?",
+            "¿Color favorito?"
+        ]
+
+        # Crear lista para almacenar los combos de preguntas (para acceso desde el controlador)
+        self.preguntas_seguridad = []
+        self.respuestas_seguridad = []
+
+        # ===== PREGUNTA DE SEGURIDAD 1 =====
+        grupo_pregunta1 = QGroupBox("Pregunta de Seguridad 1")
+        grupo_pregunta1.setStyleSheet(self.estilo["styles"]["grupo"])
+        
+        layout_pregunta1 = QVBoxLayout()
+        layout_pregunta1.setSpacing(10)
+        layout_pregunta1.setContentsMargins(15, 20, 15, 20)
+        grupo_pregunta1.setLayout(layout_pregunta1)
+        
+        # Combobox para seleccionar la pregunta
+        self.combo_pregunta1 = QComboBox()
+        self.combo_pregunta1.addItems(self.lista_preguntas)
+        self.combo_pregunta1.setStyleSheet(self.estilo["styles"]["input"])
+        self.combo_pregunta1.setMinimumHeight(35)
+        self.combo_pregunta1.setEditable(False)
+        self.combo_pregunta1.setFocusPolicy(Qt.StrongFocus)
+        self.combo_pregunta1.setInsertPolicy(QComboBox.NoInsert)
+        layout_pregunta1.addWidget(self.combo_pregunta1)
+        self.preguntas_seguridad.append(self.combo_pregunta1)  # Agregar a la lista
+        
+        # Campo para respuesta
+        label_respuesta1 = QLabel("Respuesta:")
+        label_respuesta1.setStyleSheet(self.estilo["styles"]["title"])
+        layout_pregunta1.addWidget(label_respuesta1)
+        
+        self.entry_respuesta1 = QLineEdit()
+        self.entry_respuesta1.setPlaceholderText("Ingrese su respuesta")
+        self.entry_respuesta1.setStyleSheet(self.estilo["styles"]["input"])
+        self.entry_respuesta1.setMinimumHeight(35)
+        layout_pregunta1.addWidget(self.entry_respuesta1)
+        self.respuestas_seguridad.append(self.entry_respuesta1)  # Agregar a la lista
+        
+        layout_contenido.addWidget(grupo_pregunta1)
+        
+        # ===== PREGUNTA DE SEGURIDAD 2 =====
+        grupo_pregunta2 = QGroupBox("Pregunta de Seguridad 2")
+        grupo_pregunta2.setStyleSheet(self.estilo["styles"]["grupo"])
+        
+        layout_pregunta2 = QVBoxLayout()
+        layout_pregunta2.setSpacing(10)
+        layout_pregunta2.setContentsMargins(15, 20, 15, 20)
+        grupo_pregunta2.setLayout(layout_pregunta2)
+        
+        # Combobox para seleccionar la pregunta
+        self.combo_pregunta2 = QComboBox()
+        self.combo_pregunta2.addItems(self.lista_preguntas)
+        self.combo_pregunta2.setStyleSheet(self.estilo["styles"]["input"])
+        self.combo_pregunta2.setMinimumHeight(35)
+        self.combo_pregunta2.setEditable(False)
+        self.combo_pregunta2.setFocusPolicy(Qt.StrongFocus)
+        self.combo_pregunta2.setInsertPolicy(QComboBox.NoInsert)
+        layout_pregunta2.addWidget(self.combo_pregunta2)
+        self.preguntas_seguridad.append(self.combo_pregunta2)  # Agregar a la lista
+        
+        # Campo para respuesta
+        label_respuesta2 = QLabel("Respuesta:")
+        label_respuesta2.setStyleSheet(self.estilo["styles"]["title"])
+        layout_pregunta2.addWidget(label_respuesta2)
+        
+        self.entry_respuesta2 = QLineEdit()
+        self.entry_respuesta2.setPlaceholderText("Ingrese su respuesta")
+        self.entry_respuesta2.setStyleSheet(self.estilo["styles"]["input"])
+        self.entry_respuesta2.setMinimumHeight(35)
+        layout_pregunta2.addWidget(self.entry_respuesta2)
+        self.respuestas_seguridad.append(self.entry_respuesta2)  # Agregar a la lista
+        
+        layout_contenido.addWidget(grupo_pregunta2)
+        
+        # ===== PREGUNTA DE SEGURIDAD 3 =====
+        grupo_pregunta3 = QGroupBox("Pregunta de Seguridad 3")
+        grupo_pregunta3.setStyleSheet(self.estilo["styles"]["grupo"])
+        
+        layout_pregunta3 = QVBoxLayout()
+        layout_pregunta3.setSpacing(10)
+        layout_pregunta3.setContentsMargins(15, 20, 15, 20)
+        grupo_pregunta3.setLayout(layout_pregunta3)
+        
+        # Combobox para seleccionar la pregunta
+        self.combo_pregunta3 = QComboBox()
+        self.combo_pregunta3.addItems(self.lista_preguntas)
+        self.combo_pregunta3.setStyleSheet(self.estilo["styles"]["input"])
+        self.combo_pregunta3.setMinimumHeight(35)
+        self.combo_pregunta3.setEditable(False)
+        self.combo_pregunta3.setFocusPolicy(Qt.StrongFocus)
+        self.combo_pregunta3.setInsertPolicy(QComboBox.NoInsert)
+        layout_pregunta3.addWidget(self.combo_pregunta3)
+        self.preguntas_seguridad.append(self.combo_pregunta3)  # Agregar a la lista
+        
+        # Campo para respuesta
+        label_respuesta3 = QLabel("Respuesta:")
+        label_respuesta3.setStyleSheet(self.estilo["styles"]["title"])
+        layout_pregunta3.addWidget(label_respuesta3)
+        
+        self.entry_respuesta3 = QLineEdit()
+        self.entry_respuesta3.setPlaceholderText("Ingrese su respuesta")
+        self.entry_respuesta3.setStyleSheet(self.estilo["styles"]["input"])
+        self.entry_respuesta3.setMinimumHeight(35)
+        layout_pregunta3.addWidget(self.entry_respuesta3)
+        self.respuestas_seguridad.append(self.entry_respuesta3)  # Agregar a la lista
+        
+        layout_contenido.addWidget(grupo_pregunta3)
+        
+        # Nota informativa
+        nota_label = QLabel("Nota: Las respuestas distinguen entre mayúsculas y minúsculas")
+        nota_label.setStyleSheet("color: #7f8c8d; font-size: 11px; font-style: italic; margin-top: 5px;")
+        nota_label.setAlignment(Qt.AlignCenter)
+        layout_contenido.addWidget(nota_label)
+        
+        # Agregar contenido al panel
+        layout_panel.addWidget(contenido_frame)
+        
+        # Agregar panel al scroll layout
+        self.scroll_layout.addWidget(panel_preguntas)
+        
+        # Guardar referencias
+        self.panel_preguntas = panel_preguntas
     def crear_boton_guardar(self):
         # =Crear el botón para guardar=
         # Layout para centrar el botón
@@ -631,13 +790,13 @@ class Ventana_configuracion(QFrame):
         # Actualizar títulos de paneles
         for widget in self.findChildren(QLabel):
             if widget.text() in ["Configuración de Interfaz", "Objetivos de Actividades", "Datos de Dirección", 
-                               "Datos de Jefaturas", "Gaceta Oficial"]:
+                               "Datos de Jefaturas", "Gaceta Oficial", "Preguntas y Respuestas de Seguridad"]:
                 widget.setStyleSheet(self.estilo["styles"]["header"])
         
         # Actualizar labels de campos
         for widget in self.findChildren(QLabel):
             if widget.text() not in ["Configuración", "Configuración de Interfaz", "Objetivos de Actividades",
-                                   "Datos de Dirección", "Datos de Jefaturas", "Gaceta Oficial"]:
+                                   "Datos de Dirección", "Datos de Jefaturas", "Gaceta Oficial", "Preguntas y Respuestas de Seguridad"]:
                 widget.setStyleSheet(self.estilo["styles"]["title"])
         
         # Actualizar inputs
@@ -655,7 +814,7 @@ class Ventana_configuracion(QFrame):
         # Actualizar grupos
         for widget in self.findChildren(QGroupBox):
             widget.setStyleSheet(self.estilo["styles"]["grupo"])
-        
+
         # Actualizar botón guardar
         if hasattr(self, 'boton_guardar'):
             self.boton_guardar.setStyleSheet(self.estilo["styles"]["boton"])

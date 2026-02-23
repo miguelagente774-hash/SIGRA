@@ -6,7 +6,7 @@
 from PyQt5.QtWidgets import (QApplication, QMainWindow)
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSignal, Qt
-from controller.Controller_login import controlador_login
+from controller.Controller_login import controlador_login, controlador_setup, controlador_recuperar
 from controller.Controller_main import Controlador_principal
 import sys
 import pyautogui
@@ -28,27 +28,63 @@ class App(QMainWindow):
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
 
-        # Instanciar el Controlador del Login
-        self.mostrar_login()
+        self.verificar_primer_inicio()
+
+    def verificar_primer_inicio(self):
+        from models.Modelo_login import Model_Login
+        modelo = Model_Login()
+        # Verifica si existe la Base de Datos, la Tabla Usuario
+        if modelo.verificar_usuarios_existentes():
+            # Si existen usuarios (como 'admin'), ir al login
+            self.mostrar_login()
+        else:
+            # Si no hay usuarios, es el primer inicio, ir al setup
+            self.mostrar_setup()
+
+    def mostrar_setup(self):
+        # ==Muestra el Setup al Iniciar el Programa por Primera Vez==
+        self.controlador_setup= controlador_setup()
+
+        self.controlador_setup.get_widget().registro_exitoso.connect(self.mostrar_login)
+        self.setCentralWidget(self.controlador_setup.get_widget())
+        
+        # Establecer Tamaño Fijo
+        self.setFixedSize(800, 600)
+
+        # Centrar Ventana
+        self.centrar_ventana()
+
     
     def mostrar_login(self):
         # ==Muestra el Login al iniciar el programa==
         self.controlador_login = controlador_login()
 
+        # Conectar Métodos al recibir la Señal
+        self.controlador_login.get_widget().recuperar_login.connect(self.mostrar_recuperar)
         self.controlador_login.get_widget().login_exitoso.connect(self.mostrar_principal)
 
         self.setCentralWidget(self.controlador_login.get_widget())
 
-        # Establecer tamaño fijo
+        # Establecer Tamaño Fijo
         self.setFixedSize(420, 600)
+        
+        # Centrar Ventana
+        self.centrar_ventana()
 
-        # Centrar la Ventana después del Cambio de Tamaño
-        qr = self.frameGeometry()
-        cp = QApplication.desktop().availableGeometry().center()
-        qr.moveCenter(cp)
+    def mostrar_recuperar(self):
+        # == Muestra el recuperar
+        self.controlador_recuperar = controlador_recuperar()
+        
+        self.controlador_recuperar.get_widget().recuperacion_exitosa.connect(self.mostrar_login)
+        
+        self.setCentralWidget(self.controlador_recuperar.get_widget())
+        
+        # Establecer Tamaño Fijo
+        self.setFixedSize(800, 600)
 
-        self.move(qr.topLeft())
-
+        # Centrar Ventana
+        self.centrar_ventana()
+        
     def mostrar_principal(self):
         # ==Cambia del Login al Controlador Principal donde se encuentra el Programa==
         self.controlador_principal = Controlador_principal(self)
@@ -59,7 +95,7 @@ class App(QMainWindow):
         # Restaurar bordes normales para la app principal
         self.setWindowFlags(Qt.Window) 
         self.setAttribute(Qt.WA_TranslucentBackground, False) # Quitar transparencia
-        self.show() # Es necesario re-mostrar la ventana al cambiar los flags
+        self.show()
 
         # Establecer tamaño fijo
         self.setFixedSize(1200, 700)

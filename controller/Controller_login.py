@@ -84,7 +84,7 @@ class controlador_login():
             self.vista.login_exitoso.emit()
         else:
             # Login fallido
-            self.mostrar_error(f"Error: {mensaje}")
+            self.mostrar_error(f"{mensaje}")
             self.vista.input_password.clear()
             self.vista.input_password.setFocus()
     

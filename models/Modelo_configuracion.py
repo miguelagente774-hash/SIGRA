@@ -329,6 +329,95 @@ class Model_Configuraciones:
         except Exception as e:
             print(f"Error al cargar Gaceta: {e}")
             return {"decreto": "", "fecha_publicacion": ""}
+        
+    def guardar_datos_seguridad(self, 
+                                   pregunta_1: str, respuesta_1: str,
+                                   pregunta_2: str, respuesta_2: str,
+                                   pregunta_3: str, respuesta_3: str) -> bool:
+        """Guarda las preguntas y respuestas de seguridad del usuario admin"""
+        try:
+            conn = self.db.conexion
+            cursor = conn.cursor()
+            
+            # Actualizar usuario admin (id_usuario = 1)
+            cursor.execute("""
+                UPDATE Usuario SET
+                    pregunta_seguridad_1 = ?,
+                    respuesta_seguridad_1 = ?,
+                    pregunta_seguridad_2 = ?,
+                    respuesta_seguridad_2 = ?,
+                    pregunta_seguridad_3 = ?,
+                    respuesta_seguridad_3 = ?
+                WHERE id_usuario = 1
+            """, (pregunta_1, respuesta_1, pregunta_2, respuesta_2, pregunta_3, respuesta_3))
+            
+            conn.commit()
+            print("✅ Preguntas de seguridad guardadas")
+            return True
+            
+        except Exception as e:
+            print(f"❌ Error al guardar preguntas de seguridad: {e}")
+            import traceback
+            traceback.print_exc()
+            return False
+        
+    def cargar_datos_seguridad(self) -> Dict[str, str]:
+        """Carga las preguntas y respuestas de seguridad del usuario admin"""
+        try:
+            cursor = self.db.conexion.cursor()
+            
+            # Obtener datos del usuario admin (id_usuario = 1)
+            cursor.execute("""
+                SELECT pregunta_seguridad_1, respuesta_seguridad_1,
+                       pregunta_seguridad_2, respuesta_seguridad_2,
+                       pregunta_seguridad_3, respuesta_seguridad_3
+                FROM Usuario WHERE id_usuario = 1
+            """)
+            datos = cursor.fetchone()
+            
+            if datos:
+                return {
+                    "pregunta_1": datos[0] if datos[0] else "¿Nombre de tu mascota?",
+                    "respuesta_1": datos[1] if datos[1] else "",
+                    "pregunta_2": datos[2] if datos[2] else "¿Ciudad de nacimiento?",
+                    "respuesta_2": datos[3] if datos[3] else "",
+                    "pregunta_3": datos[4] if datos[4] else "¿Nombre de tu abuela?",
+                    "respuesta_3": datos[5] if datos[5] else ""
+                }
+            else:
+                # Valores por defecto si no hay datos
+                return {
+                    "pregunta_1": "¿Nombre de tu mascota?",
+                    "respuesta_1": "",
+                    "pregunta_2": "¿Ciudad de nacimiento?",
+                    "respuesta_2": "",
+                    "pregunta_3": "¿Nombre de tu abuela?",
+                    "respuesta_3": ""
+                }
+                
+        except Exception as e:
+            print(f"❌ Error al cargar preguntas de seguridad: {e}")
+            return {
+                "pregunta_1": "¿Nombre de tu mascota?",
+                "respuesta_1": "",
+                "pregunta_2": "¿Ciudad de nacimiento?",
+                "respuesta_2": "",
+                "pregunta_3": "¿Nombre de tu abuela?",
+                "respuesta_3": ""
+            }
+    
+    def obtener_preguntas_usuario(self, username):
+        """Retorna las 3 preguntas de seguridad de un usuario específico."""
+        try:
+            conn = self.db.conexion
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT pregunta_seguridad_1, pregunta_seguridad_2, pregunta_seguridad_3 
+                FROM Usuario WHERE user = ?""", (username,))
+            return cursor.fetchone()
+        except Exception as e:
+            print(f"Error al obtener preguntas: {e}")
+            return None
 
     # ========== MÉTODOS DE VALIDACIÓN ==========
     

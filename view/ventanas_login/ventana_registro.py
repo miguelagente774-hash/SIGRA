@@ -206,7 +206,10 @@ class Ventana_setup(QFrame):
             "¿Ciudad de nacimiento?",
             "¿Nombre de tu abuela?",
             "¿Tu comida favorita?",
-            "¿Tu película favorita?"
+            "¿Tu película favorita?",
+            "¿Nombre de tu mejor amigo?",
+            "¿Tu deporte favorito?",
+            "¿Color favorito?"
         ]
 
         # Crear los 3 Combos (Fila 0) y los 3 Inputs (Fila 1)

@@ -1,7 +1,7 @@
 import sqlite3
 
 class ConexionDB:
-    def __init__(self, nombre_db="database/SIGRAG23.db"):
+    def __init__(self, nombre_db="database/SIGRAG.db"):
         self.base_datos = nombre_db
         self.conexion = sqlite3.connect(self.base_datos)
         self.cursor = self.conexion.cursor()

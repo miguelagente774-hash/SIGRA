@@ -17,7 +17,6 @@ def calcular_dimensiones_pantalla():
     alto = int(alto - 70)    # Ajusta el alto al 90% del tamaño de la pantalla
     return ancho, alto
 
-
 class App(QMainWindow):
     login_exitoso = pyqtSignal()
     def __init__(self):
@@ -51,9 +50,6 @@ class App(QMainWindow):
         # Establecer Tamaño Fijo
         self.setFixedSize(800, 600)
 
-        # Centrar Ventana
-        self.centrar_ventana()
-
     
     def mostrar_login(self):
         # ==Muestra el Login al iniciar el programa==
@@ -67,9 +63,6 @@ class App(QMainWindow):
 
         # Establecer Tamaño Fijo
         self.setFixedSize(420, 600)
-        
-        # Centrar Ventana
-        self.centrar_ventana()
 
     def mostrar_recuperar(self):
         # == Muestra el recuperar
@@ -82,8 +75,6 @@ class App(QMainWindow):
         # Establecer Tamaño Fijo
         self.setFixedSize(800, 600)
 
-        # Centrar Ventana
-        self.centrar_ventana()
         
     def mostrar_principal(self):
         # ==Cambia del Login al Controlador Principal donde se encuentra el Programa==

@@ -57,7 +57,7 @@ class Modelo_estadistica():
         }
 
     
-    def cargar_datos_objetivos(self) -> Dict[str, str]:
+    def cargar_datos_objetivos(self) -> dict[str, str]:
         """Carga los datos de objetivos desde la BD"""
         try:
             cursor = self.db.conexion.cursor()

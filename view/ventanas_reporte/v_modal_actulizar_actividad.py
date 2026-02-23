@@ -157,7 +157,6 @@ class Modal_actulizar_actividades(QDialog):
         self.fecha = QDateEdit(QDate(año, mes, dia), self)
         self.fecha.setStyleSheet(self.estilo["styles"]["date"])
         self.fecha.setCalendarPopup(True)
-        self.fecha.setFixedWidth(150)
 
         layout.addWidget(self.fecha, alignment=Qt.AlignLeft)
 

@@ -41,9 +41,9 @@ class Model_Login:
             if existe == 0:
                 # Crear la contraseña para el usuario
                 password_hash = self._hash_password(str(password))
-                respuesta_seguridad_1_hash = self._hash_password(str(datos_seguridad[0]['respuesta'])).strip()
-                respuesta_seguridad_2_hash = self._hash_password(str(datos_seguridad[1]['respuesta'])).strip()
-                respuesta_seguridad_3_hash = self._hash_password(str(datos_seguridad[2]['respuesta'])).strip()
+                respuesta_seguridad_1_hash = str(datos_seguridad[0]['respuesta']).strip()
+                respuesta_seguridad_2_hash = str(datos_seguridad[1]['respuesta']).strip()
+                respuesta_seguridad_3_hash = str(datos_seguridad[2]['respuesta']).strip()
 
                 sql = """
                     INSERT INTO Usuario (user, password, 

@@ -80,7 +80,6 @@ class controlador_login():
             self.usuario_actual = datos_usuario
             
             # Mostrar mensaje y emitir señal
-            QMessageBox.information(self.vista, "Éxito", mensaje)
             self.vista.login_exitoso.emit()
         else:
             # Login fallido
@@ -243,13 +242,13 @@ class controlador_setup(QObject):
         # - Una letra mayúscula (?=.*[A-Z])
         # - Una letra minúscula (?=.*[a-z])
         # - Un número (?=.*\d)
-        # - Un carácter especial (?=.*[@$!%*?&])
+        # - Un carácter especial (?=.*[@$!%*?&#])
         # - Mínimo 8 caracteres {8,}
-        password_pattern = re.compile(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$')
+        password_pattern = re.compile(r'^(?=.*[A-ZÁÉÍÓÚÑ])(?=.*[a-záéíóúñ])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-záéíóúñÁÉÍÓÚÑ\d@$!%*?&#]{8,}$')
     
         if not password_pattern.match(password):
             self.mostrar_error(
-                mensaje="La contraseña debe tener al menos: 1 mayúscula, 1 minúscula, 1 número y 1 carácter especial (@$!%*?&)",
+                mensaje="La contraseña debe tener al menos: 1 mayúscula, 1 minúscula, 1 número y 1 carácter especial (@$!%*?&#)",
                 tipo_error='password'
             )
             self.vista.input_password.setFocus()
@@ -599,14 +598,14 @@ class controlador_recuperar():
             # - Una letra mayúscula (?=.*[A-Z])
             # - Una letra minúscula (?=.*[a-z])
             # - Un número (?=.*\d)
-            # - Un carácter especial (?=.*[@$!%*?&])
+            # - Un carácter especial (?=.*[@$!%*?&#])
             # - Mínimo 8 caracteres {8,}
-            password_pattern = re.compile(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$')
+            password_pattern = re.compile(r'^(?=.*[A-ZÁÉÍÓÚÑ])(?=.*[a-záéíóúñ])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-záéíóúñÁÉÍÓÚÑ\d@$!%*?&#]{8,}$')
 
             # Validar que la Contraseña cumpla con el patrón de seguridad
             if not password_pattern.match(pass1):
                 self.mostrar_error(
-                    mensaje="La contraseña debe tener al menos: 1 mayúscula, 1 minúscula, 1 número y 1 carácter especial (@$!%*?&)",
+                    mensaje="La contraseña debe tener al menos: 1 mayúscula, 1 minúscula, 1 número y 1 carácter especial (@$!%*?&#)",
                     tipo_error='password'
                 )
                 self.vista.input_nueva_pass.setFocus()

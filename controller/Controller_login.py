@@ -567,7 +567,6 @@ class controlador_recuperar():
             # =Validar las entradas de Contraseña=
             pass1 = self.vista.input_nueva_pass.text().strip()
             pass2 = self.vista.input_conf_pass.text().strip()
-            respuestas_ingresadas = [d['respuesta'].lower() for d in datos_seguridad]
             
             # Verificar si la contraseña está Vacía
             if not pass1:
@@ -586,6 +585,15 @@ class controlador_recuperar():
                 self.vista.input_nueva_pass.setFocus()
                 return
             
+            # Verificar Longitud Mínima
+            if len(pass1) > 16:
+                self.mostrar_error(
+                    mensaje="La contraseña debe tener menos de 16 caracteres",
+                    tipo_error='password'
+                )
+                self.vista.input_nueva_pass.setFocus()
+                return
+
             import re
             # Regex: Al menos:
             # - Una letra mayúscula (?=.*[A-Z])

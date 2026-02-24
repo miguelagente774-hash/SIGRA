@@ -35,10 +35,10 @@ def detectar_configuracion():
 # ============================================
 # 2. CONFIGURACIÓN PRINCIPAL
 # ============================================
-# Nombre de tu aplicación (CAMBIAR ESTO)
-NOMBRE_APP = "SIGRA"
-SCRIPT_PRINCIPAL = "main.py"  # Cambia esto por tu script principal
-VERSION = "1.0.0"
+# Nombre de tu aplicación
+NOMBRE_APP = "SIGRA"            # Nombre de la Aplicacicón
+SCRIPT_PRINCIPAL = "main.py"    # Archivo Esencial de la Aplicación
+VERSION = "1.0.0"               # Versión de la Aplicación
 
 # Obtener configuración automática
 base, es_gui = detectar_configuracion()
@@ -49,10 +49,10 @@ opciones_build = {
     "packages": ["os", "sys"],
     
     # Archivos adicionales (cambiar según necesidad)
-    "include_files": ["view/", "services/", "models/", "img/", "database/", "controller/", "components/", "comunicador.py"],
+    "include_files": ["view/", "services/", "models/", "database/", "img/", "controller/", "components/", "comunicador.py"],
     
     # Excluir paquetes pesados innecesarios
-    "excludes": ["tkinter", "unittest", "email", "http", "xml"] if not es_gui else [],
+    "excludes": ["tkinter", "unittest", "email", "http", "xml", "database/SIGRA.db"] if not es_gui else [],
     
     # Optimizar tamaño
     "optimize": 2,

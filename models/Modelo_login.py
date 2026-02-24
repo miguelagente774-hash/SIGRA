@@ -41,7 +41,9 @@ class Model_Login:
             if existe == 0:
                 # Crear la contraseña para el usuario
                 password_hash = self._hash_password(str(password))
-                
+                respuesta_seguridad_1_hash = self._hash_password(str(datos_seguridad[0]['respuesta'])).strip()
+                respuesta_seguridad_2_hash = self._hash_password(str(datos_seguridad[1]['respuesta'])).strip()
+                respuesta_seguridad_3_hash = self._hash_password(str(datos_seguridad[2]['respuesta'])).strip()
 
                 sql = """
                     INSERT INTO Usuario (user, password, 
@@ -53,15 +55,12 @@ class Model_Login:
                 valores = (
                     usuario, 
                     password_hash,
-                    datos_seguridad[0]['pregunta'], datos_seguridad[0]['respuesta'],
-                    datos_seguridad[1]['pregunta'], datos_seguridad[1]['respuesta'],
-                    datos_seguridad[2]['pregunta'], datos_seguridad[2]['respuesta']
+                    datos_seguridad[0]['pregunta'], respuesta_seguridad_1_hash,
+                    datos_seguridad[1]['pregunta'], respuesta_seguridad_2_hash,
+                    datos_seguridad[2]['pregunta'], respuesta_seguridad_3_hash
                 )
                 cursor.execute(sql, valores)
                 self.conexion_db.conexion.commit()
-                print("Usuario admin creado")
-                print(f"Usuario: {usuario}")
-                print(f"Contraseña: {password}")
                 return True
             else:
                 print("Usuario admin ya existe")                
@@ -160,8 +159,6 @@ class Model_Login:
         except Exception:
             return False
 
-    # En Modelo_login.py
-
     def obtener_preguntas_usuario(self, username):
         """Retorna las 3 preguntas de seguridad de un usuario específico."""
         try:
@@ -183,9 +180,10 @@ class Model_Login:
                 FROM Usuario WHERE user = ?""", (username,))
             resultado = cursor.fetchone()
             
+
             if resultado:
-                # Comparamos ignorando mayúsculas/minúsculas y espacios
-                valido = all(r_user.strip().lower() == r_db.lower() 
+                # Comparamos ignorando y espacios
+                valido = all((r_user()) == r_db 
                              for r_user, r_db in zip(respuestas, resultado))
                 return valido
             return False

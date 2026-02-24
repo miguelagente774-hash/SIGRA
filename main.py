@@ -50,6 +50,9 @@ class App(QMainWindow):
         # Establecer Tamaño Fijo
         self.setFixedSize(800, 600)
 
+        # Centrar la Ventana después del Cambio de Tamaño
+        self.centrar_ventana()
+
     
     def mostrar_login(self):
         # ==Muestra el Login al iniciar el programa==
@@ -64,6 +67,9 @@ class App(QMainWindow):
         # Establecer Tamaño Fijo
         self.setFixedSize(420, 600)
 
+        # Centrar la Ventana después del Cambio de Tamaño
+        self.centrar_ventana()
+
     def mostrar_recuperar(self):
         # == Muestra el recuperar
         self.controlador_recuperar = controlador_recuperar()
@@ -75,7 +81,9 @@ class App(QMainWindow):
         # Establecer Tamaño Fijo
         self.setFixedSize(800, 600)
 
-        
+        # Centrar la Ventana después del Cambio de Tamaño
+        self.centrar_ventana()
+
     def mostrar_principal(self):
         # ==Cambia del Login al Controlador Principal donde se encuentra el Programa==
         self.controlador_principal = Controlador_principal(self)
@@ -95,6 +103,9 @@ class App(QMainWindow):
         ancho_pantalla, alto_pantalla = calcular_dimensiones_pantalla()
         self.setFixedSize(ancho_pantalla, alto_pantalla)
         # Centrar la Ventana después del Cambio de Tamaño
+        self.centrar_ventana()
+
+    def centrar_ventana(self):
         qr = self.frameGeometry()
         cp = QApplication.desktop().availableGeometry().center()
         qr.moveCenter(cp)

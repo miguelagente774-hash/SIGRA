@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QMessageBox, QAction
 from PyQt5.QtCore import pyqtSignal, QRegExp, QPropertyAnimation, QEasingCurve
 from PyQt5.QtGui import QRegExpValidator, QPalette, QColor
 from components.app_style import estilo_app
+from comunicador import Comunicador_global
 
 # Configurar path
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -23,7 +24,6 @@ class controlador_configuraciones(QWidget):
         # Inicializar modelo y vista
         self.modelo = Model_Configuraciones()
         self.vista = Ventana_configuracion()
-        
         # Configurar layout
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -222,6 +222,7 @@ class controlador_configuraciones(QWidget):
                 # 7. Mostrar resultado
                 self.mostrar_mensaje("Éxito", "Los cambios se guardaron correctamente", "success")
                 # Limpiar errores después de guardar exitosamente
+                Comunicador_global.actualizar_objetivos.emit()
                 self.limpiar_errores()
             else:
                 self.mostrar_mensaje("Error", "No se pudieron guardar los cambios", "error")
@@ -254,7 +255,8 @@ class controlador_configuraciones(QWidget):
         if not self.validar_gaceta(datos.get("gaceta", {})):
             return False
         
-        if not self.validar_seguridad(datos.get("seguridad", {})):
+        datos_seguridad = self.obtener_datos_seguridad()
+        if not self.validar_seguridad(datos_seguridad):
             return False
         
         return True
@@ -271,13 +273,13 @@ class controlador_configuraciones(QWidget):
         # Validar fuente
         fuente = datos_interfaz.get("fuente", "").strip()
         if len(fuente) < 3:
-            self.mostrar_error(self.vista.combo_fuente, "La fuente es requerida")
+            self.mostrar_error("La fuente es requerida", "interfaz", self.vista.combo_fuente)
             return False
         
         # Validar tamaño
-        tamaño = datos_interfaz.get("tamaño", 0)
+        tamaño = datos_interfaz.get("tamaño", 12)
         if not (8 <= tamaño <= 24):
-            self.mostrar_error(self.vista.spin_tamano, "Tamaño debe estar entre 8 y 24")
+            self.mostrar_error("Tamaño debe estar entre 8 y 24", "interfaz", self.vista.spin_tamano)
             return False
         
         return True
@@ -296,7 +298,7 @@ class controlador_configuraciones(QWidget):
         for campo_key, widget, campo_nombre in objetivos:
             valor = datos_objetivos.get(campo_key, "").strip()
             if not valor:
-                self.mostrar_error(widget, f"{campo_nombre} es requerida")
+                self.mostrar_error(f"{campo_nombre} es requerida", "objetivos", widget)
                 return False
 
         try:
@@ -309,17 +311,17 @@ class controlador_configuraciones(QWidget):
             # 2. Verificar la jerarquía lógica
             # Semanal no puede ser mayor a Mensual
             if semanal > mensual:
-                self.mostrar_error(self.vista.entry_semanal, "El objetivo Semanal no puede superar al Mensual")
+                self.mostrar_error("El objetivo Semanal no puede superar al Mensual", "objetivos", self.vista.entry_semanal)
                 return False
 
             # Mensual no puede ser mayor a Trimestral
             if mensual > trimestral:
-                self.mostrar_error(self.vista.entry_mensual, "El objetivo Mensual no puede superar al Trimestral")
+                self.mostrar_error("El objetivo Mensual no puede superar al Trimestral", "objetivos", self.vista.entry_mensual)
                 return False
 
             # Trimestral no puede ser mayor a Anual
             if trimestral > anual:
-                self.mostrar_error(self.vista.entry_trimestral, "El objetivo Trimestral no puede superar al Anual")
+                self.mostrar_error("El objetivo Trimestral no puede superar al Anual", "objetivos", self.vista.entry_trimestral)
                 return False
 
             # Si llegó aquí, todo es válido
@@ -327,7 +329,7 @@ class controlador_configuraciones(QWidget):
 
         except ValueError:
             # Si alguno no es número, el error se captura aquí de forma general
-            self.mostrar_error(self, "Ingrese solo números enteros")
+            self.mostrar_error("Ingrese solo números enteros", "objetivos", self.vista.entry_semanal)
             return False
         
     def validar_direccion(self, datos_direccion):
@@ -343,12 +345,12 @@ class controlador_configuraciones(QWidget):
             valor = datos_direccion.get(campo_key, "").strip()
             
             if not valor:
-                self.mostrar_error(widget, f"{campo_nombre} es requerida")
+                self.mostrar_error(f"{campo_nombre} es requerida", "direccion", widget)
                 return False
             
             regex_texto = QRegExp(r'^[A-Za-zÁáÉéÍíÓóÚúÑñ\s\.\-\(\)]+$')
             if not regex_texto.exactMatch(valor):
-                self.mostrar_error(widget, f"{campo_nombre} contiene caracteres no válidos")
+                self.mostrar_error(f"{campo_nombre} contiene caracteres no válidos", "direccion", widget)
                 return False
         
         return True
@@ -365,7 +367,7 @@ class controlador_configuraciones(QWidget):
             valor = datos_jefaturas.get(campo_key, "").strip()
             
             if not valor or len(valor) < 5:
-                self.mostrar_error(widget, f"{campo_nombre} es requerido (mínimo 5 caracteres)")
+                self.mostrar_error(f"{campo_nombre} es requerido (mínimo 5 caracteres)", "jefaturas", widget)
                 return False
         
         # Validar cédulas
@@ -378,13 +380,13 @@ class controlador_configuraciones(QWidget):
             valor = datos_jefaturas.get(campo_key, "").strip()
             
             if not valor:
-                self.mostrar_error(widget, f"{campo_nombre} es requerida")
+                self.mostrar_error(f"{campo_nombre} es requerida", "jefaturas", widget)
                 return False
             
             # Validar formato con regex (usando QRegExp)
             regex_cedula = QRegExp(r'^[VE]-\d{5,9}$')
             if not regex_cedula.exactMatch(valor):
-                self.mostrar_error(widget, f"{campo_nombre} inválida. Formato: V-12345678 o E-12345678")
+                self.mostrar_error(f"{campo_nombre} inválida. Formato: V-12345678 o E-12345678", "jefaturas", widget)
                 return False
         
         return True
@@ -400,7 +402,7 @@ class controlador_configuraciones(QWidget):
             valor = datos_gaceta.get(campo_key, "").strip()
 
             if not valor or len(valor) < 5:
-                self.mostrar_error(widget, f"{campo_nombre} es requerido (mínimo 5 caracteres)")
+                self.mostrar_error(f"{campo_nombre} es requerido (mínimo 5 caracteres)", "gaceta", widget)
                 return False
         return True
         
@@ -408,35 +410,63 @@ class controlador_configuraciones(QWidget):
         # Validar Fecha de Publicacion
 
     def validar_seguridad(self, datos_seguridad):
-            """Valida las preguntas y respuestas de seguridad"""
-            # Validar que las respuestas no estén vacías
-            respuestas = [
-                ("respuesta_1", self.vista.entry_respuesta1, "Respuesta 1"),
-                ("respuesta_2", self.vista.entry_respuesta2, "Respuesta 2"),
-                ("respuesta_3", self.vista.entry_respuesta3, "Respuesta 3")
-            ]
+        """Valida las preguntas y respuestas de seguridad"""
+        
+        # --- VALIDACIONES DE PREGUNTAS (Combos) ---
+        preguntas_seleccionadas = [d['pregunta'] for d in datos_seguridad]
+        
+        # Verificar preguntas duplicadas
+        if len(set(preguntas_seleccionadas)) < 3:
+            indices_duplicados = []
+            for i in range(3):
+                for j in range(i+1, 3):
+                    if datos_seguridad[i]['pregunta'] == datos_seguridad[j]['pregunta']:
+                        indices_duplicados.extend([i, j])
             
-            for campo_key, widget, campo_nombre in respuestas:
-                valor = datos_seguridad.get(campo_key, "").strip()
-                if not valor:
-                    self.mostrar_error(widget, f"{campo_nombre} es requerida")
-                    return False
-                if len(valor) < 3:
-                    self.mostrar_error(widget, f"{campo_nombre} debe tener al menos 3 caracteres")
-                    return False
+            self.mostrar_error(
+                mensaje="No puedes seleccionar la misma pregunta más de una vez.",
+                tipo_error='preguntas',
+                indices=list(set(indices_duplicados))
+            )
+            return False
+        
+        # --- VALIDACIONES DE RESPUESTAS VACÍAS ---
+        respuestas_vacias = [i for i, d in enumerate(datos_seguridad) if not d['respuesta']]
+        if respuestas_vacias:
+            self.mostrar_error(
+                mensaje="Todas las respuestas de seguridad son obligatorias",
+                tipo_error='respuestas',
+                indices=respuestas_vacias
+            )
+            return False
+        
+        # --- VALIDACIONES DE RESPUESTAS DUPLICADAS ---
+        respuestas_lower = [d['respuesta'].lower() for d in datos_seguridad]
+        if len(set(respuestas_lower)) < 3:
+            indices_duplicados = []
+            for i in range(3):
+                for j in range(i+1, 3):
+                    if respuestas_lower[i] == respuestas_lower[j]:
+                        indices_duplicados.extend([i, j])
             
-            # Validar que las preguntas sean diferentes
-            preguntas = [
-                datos_seguridad.get("pregunta_1", ""),
-                datos_seguridad.get("pregunta_2", ""),
-                datos_seguridad.get("pregunta_3", "")
-            ]
-            
-            if len(set(preguntas)) < 3:
-                self.mostrar_mensaje("Error", "Las preguntas de seguridad deben ser diferentes", "error")
-                return False
-            
-            return True
+            self.mostrar_error(
+                mensaje="Las respuestas de seguridad deben ser diferentes entre sí.",
+                tipo_error='respuestas',
+                indices=list(set(indices_duplicados))
+            )
+            return False
+        
+        # --- VALIDACIONES DE LONGITUD MÁXIMA ---
+        respuestas_largas = [i for i, d in enumerate(datos_seguridad) if len(d['respuesta']) > 16]
+        if respuestas_largas:
+            self.mostrar_error(
+                mensaje="Las respuestas no pueden tener más de 16 caracteres",
+                tipo_error='respuestas',
+                indices=respuestas_largas
+            )
+            return False
+        
+        return True
 
     def preparar_datos_para_guardar(self, datos_crudos):
         # == Prepara y limpia los datos para guardar en BD== 
@@ -771,63 +801,160 @@ class controlador_configuraciones(QWidget):
             QMessageBox.information(self, titulo, mensaje)
         else:
             QMessageBox.information(self, titulo, mensaje)
-    
-    def mostrar_error(self, widget, mensaje):
-        # ==Resalta un campo con error en rojo y muestra tooltip== 
+        
+    def mostrar_error(self, mensaje, tipo_error='general', widget=None, indices=None):
+        """
+        Muestra un mensaje de error y resalta los campos específicos
+        AHORA CON RESALTADO GARANTIZADO
+        """
+        # Mostrar mensaje de error en un label si existe
+        if hasattr(self.vista, 'label_error'):
+            self.vista.label_error.setText(f"⚠ {mensaje}")
+            self.vista.label_error.setVisible(True)
+        else:
+            # Si no hay label, mostrar messagebox
+            self.mostrar_mensaje("Error", mensaje, "error")
+        
+        # Limpiar errores anteriores primero
+        self.limpiar_errores()
+        
+        # Lista para guardar widgets a resaltar
+        widgets_a_resaltar = []
+        
+        # Resaltar campos según el tipo de error
         if widget:
-            # Mantenemos el estilo original y añadimos un borde rojo
-            estilo_actual = widget.styleSheet()
+            # Si se proporciona un widget específico, resaltar solo ese
+            widgets_a_resaltar = [widget]
             
-            # Separar las reglas CSS existentes
-            lineas = estilo_actual.split('}')
-            nuevo_estilo = ""
+        elif tipo_error == 'interfaz':
+            widgets_a_resaltar = [
+                self.vista.combo_fuente,
+                self.vista.spin_tamano
+            ]
             
-            # Buscar y modificar la regla QLineEdit (o QComboBox/QSpinBox)
-            encontrado = False
-            for linea in lineas:
-                if linea.strip():
-                    # Si encontramos el selector del widget
-                    if 'QLineEdit' in linea or 'QComboBox' in linea or 'QSpinBox' in linea:
-                        # Añadir borde rojo al estilo
-                        if 'border:' not in linea:
-                            linea += ' border: 2px solid #ff0000;'
-                        else:
-                            # Reemplazar el borde existente
-                            linea = re.sub(r'border:\s*[^;]+;', 'border: 2px solid #ff0000 !important;', linea)
-                        encontrado = True
-                    nuevo_estilo += linea + '}'
-            
-            # Si no se encontró regla específica, crear una nueva
-            if not encontrado:
-                tipo_widget = 'QLineEdit'
-                if hasattr(widget, 'clear'):  # Es QLineEdit
-                    tipo_widget = 'QLineEdit'
-                elif hasattr(widget, 'clearEditText'):  # Es QComboBox
-                    tipo_widget = 'QComboBox'
-                elif hasattr(widget, 'setMaximum'):  # Es QSpinBox
-                    tipo_widget = 'QSpinBox'
+        elif tipo_error == 'objetivos':
+            # Solo resaltar vacíos
+            for w in [self.vista.entry_semanal, self.vista.entry_mensual, 
+                    self.vista.entry_trimestral, self.vista.entry_anual]:
+                if w.text() == "":
+                    widgets_a_resaltar.append(w)
+            if not widgets_a_resaltar:  # Si no hay vacíos, resaltar el semanal
+                widgets_a_resaltar = [self.vista.entry_semanal]
                 
-                nuevo_estilo = f"{tipo_widget} {{ border: 2px solid #ff0000 !important; }}"
+        elif tipo_error == 'direccion':
+            widgets_a_resaltar = [
+                self.vista.entry_estado,
+                self.vista.entry_municipio,
+                self.vista.entry_parroquia,
+                self.vista.entry_institucion
+            ]
             
-            widget.setStyleSheet(nuevo_estilo)
+        elif tipo_error == 'jefaturas':
+            widgets_a_resaltar = [
+                self.vista.entry_nombre_coord,
+                self.vista.entry_cedula_coord,
+                self.vista.entry_nombre_gob,
+                self.vista.entry_cedula_gob
+            ]
             
-            # Establecer tooltip con mensaje de error
-            widget.setToolTip(f"ERROR: {mensaje}")
+        elif tipo_error == 'gaceta':
+            widgets_a_resaltar = [
+                self.vista.entry_decreto,
+                self.vista.entry_fechaPublicacion
+            ]
             
-            # Cambiar color de fondo a rojo claro cuando haya un error
+        elif tipo_error == 'seguridad' or tipo_error == 'preguntas':
+            if hasattr(self.vista, 'preguntas_seguridad'):
+                if indices:
+                    for i in indices:
+                        if i < len(self.vista.preguntas_seguridad):
+                            widgets_a_resaltar.append(self.vista.preguntas_seguridad[i])
+                else:
+                    widgets_a_resaltar = self.vista.preguntas_seguridad
+                    
+        elif tipo_error == 'respuestas':
+            if hasattr(self.vista, 'respuestas_seguridad'):
+                if indices:
+                    for i in indices:
+                        if i < len(self.vista.respuestas_seguridad):
+                            widgets_a_resaltar.append(self.vista.respuestas_seguridad[i])
+                else:
+                    widgets_a_resaltar = self.vista.respuestas_seguridad
+                    
+        else:  # tipo_error == 'general'
+            widgets_a_resaltar = [
+                self.vista.combo_fuente,
+                self.vista.spin_tamano,
+                self.vista.entry_estado,
+                self.vista.entry_municipio,
+                self.vista.entry_parroquia,
+                self.vista.entry_institucion,
+                self.vista.entry_nombre_coord,
+                self.vista.entry_cedula_coord,
+                self.vista.entry_nombre_gob,
+                self.vista.entry_cedula_gob,
+                self.vista.entry_decreto,
+                self.vista.entry_fechaPublicacion
+            ]
+        
+        # PRIMERO: Resaltar todos los widgets
+        for w in widgets_a_resaltar:
+            if w:
+                self._resaltar_widget(w)
+                # Forzar actualización inmediata del estilo
+                w.repaint()
+                w.update()
+        
+        # SEGUNDO: Desplazar al primer widget (si existe)
+        if widgets_a_resaltar and widgets_a_resaltar[0]:
+            self.desplazar_error(widgets_a_resaltar[0])
+        
+        # TERCERO: Asegurar que el foco y el resaltado sean visibles
+        if widgets_a_resaltar and widgets_a_resaltar[0]:
+            widgets_a_resaltar[0].setFocus()
+            
+            # Forzar actualización de la aplicación
+            from PyQt5.QtWidgets import QApplication
+            QApplication.processEvents()
+
+    def _resaltar_widget(self, widget):
+        """Resalta un widget individual con borde rojo - VERSIÓN QUE FUNCIONA"""
+        if not widget:
+            return
+            
+        try:
+            # Guardar estilo original si no existe
+            if not hasattr(widget, '_estilo_original'):
+                widget._estilo_original = widget.styleSheet()
+            
+            # OBTENER EL ESTADO DE TEMA ACTUAL
+            es_tema_oscuro = hasattr(estilo_app, 'tema_actual') and estilo_app.tema_actual == "oscuro"
+            
+            # Color de fondo según tema (rojo claro para claro, rojo oscuro para oscuro)
+            color_fondo = "#330000" if es_tema_oscuro else "#fff0f0"  # Rojo oscuro/oscuro, rojo claro/claro
+            color_borde = "#ff0000"  # Rojo brillante siempre visible
+            
+            # Aplicar estilo con alta prioridad
+            widget.setStyleSheet(f"""
+                {widget._estilo_original}
+                border: 2px solid {color_borde} !important;
+                background-color: {color_fondo} !important;
+            """)
+            
+            # Cambiar color de fondo también por paleta (doble aseguramiento)
             palette = widget.palette()
-            palette.setColor(QPalette.Base, QColor(255, 240, 240))
+            palette.setColor(widget.backgroundRole(), QColor(color_fondo))
             widget.setPalette(palette)
             
-            # Desplazar hacia el widget
-            self.desplazar_error(widget, 500)
-
-            # Enfocar el widget
-            widget.setFocus()
-
+            # Forzar actualización
+            widget.update()
+            widget.repaint()
+            
+        except Exception as e:
+            print(f"❌ Error al resaltar widget: {e}")
 
     def desplazar_error(self, widget, duration=400):
-        # ==Desplazar  hacia el error==
+        """Desplaza hacia el error - VERSIÓN MEJORADA CON CALLBACK"""
         try:
             # Acceder al scroll_area de la vista
             scroll_area = self.vista.scroll_area
@@ -836,45 +963,46 @@ class controlador_configuraciones(QWidget):
                 print(f"⚠️ ScrollArea no disponible o no visible")
                 return
             
+            # Asegurar que el widget sea visible
+            scroll_area.ensureWidgetVisible(widget, 0, 100)
+            
             # Obtener el scrollbar vertical
             vscroll = scroll_area.verticalScrollBar()
             
             if not vscroll or not vscroll.isVisible():
                 print(f"⚠️ Scrollbar vertical no disponible")
-                # Intentar método alternativo
-                scroll_area.ensureWidgetVisible(widget)
                 return
             
-            scroll_area.ensureWidgetVisible(widget, 0, 100)
             viewport = scroll_area.viewport()
-            scroll_widget = self.vista.scroll_widget
-
+            
+            # Obtener posición del widget
             widget_pos = widget.mapTo(viewport, widget.rect().topLeft())
             widget_y = widget_pos.y()
             
             # Calcular posición objetivo
             target_y = max(0, widget_y - 100)
-            
-            # Limitar al rango máximo del scrollbar
             target_y = min(target_y, vscroll.maximum())
             
-            # Verificar si ya está en la posición correcta
             current_y = vscroll.value()
             
-            # 3. TERCERO: Crear animación suave
+            # Si ya está cerca, no animar
+            if abs(current_y - target_y) < 10:
+                return
+            
+            # Crear animación suave
             animation = QPropertyAnimation(vscroll, b"value")
             animation.setDuration(duration)
             animation.setStartValue(current_y)
             animation.setEndValue(target_y)
             animation.setEasingCurve(QEasingCurve.OutCubic)
             
-            # Conectar señales para debug
-            animation.finished.connect(lambda: print(f"✅ Animación completada"))
+            # Conectar señal para asegurar que el widget sigue resaltado
+            animation.finished.connect(lambda: self._asegurar_resaltado(widget))
             
             # Iniciar animación
             animation.start()
             
-            # Forzar actualización inmediata
+            # Forzar actualización
             scroll_area.repaint()
             viewport.update()
             
@@ -882,21 +1010,29 @@ class controlador_configuraciones(QWidget):
             print(f"❌ Error crítico en desplazamiento: {e}")
             import traceback
             traceback.print_exc()
-            
-            # Último recurso: intentar método simple
-            try:
-                if hasattr(self.vista, 'scroll_area'):
-                    self.vista.scroll_area.ensureWidgetVisible(widget)
-                    print(f"🔄 Usando ensureWidgetVisible como fallback")
-            except Exception as fallback_error:
-                print(f"❌ Fallback también falló: {fallback_error}")
-    
-    def limpiar_errores(self):
-        # == Limpia todos los marcadores de error== 
-        # NO restauramos los estilos CSS completos
-        # Solo eliminamos el borde rojo y restauramos el color de fondo
+
+    def _asegurar_resaltado(self, widget):
+        """Asegura que el widget mantenga el resaltado después de la animación"""
+        if not widget:
+            return
         
-        widgets_entrada = [
+        # Reaplicar el resaltado
+        self._resaltar_widget(widget)
+        
+        # Asegurar foco
+        widget.setFocus()
+        
+        # Forzar actualización
+        from PyQt5.QtWidgets import QApplication
+        QApplication.processEvents()
+
+    def limpiar_errores(self):
+        """Limpia todos los marcadores de error de los widgets"""
+        
+        # Lista de todos los widgets que podrían tener error
+        todos_widgets = [
+            self.vista.combo_fuente,
+            self.vista.spin_tamano,
             self.vista.entry_estado,
             self.vista.entry_municipio,
             self.vista.entry_parroquia,
@@ -905,41 +1041,46 @@ class controlador_configuraciones(QWidget):
             self.vista.entry_cedula_coord,
             self.vista.entry_nombre_gob,
             self.vista.entry_cedula_gob,
-            self.vista.combo_fuente,
-            self.vista.spin_tamano,
-            self.vista.entry_respuesta1,
-            self.vista.entry_respuesta2,
-            self.vista.entry_respuesta3,
-            self.vista.combo_pregunta1,
-            self.vista.combo_pregunta2,
-            self.vista.combo_pregunta3
+            self.vista.entry_decreto,
+            self.vista.entry_fechaPublicacion,
+            self.vista.entry_semanal,
+            self.vista.entry_mensual,
+            self.vista.entry_trimestral,
+            self.vista.entry_anual
         ]
         
-        # Restaurar solo color de fondo y tooltips, NO los estilos CSS
-        for widget in widgets_entrada:
+        # Añadir widgets de seguridad si existen
+        if hasattr(self.vista, 'preguntas_seguridad'):
+            todos_widgets.extend(self.vista.preguntas_seguridad)
+        if hasattr(self.vista, 'respuestas_seguridad'):
+            todos_widgets.extend(self.vista.respuestas_seguridad)
+        if hasattr(self.vista, 'input_password'):
+            todos_widgets.append(self.vista.input_password)
+        if hasattr(self.vista, 'input_password_confirmation'):
+            todos_widgets.append(self.vista.input_password_confirmation)
+        
+        # Restaurar cada widget
+        for widget in todos_widgets:
             if widget:
+                # Restaurar estilo original si existe
+                if hasattr(widget, '_estilo_original'):
+                    widget.setStyleSheet(widget._estilo_original)
+                else:
+                    # Si no hay estilo guardado, quitar solo el borde rojo
+                    estilo_actual = widget.styleSheet()
+                    if 'border: 2px solid #ff0000' in estilo_actual:
+                        nuevo_estilo = estilo_actual.replace('border: 2px solid #ff0000;', '')
+                        widget.setStyleSheet(nuevo_estilo)
+                
                 # Restaurar color de fondo
                 palette = widget.palette()
-                palette.setColor(QPalette.Base, QColor(255, 255, 255))
+                palette.setColor(widget.backgroundRole(), QColor(255, 255, 255))
                 widget.setPalette(palette)
-                
-                # Regresar los widgets a como eran
-                estilo_actual = widget.styleSheet()
-                if 'border: 2px solid #ff0000' in estilo_actual:
-                    # Volver a aplicar el estilo original llamando a configurar_estilos
-                    if widget in [self.vista.entry_estado, self.vista.entry_municipio, 
-                                 self.vista.entry_parroquia, self.vista.entry_institucion,
-                                 self.vista.entry_nombre_coord, self.vista.entry_cedula_coord,
-                                 self.vista.entry_nombre_gob, self.vista.entry_cedula_gob]:
-                        
-                        widget.setStyleSheet(f"""
-                            {self.vista.estilo["styles"]["label"]}
-                            {self.vista.estilo["styles"]["input"]}
-                            {self.vista.estilo["styles"]["boton"]}
-                            """)
         
-        # Restaurar tooltips originales
-        self.configurar_placeholders_y_tooltips()
+        # Ocultar label de error si existe
+        if hasattr(self.vista, 'label_error'):
+            self.vista.label_error.setText("")
+            self.vista.label_error.setVisible(False)
 
     def cargar_preguntas_iniciales(self):
         """Carga las preguntas de seguridad desde la base de datos"""
@@ -948,8 +1089,6 @@ class controlador_configuraciones(QWidget):
             preguntas = self.modelo.obtener_preguntas_usuario("admin")
             
             if preguntas and len(preguntas) >= 3:
-                print(f"✅ Cargando preguntas: {preguntas}")
-                
                 # Verificar que los combos existen
                 if hasattr(self.vista, 'preguntas_seguridad') and len(self.vista.preguntas_seguridad) >= 3:
                     
@@ -962,15 +1101,9 @@ class controlador_configuraciones(QWidget):
                             index = combo.findText(texto_pregunta)
                             if index >= 0:
                                 combo.setCurrentIndex(index)
-                                print(f"✅ Pregunta {i+1} cargada: {texto_pregunta}")
                             else:
-                                print(f"⚠️ No se encontró '{texto_pregunta}' en las opciones")
                                 # Si no se encuentra, dejar el valor por defecto
-                                combo.setCurrentIndex(i if i < combo.count() else 0)
-                
-                # También cargar las respuestas si existen
-                if hasattr(self, 'cargar_respuestas_seguridad'):
-                    self.cargar_respuestas_seguridad()
+                                combo.setCurrentIndex(i if i < combo.count() else 0)                
             else:
                 print("⚠️ No se encontraron preguntas en la base de datos")
                 

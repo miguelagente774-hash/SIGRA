@@ -11,6 +11,7 @@ class ControladorEstadistica:
         self.modelo = Modelo_estadistica()
         self.vista = None
         self._conectado = False
+        Comunicador_global.actualizar_objetivos.connect(self.actualizar_todos_graficos)
         
     def get_widget(self):
         if not self.vista:
@@ -23,13 +24,9 @@ class ControladorEstadistica:
                     Comunicador_global.actividad_agregada.connect(
                         self._on_datos_actualizados
                     )
-                    print("✅ Conectada señal actividad_agregada")
-                    
                     Comunicador_global.Reporte_agregado.connect(
                         self._on_datos_actualizados
                     )
-                    print("✅ Conectada señal Reporte_agregado")
-                    
                     self._conectado = True
                 except Exception as e:
                     print(f"❌ Error al conectar señales: {e}")
@@ -41,17 +38,11 @@ class ControladorEstadistica:
         if not self.vista:
             print("⚠️ Vista no disponible para actualizar")
             return
-            
-        print("🔄 Actualizando gráficos con datos de BD...")
         
         try:
             # Obtener datos del modelo
             contadores = self.modelo.obtener_contadores_periodos()
             objetivos_data = self.modelo.cargar_datos_objetivos()
-            
-            print("📊 DATOS OBTENIDOS:")
-            print(f"   Contadores: {contadores}")
-            print(f"   Objetivos: {objetivos_data}")
             
             periodos = ["semanal", "mensual", "trimestral", "anual"]
             nombres_periodos = ["Semanal", "Mensual", "Trimestral", "Anual"]
@@ -61,7 +52,6 @@ class ControladorEstadistica:
                 return
                 
             charts = self.vista.widgets_graficos
-            print(f"📊 Encontrados {len(charts)} gráficos")
             
             for i, periodo in enumerate(periodos):
                 if i < len(charts):
@@ -79,11 +69,6 @@ class ControladorEstadistica:
                     
                     sin_hacer = max(0, objetivo - realizadas)
                     
-                    print(f"📈 Gráfico {nombres_periodos[i]}:")
-                    print(f"   Realizadas: {realizadas}")
-                    print(f"   Objetivo: {objetivo}")
-                    print(f"   Sin hacer: {sin_hacer}")
-                    
                     # Actualizar datos del gráfico
                     chart = charts[i]
                     chart.data = [realizadas, sin_hacer]
@@ -93,8 +78,6 @@ class ControladorEstadistica:
                     chart.update()
                     chart.repaint()
             
-            print("✅ Gráficos actualizados correctamente")
-            
         except Exception as e:
             print(f"❌ Error al actualizar gráficos: {e}")
             import traceback
@@ -102,7 +85,6 @@ class ControladorEstadistica:
     
     def _on_datos_actualizados(self):
         """Manejador cuando se recibe señal de datos actualizados"""
-        print("📢 Señal recibida: datos actualizados")
         # Pequeño retraso para asegurar que la BD se actualizó
         QTimer.singleShot(100, self.actualizar_todos_graficos)
     

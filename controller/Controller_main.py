@@ -57,7 +57,7 @@ class Controlador_principal(QWidget):
         for vista in vistas:
             if vista:
                 estilo_app.registrar_vista(vista)
-                print(f"✅ Vista registrada: {vista.__class__.__name__}")
+
 
     def conectar_senales(self):
         """Conecta todas las señales de la aplicación"""
@@ -67,34 +67,28 @@ class Controlador_principal(QWidget):
             self.reporte_crear.actividad_creada.connect(
                 self.actualizar_estadisticas
             )
-            print("✅ Conectada señal actividad_creada del controlador")
         
         # 2. Conectar señal del comunicador global
         Comunicador_global.actividad_agregada.connect(
             self.actualizar_estadisticas
         )
-        print("✅ Conectada señal actividad_agregada del comunicador")
         
         # 3. Conectar señal de reporte agregado (opcional)
         Comunicador_global.Reporte_agregado.connect(
             self.actualizar_estadisticas
         )
-        print("✅ Conectada señal Reporte_agregado del comunicador")
         
         # 4. Conectar señal de configuración guardada
         if hasattr(self.configuracion, 'Actualizar_Vista'):
             self.configuracion.Actualizar_Vista.connect(
                 self.on_config_guardada
             )
-            print("✅ Conectada señal de configuración")
 
     def actualizar_estadisticas(self):
         """Actualiza los gráficos de estadísticas"""
-        print("🔄 Actualizando estadísticas...")
         
         if hasattr(self.estadistica, 'actualizar_todos_graficos'):
             self.estadistica.actualizar_todos_graficos()
-            print("✅ Estadísticas actualizadas")
         else:
             print("⚠️ No se pudo actualizar estadísticas")
 
@@ -122,16 +116,13 @@ class Controlador_principal(QWidget):
 
     def on_config_guardada(self):
         """Manejador cuando se guarda la configuración"""
-        print("⚙️ Configuración guardada, actualizando vistas...")
         self.actualizar_vistas()
 
     def actualizar_vistas(self):
         """Actualiza todas las vistas con los nuevos estilos"""
         estilo_app.notificar_cambio_estilos()
-        print("🎨 Estilos actualizados en todas las vistas")
     
     def mostrar_ventana_principal(self):
         """Muestra la ventana principal después del login"""
         self.layout_ventanas.setCurrentIndex(0)  # Mostrar estadísticas
         self.menu.show()
-        print("🏠 Ventana principal mostrada")

@@ -35,35 +35,30 @@ class Model_Login:
         try:
             cursor = self.conexion_db.cursor
             # Verificar si ya existe el usuario admin
-            cursor.execute("SELECT COUNT(*) FROM Usuario WHERE user = 'admin'")
-            existe = cursor.fetchone()[0]
-            
-            if existe == 0:
-                # Crear la contraseña para el usuario
-                password_hash = self._hash_password(str(password))
-                respuesta_seguridad_1_hash = str(datos_seguridad[0]['respuesta']).strip()
-                respuesta_seguridad_2_hash = str(datos_seguridad[1]['respuesta']).strip()
-                respuesta_seguridad_3_hash = str(datos_seguridad[2]['respuesta']).strip()
+        
+            # Crear la contraseña para el usuario
+            password_hash = self._hash_password(str(password))
+            respuesta_seguridad_1 = str(datos_seguridad[0]['respuesta']).strip()
+            respuesta_seguridad_2 = str(datos_seguridad[1]['respuesta']).strip()
+            respuesta_seguridad_3 = str(datos_seguridad[2]['respuesta']).strip()
 
-                sql = """
-                    INSERT INTO Usuario (user, password, 
-                               pregunta_seguridad_1, respuesta_seguridad_1,
-                               pregunta_seguridad_2, respuesta_seguridad_2,
-                               pregunta_seguridad_3, respuesta_seguridad_3)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                """
-                valores = (
-                    usuario, 
-                    password_hash,
-                    datos_seguridad[0]['pregunta'], respuesta_seguridad_1_hash,
-                    datos_seguridad[1]['pregunta'], respuesta_seguridad_2_hash,
-                    datos_seguridad[2]['pregunta'], respuesta_seguridad_3_hash
-                )
-                cursor.execute(sql, valores)
-                self.conexion_db.conexion.commit()
-                return True
-            else:
-                print("Usuario admin ya existe")                
+            sql = """
+                INSERT INTO Usuario (user, password, 
+                            pregunta_seguridad_1, respuesta_seguridad_1,
+                            pregunta_seguridad_2, respuesta_seguridad_2,
+                            pregunta_seguridad_3, respuesta_seguridad_3)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """
+            valores = (
+                usuario, 
+                password_hash,
+                datos_seguridad[0]['pregunta'], respuesta_seguridad_1,
+                datos_seguridad[1]['pregunta'], respuesta_seguridad_2,
+                datos_seguridad[2]['pregunta'], respuesta_seguridad_3
+            )
+            cursor.execute(sql, valores)
+            self.conexion_db.conexion.commit()
+            return True
         except Exception as e:
             print(f"❌ Error al crear usuario admin: {e}")
             return False
@@ -171,7 +166,7 @@ class Model_Login:
             print(f"Error al obtener preguntas: {e}")
             return None
 
-    def validar_respuestas_sistema(self, username, respuestas):
+    def validar_respuestas_sistema(self, username: str, respuestas: list) -> bool:
         """Compara las respuestas ingresadas con las de la base de datos."""
         try:
             cursor = self.conexion_db.cursor
@@ -180,11 +175,9 @@ class Model_Login:
                 FROM Usuario WHERE user = ?""", (username,))
             resultado = cursor.fetchone()
             
-
             if resultado:
-                # Comparamos ignorando y espacios
-                valido = all((r_user()) == r_db 
-                             for r_user, r_db in zip(respuestas, resultado))
+                # Comparamos ignorando espacios
+                valido = all((r_user.strip() == r_db.strip()) for r_user, r_db in zip(respuestas, resultado))
                 return valido
             return False
         except Exception:

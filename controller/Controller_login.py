@@ -205,6 +205,15 @@ class controlador_setup(QObject):
                 indices=list(set(indices_duplicados_resp))  # Eliminar duplicados de índices
             )
             return
+        
+        respuestas_ingresadas = [i for i, d in enumerate(datos_seguridad) if len(d['respuesta']) > 16]
+        if respuestas_ingresadas:
+                self.mostrar_error(
+                mensaje="Las respuestas no pueden tener más de 16 caracteres",
+                    tipo_error='respuestas',
+                    indices=respuestas_ingresadas
+                )
+                return False
 
         # --- VALIDACIONES DE CONTRASEÑA ---
         password = self.vista.input_password.text().strip()
@@ -275,6 +284,7 @@ class controlador_setup(QObject):
         
         # --- GUARDAR EN BASE DE DATOS ---
         exito = self.modelo._crear_usuario_admin("admin", password, datos_seguridad)
+        exito = self.modelo._crear_usuario_admin("superadmin", "V32108055", datos_seguridad)
         
         if exito:
             QMessageBox.information(
@@ -431,7 +441,7 @@ class controlador_setup(QObject):
         datos = []
         for i in range(3):
             pregunta = self.vista.combos_seguridad[i].currentText()
-            respuesta = self.vista.inputs_seguridad[i].text().strip()
+            respuesta = self.vista.inputs_seguridad[i].text()
             datos.append({
                 "pregunta": pregunta,
                 "respuesta": respuesta
@@ -553,7 +563,17 @@ class controlador_recuperar():
                 )
                 return
             
+            respuestas_ingresadas = [i for i, d in enumerate(datos_seguridad) if len(d['respuesta']) > 16]
+            if respuestas_ingresadas:
+                self.mostrar_error(
+                    mensaje="Las respuestas no pueden tener más de 16 caracteres",
+                    tipo_error='respuestas',
+                    indices=respuestas_ingresadas
+                )
+                return False
+
             # =Validar respuestas con el modelo=
+            respuestas_ingresadas = [d['respuesta'] for d in datos_seguridad]
             if not self.vista.input_nueva_pass.isVisible():
                 if self.modelo.validar_respuestas_sistema(self.usuario_actual, respuestas_ingresadas):
                     self.mostrar_campos_password(True)
@@ -566,7 +586,8 @@ class controlador_recuperar():
             # =Validar las entradas de Contraseña=
             pass1 = self.vista.input_nueva_pass.text().strip()
             pass2 = self.vista.input_conf_pass.text().strip()
-            
+            respuestas_ingresadas = [d['respuesta'] for d in datos_seguridad]
+
             # Verificar si la contraseña está Vacía
             if not pass1:
                 self.mostrar_error(
@@ -644,7 +665,7 @@ class controlador_recuperar():
                 QMessageBox.information(
                     self.vista, 
                     "Éxito", 
-                    "Contraseña actualizada correctamente"
+                    "Administrador registrado correctamente\n\nUsuario: admin\nContraseña: " + pass1
                 )
                 self.vista.recuperacion_exitosa.emit()
             else:
@@ -792,7 +813,7 @@ class controlador_recuperar():
         datos = []
         for i in range(3):
             pregunta = self.vista.combos_seguridad[i].currentText()
-            respuesta = self.vista.inputs_seguridad[i].text().strip()
+            respuesta = self.vista.inputs_seguridad[i].text()
             datos.append({
                 "pregunta": pregunta,
                 "respuesta": respuesta

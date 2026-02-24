@@ -3,6 +3,7 @@ from PyQt5.QtCore import QObject, pyqtSignal
 class ComunicadorGlobal(QObject):
     actividad_agregada = pyqtSignal()
     Reporte_agregado = pyqtSignal()
+    actualizar_objetivos = pyqtSignal()
     
     def __init__(self):
         super().__init__()

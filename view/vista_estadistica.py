@@ -9,21 +9,18 @@ from components.app_style import estilo_app
 estilo = estilo_app.obtener_estilo_completo()
 
 def get_shadow_effect(radius, color=Qt.gray, offset_x=1, offset_y=1):
-    """Crea y configura un efecto de sombra."""
     sombra = QGraphicsDropShadowEffect()
     sombra.setBlurRadius(radius)
     sombra.setColor(color)
     sombra.setOffset(offset_x, offset_y)
     return sombra
 
-# Clase para el Widget de Gráfica
 class Widget_Graficos(QFrame):
     def __init__(self, title, chart_data=None, parent=None):
         super().__init__(parent)
         self.setMinimumHeight(160)
         self.setStyleSheet("background: transparent; border: none;")
         
-        # Data Configuration
         data_default = [70, 30]
         labels_default = ["Actividades Realizadas", "Actividades sin Hacer"]
         
@@ -35,12 +32,9 @@ class Widget_Graficos(QFrame):
             QColor(estilo_app.obtener_colores_tema()['secondary'])
         ]
         
-        # Layout principal
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
-        
-        # Sombra suave
         self.setGraphicsEffect(get_shadow_effect(5, QColor(0, 0, 0, 20)))
 
     def paintEvent(self, event):
@@ -50,23 +44,17 @@ class Widget_Graficos(QFrame):
 
         rect = self.contentsRect()
         
-        # ===== 1. PINTAR EL TÍTULO =====
         title_height = 30
         title_rect = QRectF(rect.left(), rect.top(), rect.width(), title_height)
         
-        label_style = estilo["styles"]["label"]
-        
-        # Fondo para el título
         painter.setBrush(QBrush(QColor(estilo_app.obtener_colores_tema()['bg_secondary'])))
         painter.setPen(Qt.NoPen)
         painter.drawRect(title_rect)
         
-        # Texto del título
         painter.setPen(QPen(QColor(estilo_app.obtener_colores_tema()['text_primary'])))
         title_font = QFont(estilo_app.FONT_FAMILY, estilo_app.FONT_SIZE + 5, QFont.Bold)
         painter.setFont(title_font)
         
-        # Ajustar texto si es muy largo
         display_title = self.title
         if len(self.title) > 30:
             if "Objetivo:" in self.title:
@@ -78,7 +66,6 @@ class Widget_Graficos(QFrame):
         
         painter.drawText(title_rect, Qt.AlignCenter | Qt.AlignVCenter, display_title)
         
-        # ===== 2. PINTAR EL GRÁFICO =====
         chart_area = QRectF(
             rect.left() + 5, 
             rect.top() + title_height + 5,
@@ -161,62 +148,44 @@ class Widget_Graficos(QFrame):
         painter.drawRoundedRect(rect.adjusted(1, 1, -1, -1), 5, 5)
 
 
-# ---------------------------------------
-
-# Clase: Ventana Estadística
 class Ventana_estadística(QFrame):
     def __init__(self):
         super().__init__()
-        # Inicializar Estilo
         self.estilo = estilo_app.obtener_estilo_completo()
-        
-        # Establecer el Tema del Fondo
-        self.setStyleSheet(estilo["styles"]["fondo"])
-        
-        # Registrar esta vista para actualización automática
+        self.setStyleSheet(self.estilo["styles"]["fondo"])
         estilo_app.registrar_vista(self)
-        
-        # Conectar señal de actualización
         estilo_app.estilos_actualizados.connect(self.actualizar_estilos)
 
-        # Lista para almacenar los gráficos
         self.widgets_graficos = []
-
-        # Inicialización de los Métodos
         self.setup_panel()
         self.setup_charts_panel()
 
     def setup_panel(self):
-        # Layout Principal
         self.layout_principal = QVBoxLayout(self)
         self.layout_principal.setContentsMargins(10, 10, 10, 10)
 
-        # Título de la Ventana
         self.titulo = QLabel("Bienvenido al Sistema de Gestión")
-        self.titulo.setStyleSheet(estilo["styles"]["header"])
+        self.titulo.setStyleSheet(self.estilo["styles"]["header"])
         self.titulo.setAlignment(Qt.AlignCenter)
         self.layout_principal.addWidget(self.titulo)
 
     def setup_charts_panel(self):
-        # Contenedor principal de estadísticas
         frame_Estadistica = QFrame()
-        frame_Estadistica.setStyleSheet(estilo["styles"]["panel"])
+        frame_Estadistica.setStyleSheet(self.estilo["styles"]["panel"])
         frame_Estadistica.setGraphicsEffect(get_shadow_effect(15))
         
         layout_estadistica = QVBoxLayout(frame_Estadistica)
         layout_estadistica.setSpacing(10)
 
         titulo = QLabel("Control de Reportes")
-        titulo.setStyleSheet(estilo["styles"]["header"])
+        titulo.setStyleSheet(self.estilo["styles"]["header"])
         titulo.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
         layout_estadistica.addWidget(titulo)
 
-        # Layout para los gráficos (Grid 2x2)
         layout_charts = QGridLayout()
         layout_charts.setContentsMargins(15, 0, 15, 15)
         layout_charts.setSpacing(15)
         
-        # Crear los 4 gráficos con títulos iniciales
         titulos_iniciales = [
             "Semanal (Objetivo: 0)",
             "Mensual (Objetivo: 0)",
@@ -224,7 +193,6 @@ class Ventana_estadística(QFrame):
             "Anual (Objetivo: 0)"
         ]
         
-        # Posiciones en el grid: (fila, columna)
         posiciones = [(0, 0), (0, 1), (1, 0), (1, 1)]
         
         for i, titulo in enumerate(titulos_iniciales):
@@ -241,14 +209,11 @@ class Ventana_estadística(QFrame):
         self.layout_principal.addWidget(frame_Estadistica)
 
     def actualizar_estilos(self):
-        # Actualizar los estilo de la vista
         self.estilo = estilo_app.obtener_estilo_completo()
         colores = self.estilo["colors"]
         
-        # Aplicar fondo a la vista principal
         self.setStyleSheet(self.estilo["styles"]["fondo"])
         
-        # Actualizar todos los paneles con sombra
         for widget in self.findChildren(QFrame):
             if widget.graphicsEffect():
                 widget.setStyleSheet(self.estilo["styles"]["panel"])
@@ -256,7 +221,6 @@ class Ventana_estadística(QFrame):
                 if isinstance(effect, QGraphicsDropShadowEffect):
                     effect.setColor(QColor(colores.get("shadow", Qt.gray)))
         
-        # Actualizar títulos
         for widget in self.findChildren(QLabel):
             text = widget.text()
             if text in ["Bienvenido al Sistema de Gestión", "Control de Reportes"]:
@@ -264,6 +228,5 @@ class Ventana_estadística(QFrame):
             else:
                 widget.setStyleSheet(self.estilo["styles"]["label"])
         
-        # Actualizar gráficos circulares
         for widget in self.findChildren(Widget_Graficos):
             widget.repaint()

@@ -1,16 +1,10 @@
 from models.conexion_db import ConexionDB
 from datetime import datetime, timedelta
-
+from typing import Dict
 
 class Modelo_estadistica():
-    """Modelo para obtener estadísticas de actividades.
-
-    Las fechas de las actividades se guardan como texto en formato
-    'dd-MM-yyyy' (según la UI). Este modelo carga las fechas,
-    las parsea y cuenta actividades en rangos de días.
-    """
     def __init__(self):
-        pass
+        self.db = ConexionDB()
 
     def obtener_todas_actividades(self):
         conexion = ConexionDB()
@@ -48,21 +42,16 @@ class Modelo_estadistica():
         return contador
 
     def obtener_contadores_periodos(self) -> dict:
-        """Devuelve contadores para: semanal, mensual, trimestral, anual."""
         return {
             "semanal": self.contar_actividades_ultimos_dias(7),
             "mensual": self.contar_actividades_ultimos_dias(30),
             "trimestral": self.contar_actividades_ultimos_dias(90),
             "anual": self.contar_actividades_ultimos_dias(365),
         }
-
     
     def cargar_datos_objetivos(self) -> Dict[str, str]:
-        """Carga los datos de objetivos desde la BD"""
         try:
             cursor = self.db.conexion.cursor()
-            
-            # Obtener los objetivos desde la tabla Objetivos_Reportes
             cursor.execute("""
                 SELECT objetivo_semanal, objetivo_mensual, 
                        objetivo_trimestral, objetivo_anual 
@@ -70,27 +59,25 @@ class Modelo_estadistica():
             """)
             datos = cursor.fetchone()
             
-            if datos:
+            if datos and any(datos):
                 return {
-                    "objetivo_semanal": datos[0] if datos else "5",
-                    "objetivo_mensual": datos[1] if datos else "10",
-                    "objetivo_trimestral": datos[2] if datos else "30",
-                    "objetivo_anual": datos[3] if datos else "90"
+                    "objetivo_semanal": str(datos[0]) if datos[0] is not None else "8",
+                    "objetivo_mensual": str(datos[1]) if datos[1] is not None else "20",
+                    "objetivo_trimestral": str(datos[2]) if datos[2] is not None else "30",
+                    "objetivo_anual": str(datos[3]) if datos[3] is not None else "120"
                 }
             else:
-            # Si no hay datos, retornar valores por defecto
                 return {
-                    "objetivo_semanal": "5",
-                    "objetivo_mensual": "10", 
+                    "objetivo_semanal": "8",
+                    "objetivo_mensual": "20", 
                     "objetivo_trimestral": "30",
-                    "objetivo_anual": "90"
+                    "objetivo_anual": "120"
                 }
-            
         except Exception as e:
             print(f"❌ Error al cargar objetivos: {e}")
             return {
-                "objetivo_semanal": "5",
-                "objetivo_mensual": "10",
+                "objetivo_semanal": "8",
+                "objetivo_mensual": "20",
                 "objetivo_trimestral": "30",
-                "objetivo_anual": "90"
+                "objetivo_anual": "120"
             }

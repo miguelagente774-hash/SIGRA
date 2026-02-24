@@ -115,17 +115,33 @@ class Ventana_reporte_crear(QFrame):
         titulo.setStyleSheet(self.estilo["styles"]["title"])
         layout_fecha.addWidget(titulo)
 
-        # Fecha de la Actividad - QEdit
-        self.fecha = QDateEdit(self)
-        self.fecha.setStyleSheet(self.estilo["styles"]["date"])
+        colores = estilo_app
+        colores = colores.obtener_colores_tema()
+        FONT_SIZE = estilo_app.FONT_SIZE
+        FONT_FAMILY = estilo_app.FONT_FAMILY
+
+        self.fecha = QDateEdit()
+        self.fecha.setStyleSheet(f"""
+        QDateEdit {{
+            border: 2px solid {colores['primary']};
+            border-radius 5px;
+            min-height: 50xp;
+            background-color: {colores['bg_primary']};
+            color: {colores["text_primary"]};
+            font-size: {FONT_SIZE}px;
+            font-family: {FONT_FAMILY};
+        }}
+        """)
         self.fecha.setCalendarPopup(True)
-        self.fecha.setFixedWidth(250)
         self.fecha.setDate(QDate.currentDate())
 
         layout_fecha.addWidget(self.fecha, alignment=Qt.AlignLeft)
-        layout_fecha.addStretch()
+        
+        
 
         layout_panel.addLayout(layout_fecha)
+
+        layout_fecha.addWidget(self.fecha, alignment=Qt.AlignLeft)
         
         # Agregar Botones
         layout_botones = QHBoxLayout()

@@ -156,7 +156,7 @@ class AppStyle(QObject):
         return f"""
         QLineEdit, QTextEdit, QComboBox{{
             font-family: {self.FONT_FAMILY};
-            font-size: {self.FONT_SIZE + 5}px;
+            font-size: {self.FONT_SIZE + 3}px;
             border: 1.5px solid {colores['border_light']};
             border-radius: 10px;
             padding: 14px 18px;
@@ -171,22 +171,22 @@ class AppStyle(QObject):
         }}
        QSpinBox{{
         font-family: {self.FONT_FAMILY};
-        font-size: {self.FONT_SIZE + 5}px;
+        font-size: {self.FONT_SIZE + 3}px;
         border: 1.5px solid {colores['border_light']};
         border-radius: 10px;
-        padding: 5px;
-        min-height: 30px;
+        min-height: 50px;
         min-width: 120px;
         margin-top: 5px;
         margin-bottom: 5px;
         margin-left: 5px;
         margin-right: 5px;
+        padding: -5px 0px 10px 0px;
         background: {colores['input_bg']};
         color: {colores['text_primary']};
         }}
 
         QSpinBox::up-button, QSpinBox::down-button {{
-            width: 25px;
+            width: 20px;
         }}
         
         QLineEdit:focus, QTextEdit:focus, QComboBox:focus, QSpinBox:focus{{
@@ -418,64 +418,120 @@ class AppStyle(QObject):
         colores = self.obtener_colores_tema()
 
         return f"""QDateEdit {{
-        margin: 0 0 0 20px;
         border: 2px solid {colores['primary']};
-        border-radius: 2px;
-        padding: 10px;
-        margin: 5px 2px 15px 20px;
+        border-radius: 5px;
+        margin: 5px;
         background-color: {colores['bg_primary']};
         color: {colores["text_primary"]};
         font-size: {self.FONT_SIZE}px;
-        }}
-        QDateEdit:hover {{
-        border-color: {colores['primary']};
-        }}
-
-        QDateEdit:disabled {{
+        font-family: {self.FONT_FAMILY};
+        min-height: 30px;
+        min-width: 150px;
+        selection-background-color: {colores['primary']};
+    }}
+    
+    QDateEdit::drop-down {{
+        subcontrol-origin: padding;
+        subcontrol-position: center right;
+        width: 25px;
+        border-left-width: 1px;
+        border-left-color: {colores['primary']};
+        border-left-style: solid;
+        border-top-right-radius: 3px;
+        border-bottom-right-radius: 3px;
+    }}
+    
+    QDateEdit::down-arrow {{
+        image: url(none);  /* Elimina imagen por defecto si hay problemas */
+        width: 12px;
+        height: 12px;
+    }}
+    
+    QDateEdit:hover {{
+        border-color: {colores['boton_hover']};
+        background-color: {colores['input_bg']};
+    }}
+    
+    QDateEdit:focus {{
+        border-color: {colores['border_input']};
+        border-width: 2px;
+    }}
+    
+    QDateEdit:disabled {{
+        background-color: {colores['bg_secondary']};
+        border-color: {colores['border_light']};
+        color: {colores['text_secondary']};
+    }}
+    
+    /* Calendario desplegable */
+    QCalendarWidget {{
         background-color: {colores['bg_primary']};
-        }}
-        
-        QCalendarWidget {{
-        background-color: {colores['bg_primary']};
-        border: 2px solid {colores['primary']}
-        border-radius: 2px;
-        }}
-        
-        QCalendarWidget QToolButton {{
-        color: #005a6e;
-        background-color: #f0f0f0;
+        border: 2px solid {colores['primary']};
+        border-radius: 5px;
+    }}
+    
+    QCalendarWidget QToolButton {{
+        color: {colores['text_primary']};
+        background-color: {colores['bg_secondary']};
         font-size: {self.FONT_SIZE}px;
-        icon-size: 20px, 20px;
-        }}
-        
-        QCalendarWidget QMenu {{
-        background-color: white;
+        font-weight: bold;
+        min-height: 25px;
+        padding: 3px;
+        border: none;
+        border-radius: 0px;
+    }}
+    
+    QCalendarWidget QToolButton:hover {{
+        background-color: {colores['boton_hover']};
+        color: white;
+    }}
+    
+    QCalendarWidget QMenu {{
+        background-color: {colores['bg_primary']};
         color: {colores["text_primary"]};
-        }}
-        
-        QCalendarWidget QSpinBox {{
+        border: 1px solid {colores['border']};
+    }}
+    
+    QCalendarWidget QSpinBox {{
         background-color: {colores['bg_primary']};
         color: {colores["text_primary"]};
         selection-background-color: {colores['primary']};
         selection-color: white;
-        }}
-        
-        QCalendarWidget QWidget {{ alternate-background-color: #e6f7ff; }}
-        
-        QCalendarWidget QTableView {{
+        border: 1px solid {colores['border_light']};
+        border-radius: 3px;
+        min-height: 20px;
+    }}
+    
+    QCalendarWidget QWidget {{ 
+        alternate-background-color: {colores['bg_secondary']}; 
+    }}
+    
+    QCalendarWidget QTableView {{
         selection-background-color: {colores['primary']};
-        selection-color: {colores['bg_primary']};
-        gridline-color: #ddd;
-        }}
-        
-        QCalendarWidget QHeaderView::section {{
-        background-color: #f8f9fa;
-        color: {colores["text_primary"]};
-        min-height: {self.FONT_SIZE +10}px;
+        selection-color: white;
+        gridline-color: {colores['border_light']};
+        background-color: {colores['bg_primary']};
+        color: {colores['text_primary']};
+        font-size: {self.FONT_SIZE - 1}px;
+    }}
+    
+    QCalendarWidget QHeaderView::section {{
+        background-color: {colores['table_header']};
+        color: white;
+        min-height: {self.FONT_SIZE + 8}px;
         font-weight: bold;
-        padding: 6px;
-        border: 1px solid #ddd;
-        }}
+        padding: 4px;
+        border: 1px solid {colores['border']};
+    }}
+    
+    /* Días del calendario */
+    QCalendarWidget QAbstractItemView:enabled {{
+        color: {colores['text_primary']};
+    }}
+    
+    QCalendarWidget QAbstractItemView:disabled {{
+        color: {colores['text_secondary']};
+    }}
         """
     
     def obtener_estilo_frame(self):

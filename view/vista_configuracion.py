@@ -176,9 +176,6 @@ class Ventana_configuracion(QFrame):
         # GRUPO FUENTE - SpinBox Tamaño de Fuente
         self.spin_tamano = QSpinBox()
         self.spin_tamano.setStyleSheet(self.estilo["styles"]["input"])
-        self.spin_tamano.setMinimum(10)
-        self.spin_tamano.setMaximum(18)
-        self.spin_tamano.setValue(12)
         layout_fuente.addWidget(self.spin_tamano)
         
         # GRUPO FUENTE - Checkbox de BOLD en Fuente

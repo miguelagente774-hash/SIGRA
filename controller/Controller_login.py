@@ -206,7 +206,7 @@ class controlador_setup(QObject):
                 indices=list(set(indices_duplicados_resp))  # Eliminar duplicados de índices
             )
             return
-        
+
         # --- VALIDACIONES DE CONTRASEÑA ---
         password = self.vista.input_password.text().strip()
         password_confirmacion = self.vista.input_password_confirmation.text().strip()
@@ -224,6 +224,15 @@ class controlador_setup(QObject):
         if len(password) < 8:
             self.mostrar_error(
                 mensaje="La contraseña debe tener al menos 8 caracteres",
+                tipo_error='password'
+            )
+            self.vista.input_password.setFocus()
+            return
+        
+        # Verificar longitud Maxima
+        if len(password) > 16:
+            self.mostrar_error(
+                mensaje="La contraseña no puede tener mas de 16 caracteres",
                 tipo_error='password'
             )
             self.vista.input_password.setFocus()
@@ -319,7 +328,7 @@ class controlador_setup(QObject):
                 for combo in self.vista.combos_seguridad:
                     combo.setStyleSheet(estilo_error_combo)
         
-        elif tipo_error in ['respuestas vacías', 'respuestas duplicadas']:
+        elif tipo_error in ['respuestas vacías', 'respuestas duplicadas', 'respuestas validadas']:
             # Resaltar inputs de respuesta específicos
             if indices:
                 for i in indices:
@@ -541,7 +550,7 @@ class controlador_recuperar():
                 self.mostrar_error(
                     mensaje="Las respuestas de seguridad deben ser diferentes entre sí.",
                     tipo_error='respuestas duplicadas',
-                    indices=list(set(indices_duplicados_resp))  # Eliminar duplicados de índices
+                    indices=list(set(indices_duplicados_resp)) 
                 )
                 return
             
@@ -679,7 +688,7 @@ class controlador_recuperar():
                 # Si no hay índices específicos, resaltar todos
                 for combo in self.vista.combos_seguridad:
                     combo.setStyleSheet(estilo_error_combo)
-        elif tipo_error in ['respuestas vacías', 'respuestas duplicadas', 'respuestas no coinciden']:
+        elif tipo_error in ['respuestas vacías', 'respuestas duplicadas', 'respuestas no coinciden', 'respuestas']:
             # Resaltar inputs de respuesta específicos
             if indices:
                 for i in indices:

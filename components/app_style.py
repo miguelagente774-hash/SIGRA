@@ -419,19 +419,19 @@ class AppStyle(QObject):
 
         return f"""QDateEdit {{
         border: 2px solid {colores['primary']};
-        border-radius: 5px;
-        margin: 5px;
+        border-radius: 10px; /* Consistente con otros inputs */
+        margin: 0;
+        padding: 0 10px; /* SIN padding vertical para que no empuje el texto */
         background-color: {colores['bg_primary']};
         color: {colores["text_primary"]};
-        font-size: {self.FONT_SIZE}px;
+        font-size: {self.FONT_SIZE + 2}px; /* Ligeramente más grande para consistencia */
         font-family: {self.FONT_FAMILY};
-        min-height: 30px;
+        min-height: 40px;   /* Altura total del widget. Qt centrará el texto aquí. */
         min-width: 150px;
         selection-background-color: {colores['primary']};
     }}
     
     QDateEdit::drop-down {{
-        subcontrol-origin: padding;
         subcontrol-position: center right;
         width: 25px;
         border-left-width: 1px;
@@ -510,8 +510,8 @@ class AppStyle(QObject):
         selection-background-color: {colores['primary']};
         selection-color: white;
         gridline-color: {colores['border_light']};
-        background-color: {colores['bg_primary']};
-        color: {colores['text_primary']};
+        background-color: white;
+        color: black;
         font-size: {self.FONT_SIZE - 1}px;
     }}
     

@@ -1,4 +1,5 @@
 SIGRAG.db
 database
+.venv
 actividades_imagenes
 __pycache__

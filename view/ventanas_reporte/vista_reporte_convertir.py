@@ -7,7 +7,7 @@ from PyQt5.QtCore import Qt
 from comunicador import Comunicador_global
 from datetime import datetime
 from components.app_style import estilo_app
-import locale
+#import locale
 
 # Ventana de Convertir Actividades en Reportes
 class Ventana_convertir_reporte(QFrame):
@@ -18,7 +18,7 @@ class Ventana_convertir_reporte(QFrame):
         self.controller = controller
         
         #estableciendo el sistema a español
-        locale.setlocale(locale.LC_TIME, "Spanish_Spain")
+        #locale.setlocale(locale.LC_TIME, "Spanish_Spain")
 
         # Establecer el Tema de Fondo
         self.setStyleSheet(self.estilo["styles"]["fondo"])
